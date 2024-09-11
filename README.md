@@ -5,6 +5,11 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 # Installation & dependencies
 Currently, just source the scripts. Will update a list of dependencies later.
 
+On Sanger farm22 should run with:
+``` 
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/5
+```
+
 # Data structure
 Data is organized into a TglowDataset object, which stores image / well level metadata alongside the features. Features are stored in a slot called assays, which have the class TglowAssay. These are very similar to Seurat Assays. TglowAssay objects store the cell-feature level data and make a distinction between numeric data used for analysis which is stored as a matrix, and cell level metadata such as object IDs stored in a dataframe.
 
