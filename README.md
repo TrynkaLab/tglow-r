@@ -3,14 +3,18 @@
 This repo contains an R package for analyzing (single cell) HCI imaging data. The package strucutre is heavily inspired by Seurat.
 
 # Installation & dependencies
-Note: Will update a list of dependencies later and fix the dependencies during install.
+Note: Will update a list of dependencies later and automate the dependencies during install.  
 
-Clone the repo
+Note: For now repo is private, make sure you are on VPN when calling this.
+```
+library(remotes)
 
+remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git")
+```
 
-## On Sanger farm22
+## On Sanger farm22 - latest dev version
 
-If using R from the headnode or jammy64 you should be able to install directly through the cloned repo. If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there. The Rlibs user must be set when calling `rstudio start` for this to work.
+If using R from the headnode or jammy64 you should be able to install directly through gitlab, the cloned repo or `/software/teamtrynka/installs/tglow-r-core`. If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there. The Rlibs user must be set when calling `rstudio start` for this to work.
 
 ``` 
 module load HGI/softpack/groups/cell_activation_tc/tglow-r/5
