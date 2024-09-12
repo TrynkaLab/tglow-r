@@ -14,21 +14,24 @@ remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-cor
 
 ## On Sanger farm22 - latest dev version
 
-If using R from the headnode or jammy64 you should be able to install directly through gitlab, the cloned repo or `/software/teamtrynka/installs/tglow-r-core`. If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there. The Rlibs user must be set when calling `rstudio start` for this to work.
+If using R from the headnode or jammy64 you should be able to install directly through gitlab, using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core`. If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there into a local tmp library inside the container.
 
 ``` 
 module load HGI/softpack/groups/cell_activation_tc/tglow-r/5
 ```
 
 Then launch R.
-The latest dev version is on `/software/teamtrynka/installs/tglow-r-core`
+The latest dev version is in `/software/teamtrynka/installs/tglow-r-core`
 ```
 # Install tglow R package 
-path <- tempdir()
-path <- paste0(path, "/tglowr")
+tmpdir <- tempdir()
+path   <- paste0(tmpdir, "/tglowr")
+libdir <- paste0("/tmp/rlibs-tglow")
 
-# Copy the package to a wirtable tempdir
-dir.create(paste0(path))
+dir.create(path)
+dir.create(libdir)
+
+# Copy the package to a writable tempdir
 file.copy(from = list.files("</path/to/repo>", full.names = TRUE), 
           to = path, recursive = TRUE)
 
@@ -36,16 +39,13 @@ file.copy(from = list.files("</path/to/repo>", full.names = TRUE),
 devtools::document(pkg=path)
 res  <- devtools::build(pkg=path, path=path)
 
-# Find the user library to install in
-lib  <- strsplit(Sys.getenv("R_LIBS_USER"), ":")[[1]][2]
-
 # Remove the old version, install the new version, restart R
-remove.packages("tglowr", lib=lib)
-install.packages(res, lib=lib)
+remove.packages("tglowr", lib=libdir)
+install.packages(res, lib=libdir)
 .rs.restartR()
 
 # Load the package
-library(tglowr, lib=lib)
+library(tglowr,lib=libdir)
 ```
 
 

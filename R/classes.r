@@ -21,7 +21,6 @@ setClass("TglowAssay",
 #'
 #' Object to store HCI features along side object (cell) and image level metadata.
 #'
-#' Hello there!
 #' @slot assays List of TglowAssays containing the data
 #' @slot meta Data frame containing object (cell) level metadata
 #' @slot object.ids Vector containing object (cell) level identifiers
