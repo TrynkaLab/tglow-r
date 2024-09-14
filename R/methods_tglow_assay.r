@@ -1,4 +1,41 @@
 #' @include generics.r
+#'
+#'
+NULL
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "$", signature("TglowAssay"),
+  function(x, name) {
+    dx <- x@data[, name]
+    sx <- NULL
+
+    if (!is.null(x@scale.data)) {
+      sx <- x@scale.data[, name]
+    }
+    return(list(data = dx, scale.data = sx))
+  }
+)
+
+#' @export
+.DollarNames.TglowAssay <- function(x, pattern = "") {
+  # x is the .CompletionEnv
+  return(x@features$id)
+}
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "[[", signature("TglowAssay"),
+  function(x, i) {
+    dx <- x@data[, i]
+    sx <- NULL
+
+    if (!is.null(x@scale.data)) {
+      sx <- x@scale.data[, i]
+    }
+    return(list(data = dx, scale.data = sx))
+  }
+)
 #-------------------------------------------------------------------------------
 setMethod(
   "show", signature("TglowAssay"),

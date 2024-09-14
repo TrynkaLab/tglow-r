@@ -13,5 +13,8 @@ Collate:
     'classes.r'
     'constructors.r'
     'generics.r'
+    'utils.r'
+    'io_cellprofiler.r'
     'methods_tglow_assay.r'
     'methods_tglow_dataset.r'
+    'methods_tglow_matrix.r'

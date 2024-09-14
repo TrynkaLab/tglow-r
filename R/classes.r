@@ -1,4 +1,11 @@
 setClassUnion(name = "MatrixOrNull", members = c("matrix", "NULL"))
+setClassUnion(name = "TglowMatrixOrNull", members = c("matrix", "NULL"))
+
+#-------------------------------------------------------------------------------
+#' TglowMatrix
+#'
+#' Wrapper arround matrix to enable the use of $
+setClass("TglowMatrix", contains = "matrix")
 
 #-------------------------------------------------------------------------------
 #' TglowAssay
@@ -9,8 +16,8 @@ setClassUnion(name = "MatrixOrNull", members = c("matrix", "NULL"))
 #'
 setClass("TglowAssay",
     slots = list(
-        data = "matrix",
-        scale.data = "MatrixOrNull",
+        data = "TglowMatrix",
+        scale.data = "TglowMatrixOrNull",
         features = "data.frame"
     ),
     prototype = list(scale.data = NULL)

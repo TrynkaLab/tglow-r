@@ -1,10 +1,20 @@
 #-------------------------------------------------------------------------------
+#' Create a new TglowMatrix
+#' @param matrix The data matrix
+#' @export
+TglowMatrix <- function(data) {
+  new("TglowMatrix", data = data)
+}
+
+#-------------------------------------------------------------------------------
 #' Convert a tglow list to a tglow assay
 #'
 #' @param output Tglow list object obtained from tglow.read.dir
 #' @param assay Which assay to convert
 #' @param meta.cols Which object level collumns in the features to consider as metadata
 #' @param col.object Which collumn to use as the identifier. Must be in meta.cols
+#'
+#' @export
 tglow.assay.from.list <- function(output, assay, meta.cols, col.object) {
   if (!col.object %in% meta.cols) {
     stop(paste0("Object ID column col.object must be in meta.cols but ", col.object, " is not"))
@@ -20,7 +30,7 @@ tglow.assay.from.list <- function(output, assay, meta.cols, col.object) {
   rownames(features) <- colnames(data)
 
   assay <- new("TglowAssay",
-    data = data,
+    data = TglowMatrix(data),
     features = features
   )
 
@@ -39,6 +49,8 @@ tglow.assay.from.list <- function(output, assay, meta.cols, col.object) {
 #' @param col.meta.img.id The collumn name in the image level data which contains the image id
 #'
 #' @returns A populated TglowDataset
+#'
+#' @export
 tglow.dataset.from.list <- function(
     output,
     assay,
@@ -77,8 +89,8 @@ tglow.dataset.from.list <- function(
   # Image level data
   image.cols <- unlist(sapply(img.feature.patterns, grep, colnames(output$meta), value = T))
   dataset@image.data <- new("TglowAssay",
-    data = as.matrix(output$meta[, image.cols]),
-    features = tglow.get.feature.meta.from.cells(image.cols)
+    data = TglowMatrix(as.matrix(output$meta[, image.cols])),
+    features = get.feature.meta.from.names(image.cols)
   )
   rownames(dataset@image.data@data) <- output$meta[, col.meta.img.id]
   dataset@image.meta <- output$meta[, !colnames(output$meta) %in% image.cols]

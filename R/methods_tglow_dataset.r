@@ -1,4 +1,30 @@
 #' @include generics.r
+#' 
+#' 
+
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "$", signature("TglowDataset"),
+  function(x, name) {
+    return(x@assays[[name]])
+  }
+)
+
+#' @export
+.DollarNames.TglowDataset = function(x, pattern = "") {
+  #x is the .CompletionEnv
+  return(names(x@assays))
+}
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "[[", signature("TglowDataset"),
+  function(x, i) {
+    return(x@assays[[i]])
+  }
+)
+
 #-------------------------------------------------------------------------------
 setMethod(
   "show", signature("TglowDataset"),
@@ -74,6 +100,15 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
+#' Get image data and features per cell
+#' 
+#' @param object TglowDataset
+#' @param j character with column names from image.meta, image.data or assay@slot to select
+#' @param assay the assay to select from
+#' @param slot slot to fetch features fromdata or scale.data
+#' @param drop should cols be dropped or not
+#' @returns A data frame with the corresponding columns
+#' @export
 setMethod(
   "getImageDataAndFeatures", signature("TglowDataset"),
   function(object, j, assay, slot, drop) {
@@ -100,6 +135,14 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
+#' Fetch image data or meta data from a tglow object per cell
+#' 
+#' @param object TglowDataset
+#' @param j character with column names from image.meta or image.data to select
+#' @param slot slot to fetch features fromdata or scale.data
+#' @param drop should cols be dropped or not
+#' @returns A data frame with the corresponding columns
+#' @export
 setMethod(
   "getImageDataByCell", signature("TglowDataset"),
   function(object, j, slot, drop) {
@@ -117,6 +160,14 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
+#' Fetch image data or meta data from a tglow object
+#' 
+#' @param object TglowDataset
+#' @param j character with column names from image.meta or image.data to select
+#' @param slot slot to fetch features fromdata or scale.data
+#' @param drop should cols be dropped or not
+#' @returns A data frame with the corresponding columns
+#' @export
 setMethod(
   "getImageData", signature("TglowDataset"),
   function(object, j, slot, drop) {
