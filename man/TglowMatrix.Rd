@@ -4,7 +4,7 @@
 \alias{TglowMatrix}
 \title{Create a new TglowMatrix}
 \usage{
-TglowMatrix(matrix)
+TglowMatrix(data)
 }
 \arguments{
 \item{matrix}{The data matrix}

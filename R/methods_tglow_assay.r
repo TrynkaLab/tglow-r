@@ -36,13 +36,14 @@ setMethod(
     return(list(data = dx, scale.data = sx))
   }
 )
+
 #-------------------------------------------------------------------------------
 setMethod(
   "show", signature("TglowAssay"),
   function(object) {
     cat(
       "TglowAssay with: ",
-      nrow(object@data), " cells and ",
+      nrow(object@data), " objects and ",
       ncol(object@data), " features \n"
     )
   }
@@ -61,6 +62,22 @@ setMethod(
   "ncol", signature("TglowAssay"),
   function(x) {
     ncol(x@data)
+  }
+)
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "colnames", signature("TglowAssay"),
+  function(x) {
+    colnames(x@data)
+  }
+)
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "rownames", signature("TglowAssay"),
+  function(x) {
+    rownames(x@data)
   }
 )
 

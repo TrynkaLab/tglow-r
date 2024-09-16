@@ -1,6 +1,5 @@
 #' @include generics.r
 #'
-#'
 NULL
 
 #-------------------------------------------------------------------------------
@@ -22,5 +21,14 @@ setMethod(
   "[[", signature("TglowMatrix"),
   function(x, name) {
     return(x[, name])
+  }
+)
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "[",
+  "TglowMatrix",
+  function(x, i, j, drop = F) {
+    return(TglowMatrix(x@.Data[i, j, drop = drop]))
   }
 )

@@ -26,7 +26,10 @@ setClass("TglowAssay",
 #-------------------------------------------------------------------------------
 #' TglowDataset
 #'
+#' @description
 #' Object to store HCI features along side object (cell) and image level metadata.
+#' Matrices are assumed to have row and column names set in the constructor function.
+#' This is important for downstream functionality.
 #'
 #' @slot assays List of TglowAssays containing the data
 #' @slot meta Data frame containing object (cell) level metadata
@@ -53,5 +56,32 @@ setClass("TglowDataset",
     prototype = list(
         reduction = list(),
         graph = NULL
+    )
+)
+
+#-------------------------------------------------------------------------------
+#' TglowFilter
+#'
+#' @description An object to describe a filter for either objects (cells) or
+#' features.
+#'
+#' @slot name Filter name
+#' @slot column_pattern Collumn pattern to apply filters on. "all" represents all
+#' @slot func Name of filter function
+#' @slot threshold Filter threshold value
+#' @slot active Logical indicating if the filter should be applied
+#' @slot transpose Should data matrix be transposed prior to running func
+setClass("TglowFilter",
+    slots = list(
+        name = "character",
+        column_pattern = "character",
+        func = "character",
+        threshold = "numeric",
+        transpose = "logical",
+        active = "logical"
+    ),
+    prototype = list(
+        transpose = FALSE,
+        active = TRUE
     )
 )

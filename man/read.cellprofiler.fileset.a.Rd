@@ -20,7 +20,7 @@ list with data frames:
 
 - meta (image level features)
 
-- objectRelations 
+- objectRelations
 
 - features [optional]
 

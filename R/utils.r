@@ -38,9 +38,9 @@ get.feature.meta.from.names <- function(feature.names) {
 #' Data must be a list of lists with outputs from tglow.read.fileset.a/b
 #' or have the items, cells, meta, orl,  [children], [features], [cells_norm]
 #'
-#' @param data List output from @seealso \code{\link{tglow.read.fileset}}
+#' @param data List output from \code{\link{tglow.read.fileset}}
 #'
-#' @returns The mered output from @seealso \code{\link{tglow.read.fileset}}
+#' @returns The mered output from \code{\link{tglow.read.fileset}}
 #' @export
 merge.filesets <- function(data) {
   if (class(data) != "list") {

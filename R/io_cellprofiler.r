@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Imports
 #' @import data.table
-#' @include utils.r 
+#' @include utils.r
 NULL
 
 

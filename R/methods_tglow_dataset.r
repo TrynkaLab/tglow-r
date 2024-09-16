@@ -1,7 +1,6 @@
 #' @include generics.r
-#' 
-#' 
-
+#'
+#'
 
 #-------------------------------------------------------------------------------
 setMethod(
@@ -12,8 +11,8 @@ setMethod(
 )
 
 #' @export
-.DollarNames.TglowDataset = function(x, pattern = "") {
-  #x is the .CompletionEnv
+.DollarNames.TglowDataset <- function(x, pattern = "") {
+  # x is the .CompletionEnv
   return(names(x@assays))
 }
 
@@ -31,16 +30,16 @@ setMethod(
   function(object) {
     cat(
       "TglowData with: ",
-      nrow(object@meta), " cells, ",
+      nrow(object@meta), " objects (cells), ",
       nrow(object@image.meta), " images and ",
       length(object@assays), " assays \n"
     )
 
-    cat("Assays: \n")
+    cat("- Assays:\n")
     print(object@assays)
 
-    cat("\nActive assay: ", object@active.assay, "\n")
-    cat("\nReductions: ", names(object@reduction), "\n")
+    cat("- Active assay: ", object@active.assay, "\n")
+    cat("- Reductions: ", names(object@reduction), "\n")
   }
 )
 
@@ -101,12 +100,15 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 #' Get image data and features per cell
-#' 
+#'
+#' @description Select columns from image.data@slot, image.meta, and assay\@slot and return them
+#' as a data.frame.
+#'
 #' @param object TglowDataset
-#' @param j character with column names from image.meta, image.data or assay@slot to select
-#' @param assay the assay to select from
-#' @param slot slot to fetch features fromdata or scale.data
-#' @param drop should cols be dropped or not
+#' @param j Character with column names from image.meta, image.data@slot or assay@slot to select
+#' @param assay The assay to select from
+#' @param slot Slot to fetch features from: "data" or "scale.data"
+#' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
 setMethod(
@@ -135,12 +137,15 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-#' Fetch image data or meta data from a tglow object per cell
-#' 
+#' Fetch image data or meta data from a tglow object per object (cell).
+#'
+#' @description Select columns from image.data@slot, image.meta and return them
+#' as a data.frame per object (cell).
+#'
 #' @param object TglowDataset
-#' @param j character with column names from image.meta or image.data to select
-#' @param slot slot to fetch features fromdata or scale.data
-#' @param drop should cols be dropped or not
+#' @param j Character with column names from image.meta or image.data to select
+#' @param slot Slot to fetch features fromdata or scale.data
+#' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
 setMethod(
@@ -161,7 +166,10 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 #' Fetch image data or meta data from a tglow object
-#' 
+#'
+#' @description Select columns from image.data@slot, image.meta and return them
+#' as a data.frame per image.
+#'
 #' @param object TglowDataset
 #' @param j character with column names from image.meta or image.data to select
 #' @param slot slot to fetch features fromdata or scale.data

@@ -12,9 +12,12 @@ RoxygenNote: 7.3.1
 Collate: 
     'classes.r'
     'constructors.r'
+    'filter_functions.r'
+    'filters.r'
     'generics.r'
     'utils.r'
     'io_cellprofiler.r'
     'methods_tglow_assay.r'
     'methods_tglow_dataset.r'
     'methods_tglow_matrix.r'
+    'qc_functions.r'

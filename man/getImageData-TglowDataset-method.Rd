@@ -19,5 +19,6 @@
 A data frame with the corresponding columns
 }
 \description{
-Fetch image data or meta data from a tglow object
+Select columns from image.data@slot, image.meta and return them
+as a data.frame per image.
 }

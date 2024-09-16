@@ -7,10 +7,10 @@
 \method{merge}{filesets}(data)
 }
 \arguments{
-\item{data}{List output from @seealso \code{\link{tglow.read.fileset}}}
+\item{data}{List output from \code{\link{tglow.read.fileset}}}
 }
 \value{
-The mered output from @seealso \code{\link{tglow.read.fileset}}
+The mered output from \code{\link{tglow.read.fileset}}
 }
 \description{
 Data must be a list of lists with outputs from tglow.read.fileset.a/b

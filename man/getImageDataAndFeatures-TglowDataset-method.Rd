@@ -9,17 +9,18 @@
 \arguments{
 \item{object}{TglowDataset}
 
-\item{j}{character with column names from image.meta, image.data or assay@slot to select}
+\item{j}{Character with column names from image.meta, image.data@slot or assay@slot to select}
 
-\item{assay}{the assay to select from}
+\item{assay}{The assay to select from}
 
-\item{slot}{slot to fetch features fromdata or scale.data}
+\item{slot}{Slot to fetch features from: "data" or "scale.data"}
 
-\item{drop}{should cols be dropped or not}
+\item{drop}{Should cols be dropped or not}
 }
 \value{
 A data frame with the corresponding columns
 }
 \description{
-Get image data and features per cell
+Select columns from image.data@slot, image.meta, and assay\@slot and return them
+as a data.frame.
 }

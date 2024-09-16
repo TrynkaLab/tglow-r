@@ -12,11 +12,11 @@ read.cellprofiler.dir(path, pattern, type, n = NULL, verbose = F, ...)
 \item{pattern}{The pattern that uniquely identfies a well. Use .zip for type B and the _experiment.tsv
 for type A.}
 
-\item{type}{Must be A or B. 
+\item{type}{Must be A or B.
 Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv.
 See read.cellprofiler.fileset.a for detaills
 Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells.
-see 
+see
 See read.cellprofiler.fileset.b for detaills}
 
 \item{n}{Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read.}

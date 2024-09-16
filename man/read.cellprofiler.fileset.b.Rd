@@ -22,7 +22,7 @@ read.cellprofiler.fileset.b(
 list with data frames:
 - cells (cell level features)
 - meta (image level features)
-- objectRelations 
+- objectRelations
 - features [optional]
 Output is NULL if no cells are detected.
 }

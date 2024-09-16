@@ -2,22 +2,23 @@
 % Please edit documentation in R/methods_tglow_dataset.r
 \name{getImageDataByCell,TglowDataset-method}
 \alias{getImageDataByCell,TglowDataset-method}
-\title{Fetch image data or meta data from a tglow object per cell}
+\title{Fetch image data or meta data from a tglow object per object (cell).}
 \usage{
 \S4method{getImageDataByCell}{TglowDataset}(object, j, slot = "data", drop = T)
 }
 \arguments{
 \item{object}{TglowDataset}
 
-\item{j}{character with column names from image.meta or image.data to select}
+\item{j}{Character with column names from image.meta or image.data to select}
 
-\item{slot}{slot to fetch features fromdata or scale.data}
+\item{slot}{Slot to fetch features fromdata or scale.data}
 
-\item{drop}{should cols be dropped or not}
+\item{drop}{Should cols be dropped or not}
 }
 \value{
 A data frame with the corresponding columns
 }
 \description{
-Fetch image data or meta data from a tglow object per cell
+Select columns from image.data@slot, image.meta and return them
+as a data.frame per object (cell).
 }
