@@ -36,10 +36,13 @@ setMethod(
     )
 
     cat("- Assays:\n")
-    print(object@assays)
-
-    cat("- Active assay: ", object@active.assay, "\n")
-    cat("- Reductions: ", names(object@reduction), "\n")
+    for (assay in names(object@assays)) {
+      cat("\t$", assay, ":", sep = "")
+      cat("\t", capture.output(show(object@assays[[assay]])), "\n", sep = "")
+    }
+    cat("- Active assay:", object@active.assay, "\n")
+    cat("- Reductions:", names(object@reduction), "\n")
+    cat("- Object size:", format(object.size(object), "Gb", digits = 2))
   }
 )
 
@@ -73,6 +76,12 @@ setMethod(
       object@image.ids <- object@image.ids[i, drop = F]
       object@image.data <- object@image.data[unique(object@image.ids), , drop = F]
       object@image.meta <- object@image.meta[unique(object@image.ids), , drop = F]
+      if (!is.null(object@image.data.trans)) {
+        object@image.data.trans <- object@image.data.trans[unique(object@image.ids), , drop = F]
+      }
+      if (!is.null(object@image.data.trans)) {
+        object@image.data.norm <- object@image.data[unique(object@image.ids), , drop = F]
+      }
 
       # Filter dimension reductions
       if (length(object@reduction) >= 1) {
@@ -113,7 +122,7 @@ setMethod(
 #' @export
 setMethod(
   "getImageDataAndFeatures", signature("TglowDataset"),
-  function(object, j, assay, slot, drop) {
+  function(object, j, assay = NULL, slot, drop) {
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")
     }
@@ -125,7 +134,9 @@ setMethod(
     j.meta <- j[is.meta]
     j.feature <- j[!is.meta]
 
-    data <- data.frame(slot(object@assays[[assay]], slot))[, j.feature, drop = F]
+    if (!is.null(assay)) {
+      data <- data.frame(slot(object@assays[[assay]], slot))[, j.feature, drop = F]
+    }
 
     if (sum(is.meta) > 0) {
       meta <- data.frame(getImageDataByCell(object, j.meta, slot = slot, drop = F))

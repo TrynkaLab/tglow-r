@@ -1125,3 +1125,111 @@ tglow.transform.bc <- function(c, return.lambda = F, limit = 5, downsample.lambd
   }
   
 }
+
+# Function to run mixed linear models  to compare control/cases [needs TGlow V5 for the matrix]
+
+tglow.model.casectrl.mixed <- function(dataset, 
+                                       assay = "cells_norm", 
+                                       case, 
+                                       control, 
+                                       predictor, 
+                                       fixed.covariates = NULL, 
+                                       random.covariates = "sample", 
+                                       interaction = NULL, 
+                                       features = NULL, 
+                                       features_col = "analyze",
+                                       img.id.col = "Image_ImageNumber_Global",
+                                       scale = F){
+  
+  #  Define the features
+  if(is.null(features)){
+    
+    features <- colnames(dataset[[assay]])[dataset$features[[features_col]]]
+    features <- features[features %in% colnames(dataset[[assay]])]
+    
+  } 
+  
+  # Build dataframe of covariates
+  meta <- dataset$meta[dataset[[assay]][[img.id.col]], c(predictor, fixed.covariates, random.covariates, interaction, "ImageNumber_Global")]
+  #meta[[predictor]] <- factor(meta[[predictor]], levels = c(control, case))
+  
+  # Bind covariates to the features df
+  data <- cbind(meta, dataset[[assay]][,features])
+  
+  # Subset to the cells/wells we are interested in
+  data <- data[data[, predictor] %in% c(control, case), ]
+  
+  # Scale the features if necessary
+  if(scale != F){
+    
+    data[, features] <- scale(data[, features])
+    
+  }
+  
+
+  # Label case_control & relevel so that control is first
+  data$case_control <- ifelse(data[, predictor] == control, "control", "case")
+  data$case_control <- factor(data$case_control, levels = c("control", "case"))
+  
+  # Make dataframes to store results
+  if(!is.null(interaction)){
+    
+    res <- data.frame(matrix(nrow = 0, ncol = 5))
+    names(res) <- c("Estimate", "Std. Error", "t value", "term", "feature")
+    
+  } else{
+    
+    res <- data.frame(matrix(nrow = 0, ncol = 3))
+    names(res) <- c("Estimate", "Std. Error", "t value")
+    
+  }
+  
+  # Model
+  cat("[INFO] Starting regressions\n")
+  
+  j <- 0
+  
+  control=lmerControl(check.conv.singular = .makeCC(action = "ignore",  tol = 1e-4))
+  
+  for(i in features){
+    
+    cat("\r[INFO] ", round((j/length(features))*100, digits=2), "%" )
+    j <- j+1
+    
+    if(!is.null(interaction)){
+      
+      # Get the random and interaction terms in the correct manner
+      rand <- paste("(1|", random.covariates, ")", sep = "") # random effects
+      int <- c(interaction, paste0("case_control:", interaction)) # interaction effect
+      
+      
+      m <- lmer(as.formula(paste(i, "~ ", paste(c("case_control", fixed.covariates, rand, int), collapse = "+"))), data = data, control=control)
+      s <- summary(m)
+      
+      temp <- as.data.frame(s$coefficients)
+      
+      temp$term <- rownames(temp)
+      temp$feature <- i
+      res <- rbind(res, temp)
+      
+      
+      
+    } else{
+      
+      # Get the random terms in the correct manner
+      rand <- paste("(1|", random.covariates, ")", sep = "") # random effects
+      m <- lmer(as.formula(paste(i, "~ ", paste(c("case_control", fixed.covariates, rand), collapse = "+"))), data = data, control=control)
+      s <- summary(m)
+      res[i, ] <- s$coefficients[2, ] # get results of the case_control [pvalue + estimate]
+      
+    }
+    
+    
+    
+  }
+  
+  cat("\n[INFO] Done with regressions\n")
+  
+  return(res)
+  
+}

@@ -14,6 +14,10 @@ setClass("TglowMatrix", contains = "matrix")
 #' @slot scale.data Slot to store a scaled version of data
 #' @slot features Data frame with feature level metadata
 #'
+#' @exportMethod colnames
+#' @exportMethod rownames
+#' @exportMethod ncol
+#' @exportMethod nrow
 setClass("TglowAssay",
     slots = list(
         data = "TglowMatrix",
@@ -22,6 +26,7 @@ setClass("TglowAssay",
     ),
     prototype = list(scale.data = NULL)
 )
+
 
 #-------------------------------------------------------------------------------
 #' TglowDataset
@@ -36,11 +41,14 @@ setClass("TglowAssay",
 #' @slot object.ids Vector containing object (cell) level identifiers
 #' @slot image.meta Image level metadata
 #' @slot image.data TglowAssay object with image level features
+#' @slot image.data.trans TglowAssay object with image level features after transformation
+#' @slot image.data.norm TglowAssay object with image level features after transformation and normalization
 #' @slot image.ids Vector of length objects with corresponding image ids
 #' @slot reduction List to store PCA/UMAP embeddings
 #' @slot graph Slot to store kNN/AkNN graph
 #' @slot active.assay The default assay to analyze. Not all functions may respect this
 #'
+#' @exportMethod nrow
 setClass("TglowDataset",
     slots = list(
         assays = "list",
@@ -48,6 +56,8 @@ setClass("TglowDataset",
         object.ids = "character",
         image.meta = "data.frame",
         image.data = "TglowAssay",
+        image.data.trans = "TglowAssay",
+        image.data.norm = "TglowAssay",
         image.ids = "character",
         reduction = "list",
         graph = "ANY",

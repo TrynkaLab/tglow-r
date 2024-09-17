@@ -4,7 +4,7 @@
 \alias{getImageDataAndFeatures,TglowDataset-method}
 \title{Get image data and features per cell}
 \usage{
-\S4method{getImageDataAndFeatures}{TglowDataset}(object, j, assay, slot = "data", drop = F)
+\S4method{getImageDataAndFeatures}{TglowDataset}(object, j, assay = NULL, slot = "data", drop = F)
 }
 \arguments{
 \item{object}{TglowDataset}

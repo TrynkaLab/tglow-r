@@ -1,6 +1,4 @@
 #' @include generics.r
-#'
-#'
 NULL
 
 #-------------------------------------------------------------------------------
@@ -42,9 +40,10 @@ setMethod(
   "show", signature("TglowAssay"),
   function(object) {
     cat(
-      "TglowAssay with: ",
-      nrow(object@data), " objects and ",
-      ncol(object@data), " features \n"
+      "TglowAssay with:",
+      nrow(object@data), "objects and",
+      ncol(object@data), "features.",
+      "Size:", format(object.size(object), "Gb", digits = 2), "\n"
     )
   }
 )
@@ -87,6 +86,15 @@ setMethod(
   "TglowAssay",
   function(x, i, j, drop = F) {
     object <- x
+
+    if (is.null(object@data)) {
+      return(object)
+    }
+
+    if (nrow(object) == 0 || ncol(object) == 0) {
+      return(object)
+    }
+
 
     # Select rows
     if (!missing(i)) {

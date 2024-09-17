@@ -9,7 +9,7 @@
 #'
 #' @returns A data.frame with feature attributes
 #' @export
-get.feature.meta.from.names <- function(feature.names) {
+get_feature_meta_from_names <- function(feature.names) {
   feature.meta <- data.frame(
     id = feature.names,
     object = sapply(strsplit(feature.names, split = "_"), function(x) {
@@ -42,7 +42,7 @@ get.feature.meta.from.names <- function(feature.names) {
 #'
 #' @returns The mered output from \code{\link{tglow.read.fileset}}
 #' @export
-merge.filesets <- function(data) {
+merge_filesets <- function(data) {
   if (class(data) != "list") {
     stop("Data argument must be a list.")
   }
@@ -69,7 +69,7 @@ merge.filesets <- function(data) {
       "The following filesets are at issue:\n"
     )
 
-    for (i in seq_along(length(data))[!selector]) {
+    for (i in seq_along(data)[!selector]) {
       msg <- paste0(msg, i, ", ")
     }
 

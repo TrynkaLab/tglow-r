@@ -6,7 +6,7 @@ NULL
 setMethod(
   "$", signature("TglowMatrix"),
   function(x, name) {
-    return(x[, name])
+    return(as.numeric(x[, name]))
   }
 )
 

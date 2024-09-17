@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 #' Create TglowFilters from a filter table
 #'
-#' @description See \code{\link(TglowFilters)} for detaills
+#' @description See  \linkS4class{TglowFilter} for detaills
 #'
 #' @param filter.table The table with filters
 #' @param name.col Column id with filter name
@@ -10,12 +10,12 @@
 #' @param thresh.col Column id with col with threshold
 #' @param trans.col Column id with col indicating if transpose is applied before running func
 #' @param active.col Column id with boolean setting filter to active or inactive
-#' @returns A list of TglowFilters
+#' @returns A list of \linkS4class{TglowFilter}
 #' @export
-tglow.filters.from.table <- function(filter.table, name.col = 1, col.col = 2, func.col = 3, thresh.col = 4, trans.col = NULL, active.col = NULL) {
+tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, func.col = 3, thresh.col = 4, trans.col = NULL, active.col = NULL) {
     filters <- list()
 
-    for (row in seq_along(filter.table)) {
+    for (row in seq(1, nrow(filter.table))) {
         f <- new("TglowFilter",
             name = filter.table[row, name.col],
             column_pattern = filter.table[row, col.col],
@@ -34,17 +34,20 @@ tglow.filters.from.table <- function(filter.table, name.col = 1, col.col = 2, fu
 #-------------------------------------------------------------------------------
 #' Find which feature filters to a tglow dataset
 #'
+#' @description
+#' Calculate a feature filter table on a \linkS4class{TglowDataset}
 #' All filters are inclusive
 #'
 #' @param dataset A tglow dataset
 #' @param filters A list with TglowFilter objects to apply
 #' @param assay The assay to use for calculating filters
 #' @param slot The slot to use for calculating filters: "data" or "scale.data"
-#' @param features An optional subset of features to use for calculation.
+#' @param features An optional subset of features to use for calculation
+#' @param na.fail Should NA be treated as fail, defaults to yes
 #'
-#' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail.
+#' @returns A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail.
 #' @export
-calculate.feature.filters <- function(dataset, filters, assay, slot, features = NULL) {
+calculate_feature_filters <- function(dataset, filters, assay, slot, features = NULL, na.fail = TRUE) {
     # Checks for input
     if (!is(dataset, "TglowDataset")) {
         stop("Dataset must be of class TglowDataset")
@@ -86,13 +89,102 @@ calculate.feature.filters <- function(dataset, filters, assay, slot, features = 
 
         cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
 
-        j <- 0
+        pb <- txtProgressBar(min = 0, max = ncol(data), style = 3)
         res[cur.features, filter@name] <- apply(data[, cur.features], 2, function(x) {
-            j <<- j + 1
-            cat("[INFO] ", round((j / length(cur.features)) * 100, digits = 2), "%\r")
-            do.call(filter@func, list(vec = x, thresh = filter@threshold))
+            setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
+            if (is.na(filter@threshold) || is.null(filter@threshold)) {
+                return(do.call(filter@func, list(vec = x)))
+            } else {
+                return(do.call(filter@func, list(vec = x, thresh = filter@threshold)))
+            }
         })
-        cat("\n")
+        close(pb)
+    }
+
+    if (na.fail) {
+        res[is.na(res)] <- FALSE
+    }
+
+    return(res)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Apply a cell level filter to a tglow dataset
+#'
+#' @description
+#' Calculate an object filter table on a \linkS4class{TglowDataset}
+#' All filters are inclusive
+#'
+#' @param dataset A tglow dataset
+#' @param filters A list with TglowFilter objects to apply
+#' @param assay The assay to use for calculating filters
+#' @param slot The slot to use for calculating filters: "data" or "scale.data"
+#' @param grouping A vector specifying the grouping for some filters
+#' @param features An optional subset of features to use for calculation.
+#' @param na.fail Should NA be treated as fail, defaults to yes
+#'
+#' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail.
+#' @export
+calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail=TRUE) {
+    # Checks for input
+    if (!is(dataset, "TglowDataset")) {
+        stop("Dataset must be of class TglowDataset")
+    }
+
+    for (filter in filters) {
+        if (!is(filter, "TglowFilter")) {
+            stop(paste0("Filter must be of class TglowFilter: ", filter))
+        }
+    }
+
+    if (is.null(features)) {
+        features <- colnames(slot(dataset@assays[[assay]], slot))
+    }
+
+    data <- slot(dataset[[assay]], slot)[, features]
+
+    res <- matrix(TRUE, nrow = nrow(data), ncol = length(filters))
+    rownames(res) <- rownames(data)
+    colnames(res) <- sapply(filters, function(x) {
+        x@name
+    })
+
+    for (i in seq_along(filters)) {
+        cur.filter <- filters[[i]]
+
+        cat("[INFO] ", cur.filter@name, ": ", cur.filter@func, "\n")
+
+        # Select the features to apply to
+        if (cur.filter@column_pattern == "all") {
+            cur.features <- colnames(data)
+        } else {
+            cur.features <- grep(cur.filter@column_pattern, colnames(data), value = T)
+        }
+
+        cat("[INFO] Applying pattern: ", cur.filter@column_pattern, " and selected: ", length(cur.features), " features \n")
+
+        cur.data <- data[, cur.features, drop = F]
+        if (cur.filter@transpose) {
+            cur.data <- t(cur.data)
+        }
+
+        if (is.na(cur.filter@threshold) || is.null(cur.filter@threshold)) {
+            res[, cur.filter@name] <- do.call(cur.filter@func, list(
+                vec = cur.data,
+                grouping = grouping
+            ))
+        } else {
+            res[, cur.filter@name] <- do.call(cur.filter@func, list(
+                vec = cur.data,
+                thresh = cur.filter@threshold,
+                grouping = grouping
+            ))
+        }
+    }
+
+    if (na.fail) {
+        res[is.na(res)] <- FALSE
     }
 
     return(res)
@@ -109,13 +201,13 @@ calculate.feature.filters <- function(dataset, filters, assay, slot, features = 
 #'
 #' If filter.res is a matrix, all rows must be true.
 #'
-#' @param dataset A \code{\link{TglowDataset}}
-#' @param filter.res The matrix of filter output from \code{\link{calculate.feature.filters}} or a named logical vector
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param filter.res The matrix of filter output from \code{\link{calculate_feature_filters}} or a named logical vector
 #' @param assays Only apply filteres to these assays
 #'
-#' @returns The filtered \code{\link{TglowDataset}}
-#'
-apply.feature.filters <- function(dataset, filter.res, assays = NULL) {
+#' @returns The filtered \linkS4class{TglowDataset}
+#' @export
+apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
     # Checks for input
     if (!is(dataset, "TglowDataset")) {
         stop("dataset must be of class TglowDataset")
@@ -164,11 +256,12 @@ apply.feature.filters <- function(dataset, filter.res, assays = NULL) {
 #' Apply image level filter to a TglowDataset. All objects in that image are
 #' removed. If filter.res is a matrix, all rows must be true to keep the image.
 #'
-#' @param dataset A \code{\link{TglowDataset}}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param filter.res A logical matrix or vector indicating which images to keep
 #'
-#' @returns The filtered \code{\link{TglowDataset}}
-apply.image.filters <- function(dataset, filter.res) {
+#' @returns The filtered \linkS4class{TglowDataset}
+#' @export
+apply_image_filters <- function(dataset, filter.res) {
     # Checks for input
     if (!is(dataset, "TglowDataset")) {
         stop("dataset must be of class TglowDataset")
@@ -183,8 +276,8 @@ apply.image.filters <- function(dataset, filter.res) {
         stop("filter.res must be of class matrix")
     }
 
-    if (nrow(filter.res) != nrow(dataset@image.data)) {
-        stop("filter.res must have the same number of rows as dataset@image.data")
+    if (nrow(filter.res) != nrow(dataset@image.meta)) {
+        stop("filter.res must have the same number of rows as dataset@image.meta")
     }
 
     selector <- rowSums(filter.res) == ncol(filter.res)

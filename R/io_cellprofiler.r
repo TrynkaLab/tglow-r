@@ -1,9 +1,7 @@
 #-------------------------------------------------------------------------------
 # Imports
 #' @import data.table
-#' @include utils.r
 NULL
-
 
 #-------------------------------------------------------------------------------
 #' Read a cellprofiler fileset directory tree
@@ -24,7 +22,7 @@ NULL
 #' @param ... Remaining parameters passed to read.cellprofiler.fileset.a/b
 #'
 #' @export
-read.cellprofiler.dir <- function(path, pattern, type, n = NULL, verbose = F, ...) {
+read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, ...) {
   files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T)
 
   if (type == "A") {
@@ -48,9 +46,9 @@ read.cellprofiler.dir <- function(path, pattern, type, n = NULL, verbose = F, ..
     cat("\r[INFO] reading fileset ", i, "/", length(prefixes))
 
     if (type == "A") {
-      cur <- read.cellprofiler.fileset.a(pre, return.feature.meta = F, ...)
+      cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, ...)
     } else if (type == "B") {
-      cur <- read.cellprofiler.fileset.b(pre, return.feature.meta = F, ...)
+      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
@@ -67,7 +65,7 @@ read.cellprofiler.dir <- function(path, pattern, type, n = NULL, verbose = F, ..
   }
 
   cat("\n[INFO] Merging filesets\n")
-  output <- merge.filesets(filesets)
+  output <- merge_filesets(filesets)
 
   cat("[INFO] names: ", names(output), "\n")
 
@@ -75,7 +73,7 @@ read.cellprofiler.dir <- function(path, pattern, type, n = NULL, verbose = F, ..
     cat("[DEBUG] colnames:\n", colnames(output$cells))
   }
 
-  features <- get.feature.meta.from.names(colnames(output$cells))
+  features <- get_feature_meta_from_names(colnames(output$cells))
   classes <- sapply(output$cells, class)
   features$type <- classes[features$id]
 
@@ -93,7 +91,7 @@ read.cellprofiler.dir <- function(path, pattern, type, n = NULL, verbose = F, ..
 #' Output of this is stored in the same column name but with suffix _Global
 #'
 #' @export
-add.global.ids <- function(matrix) {
+add_global_ids <- function(matrix) {
   # Fetch global fileset id
   global.prefix <- paste0("FS", FILESET_ID)
 
@@ -141,7 +139,7 @@ add.global.ids <- function(matrix) {
 #' Output is NULL if no cells are detected.
 #'
 #' @export
-read.cellprofiler.fileset.a <- function(prefix,
+read_cellprofiler_fileset_a <- function(prefix,
                                         return.feature.meta = F,
                                         add.global.id = T,
                                         pat.img = "_image.tsv",
@@ -153,7 +151,7 @@ read.cellprofiler.fileset.a <- function(prefix,
   }
 
   # Read header of _cells.tsv
-  cells <- fread(paste0(prefix, pat.cells), data.table = F, nrows = 3)
+  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, nrows = 3)
 
   # If the file has no cells empty
   if (nrow(cells) != 3) {
@@ -164,18 +162,18 @@ read.cellprofiler.fileset.a <- function(prefix,
   cn <- paste0(colnames(cells), "_", as.character(cells[1, ]))
 
   if (return.feature.meta) {
-    feature.meta <- tglow.get.feature.meta.from.cells(cn)
+    feature.meta <- get_feature_meta_from_names(cn)
   }
 
   # Read content of _cells.tsv
-  cells <- fread(paste0(prefix, pat.cells), data.table = F, skip = 2)
+  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, skip = 2)
   colnames(cells) <- cn
 
   # Read _image.tsv (metadata)
-  img <- fread(paste0(prefix, pat.img), data.table = F)
+  img <- data.table::fread(paste0(prefix, pat.img), data.table = F)
 
   # Read _objectRelation.ships.tsv
-  orl <- fread(paste0(prefix, pat.orl), data.table = F)
+  orl <- data.table::fread(paste0(prefix, pat.orl), data.table = F)
 
 
   # Standardize ID's across filesets into the following format
@@ -185,7 +183,7 @@ read.cellprofiler.fileset.a <- function(prefix,
   if (add.global.id) {
     # Cell level information
     #-----------
-    cells <- add.global.ids(cells)
+    cells <- add_global_ids(cells)
 
     # IMG image level information
     #-----------
@@ -225,7 +223,7 @@ read.cellprofiler.fileset.a <- function(prefix,
 #' Output is NULL if no cells are detected.
 #'
 #' @export
-read.cellprofiler.fileset.b <- function(prefix,
+read_cellprofiler_fileset_b <- function(prefix,
                                         return.feature.meta = F,
                                         add.global.id = T,
                                         merging.strategy = "mean",
@@ -252,9 +250,9 @@ read.cellprofiler.fileset.b <- function(prefix,
   tmpdir <- tempdir()
   unzip(prefix, exdir = tmpdir)
 
-  cells <- fread(paste0(tmpdir, "/", index[grep(pat.cells, index$FileName), "Name"]), data.table = F)
-  img <- fread(paste0(tmpdir, "/", index[grep(pat.img, index$FileName), "Name"]), data.table = F)
-  orl <- fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F)
+  cells <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.cells, index$FileName), "Name"]), data.table = F)
+  img <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.img, index$FileName), "Name"]), data.table = F)
+  orl <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F)
 
   if (nrow(cells) == 0) {
     warning("No cells detected for ", index[grep(pat.cells, index$FileName), "Name"], " returning NULL.")
@@ -279,7 +277,7 @@ read.cellprofiler.fileset.b <- function(prefix,
 
     for (i in 1:nrow(index)) {
       obj <- index[i, "object"]
-      cur <- fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T)
+      cur <- data.table::fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T)
 
       # Remove these columns from the merging strategy
       exclude.cols <- c("Group.1", grep("ObjectNumber", colnames(cur), value = T), grep("Number_Object_Number", colnames(cur), value = T))
@@ -334,7 +332,7 @@ read.cellprofiler.fileset.b <- function(prefix,
   if (add.global.id) {
     # Cell level information
     #-----------
-    cells <- add.global.ids(cells)
+    cells <- add_global_ids(cells)
 
     # IMG image level information
     #-----------
@@ -350,7 +348,7 @@ read.cellprofiler.fileset.b <- function(prefix,
   }
 
   if (return.feature.meta) {
-    feature.meta <- tglow.get.feature.meta.from.cells(colnames(cells))
+    feature.meta <- get_feature_meta_from_names(colnames(cells))
   }
 
   out.list <- list(cells = cells, meta = img, orl = orl)

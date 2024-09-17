@@ -6,6 +6,8 @@
 \title{TglowDataset}
 \description{
 Object to store HCI features along side object (cell) and image level metadata.
+Matrices are assumed to have row and column names set in the constructor function.
+This is important for downstream functionality.
 }
 \section{Slots}{
 
@@ -19,6 +21,10 @@ Object to store HCI features along side object (cell) and image level metadata.
 \item{\code{image.meta}}{Image level metadata}
 
 \item{\code{image.data}}{TglowAssay object with image level features}
+
+\item{\code{image.data.trans}}{TglowAssay object with image level features after transformation}
+
+\item{\code{image.data.norm}}{TglowAssay object with image level features after transformation and normalization}
 
 \item{\code{image.ids}}{Vector of length objects with corresponding image ids}
 
