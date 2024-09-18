@@ -48,16 +48,9 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 #' @returns A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail.
 #' @export
 calculate_feature_filters <- function(dataset, filters, assay, slot, features = NULL, na.fail = TRUE) {
-    # Checks for input
-    if (!is(dataset, "TglowDataset")) {
-        stop("Dataset must be of class TglowDataset")
-    }
-
-    for (filter in filters) {
-        if (!is(filter, "TglowFilter")) {
-            stop(paste0("Filter must be of class TglowFilter: ", filter))
-        }
-    }
+    # Check inputs
+    check_dataset_assay_slot(dataset, assay, slot)
+    check_filter_list(filters)
 
     if (is.null(features)) {
         features <- colnames(slot(dataset@assays[[assay]], slot))
@@ -127,16 +120,9 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 #' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail.
 #' @export
 calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail=TRUE) {
-    # Checks for input
-    if (!is(dataset, "TglowDataset")) {
-        stop("Dataset must be of class TglowDataset")
-    }
-
-    for (filter in filters) {
-        if (!is(filter, "TglowFilter")) {
-            stop(paste0("Filter must be of class TglowFilter: ", filter))
-        }
-    }
+    # Check inputs
+    check_dataset_assay_slot(dataset, assay, slot)
+    check_filter_list(filters)
 
     if (is.null(features)) {
         features <- colnames(slot(dataset@assays[[assay]], slot))
@@ -208,10 +194,8 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 #' @returns The filtered \linkS4class{TglowDataset}
 #' @export
 apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
-    # Checks for input
-    if (!is(dataset, "TglowDataset")) {
-        stop("dataset must be of class TglowDataset")
-    }
+    # Check inputs
+    check_dataset_assay_slot(dataset, NULL, NULL)
 
     # Can be a single logical as well
     if (is(filter.res, "logical")) {
@@ -263,9 +247,7 @@ apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
 #' @export
 apply_image_filters <- function(dataset, filter.res) {
     # Checks for input
-    if (!is(dataset, "TglowDataset")) {
-        stop("dataset must be of class TglowDataset")
-    }
+    check_dataset_assay_slot(dataset, NULL, NULL)
 
     # Can be a single logical as well
     if (is(filter.res, "logical")) {

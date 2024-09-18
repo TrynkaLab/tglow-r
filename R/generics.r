@@ -1,14 +1,14 @@
 #-------------------------------------------------------------------------------
-setGeneric("getImageData", function(object, j, slot = "data", drop = T) {
+setGeneric("getImageData", function(object, j, assay.image, slot = "data", drop = TRUE) {
     standardGeneric("getImageData")
 })
 
 #-------------------------------------------------------------------------------
-setGeneric("getImageDataByCell", function(object, j, slot = "data", drop = T) {
-    standardGeneric("getImageDataByCell")
+setGeneric("getImageDataByObject", function(object, j, assay.image, slot = "data", drop = TRUE) {
+    standardGeneric("getImageDataByObject")
 })
 
 #-------------------------------------------------------------------------------
-setGeneric("getImageDataAndFeatures", function(object, j, assay, slot = "data", drop = F) {
-    standardGeneric("getImageDataAndFeatures")
+setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NULL, slot = "data", drop = TRUE) {
+    standardGeneric("getDataByObject")
 })

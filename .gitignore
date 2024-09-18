@@ -10,3 +10,5 @@ tglow/cellprofiler/.DS_Store
 **/work/**
 **.nextflow.log*
 **/psfs
+**/data
+/data

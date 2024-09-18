@@ -15,6 +15,7 @@ find_outliers_pca(
   slot = "data",
   method = "z",
   return.pcs = FALSE,
+  use_irlba = TRUE,
   rfast.zerotol = 1e-10
 )
 }
@@ -29,13 +30,15 @@ find_outliers_pca(
 
 \item{pc.thresh}{The percentage of variance of PC's to select for outlier detection}
 
-\item{pc.max}{The maximum number of components to calculate using \code{\link{rlba::prcomp_irlba}}}
+\item{pc.max}{The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}}
 
 \item{pc.n}{The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max}
 
 \item{method}{Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore}
 
 \item{return.pcs}{Should the grouped PC's be returned?}
+
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
 }
 \value{
 Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
@@ -48,5 +51,6 @@ assays and image.data.
 To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
 as a special case.
 This does not use existing dimension reductions to avoid issues when running with different QC groups.
-It uses existing scale.data slot on assay if available, if not, data is scaled but not returned.
+NA values are removed on a column basis and a warning message is raised. If you want
+to handle them differenlty, could make a new assay where the NA's are handled manually.
 }

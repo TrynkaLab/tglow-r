@@ -4,12 +4,14 @@
 \alias{getImageData,TglowDataset-method}
 \title{Fetch image data or meta data from a tglow object}
 \usage{
-\S4method{getImageData}{TglowDataset}(object, j, slot = "data", drop = T)
+\S4method{getImageData}{TglowDataset}(object, j, assay.image, slot = "data", drop = TRUE)
 }
 \arguments{
-\item{object}{TglowDataset}
+\item{object}{A \linkS4class{TglowDataset}}
 
-\item{j}{character with column names from image.meta or image.data to select}
+\item{j}{character with column names from image.meta or assay.image to select}
+
+\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"}
 
 \item{slot}{slot to fetch features fromdata or scale.data}
 
@@ -19,6 +21,6 @@
 A data frame with the corresponding columns
 }
 \description{
-Select columns from image.data@slot, image.meta and return them
+Select columns from assay.image, image.meta and return them
 as a data.frame per image.
 }

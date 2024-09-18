@@ -12,7 +12,8 @@ find_outliers_pca_fixed(
   pc.n = 5,
   slot = "data",
   method = "z",
-  return.pcs = FALSE
+  return.pcs = FALSE,
+  use_irlba = TRUE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ find_outliers_pca_fixed(
 \item{method}{Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore}
 
 \item{return.pcs}{Should the grouped PC's be returned?}
+
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
 }
 \value{
 Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE

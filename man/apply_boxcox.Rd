@@ -16,7 +16,7 @@ apply_boxcox(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class(TglowDataset)}
 
 \item{assay}{The assay to use.}
 
@@ -33,7 +33,7 @@ apply_boxcox(
 \item{...}{Arguments passed to \code{\link{boxcox_transform}}}
 }
 \value{
-Tglow object with new boxcox assay
+\linkS4class{TglowDataset} with new boxcox assay
 }
 \description{
 Transform a assay using boxcox transform. If assay="image.data", result is stored in slot image.data.trans.

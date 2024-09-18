@@ -89,6 +89,12 @@ setMethod(
           object@reduction[[k]] <- object@reduction[[k]][i, , drop = F]
         }
       }
+
+      # Set the graph to NULL to avoid issues
+      if (!is.null(object@graph)) {
+        warning("Removing graph from object to avoid bugs. Subsetting graph is on TODO list.")
+        object@graph <- NULL
+      }
     }
 
     # Select columns
@@ -108,21 +114,25 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-#' Get image data and features per cell
+#' Get image data and features per object (cell).
 #'
-#' @description Select columns from image.data@slot, image.meta, and assay\@slot and return them
-#' as a data.frame.
+#' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
+#' and return them as a data.frame.
 #'
-#' @param object TglowDataset
-#' @param j Character with column names from image.meta, image.data@slot or assay@slot to select
+#' @param object A \linkS4class{TglowDataset}
+#' @param j Character with column names from assay, assay.image, image.meta to select
 #' @param assay The assay to select from
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot Slot to fetch features from: "data" or "scale.data"
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
 setMethod(
-  "getImageDataAndFeatures", signature("TglowDataset"),
-  function(object, j, assay = NULL, slot, drop) {
+  "getDataByObject", signature("TglowDataset"),
+  function(object, j, assay, assay.image, slot, drop) {
+    # Check the imputs
+    check_dataset_assay_slot(object, assay = assay, slot = slot, assay.image = assay.image)
+
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")
     }
@@ -130,17 +140,56 @@ setMethod(
       stop("j can not have NA")
     }
 
-    is.meta <- (j %in% colnames(object@image.meta)) | (j %in% colnames(object@image.data@data))
-    j.meta <- j[is.meta]
-    j.feature <- j[!is.meta]
+    # Figure out from which table to retieve which features
+    j <- as.character(j)
 
+    # Image level features
+    is.image <- (j %in% colnames(object@image.meta)) | (j %in% colnames(object@image.data@data))
+    j.image  <- j[is.image]
+
+    # Object level features
+    j.object <- j[!is.image]
+    is.meta <- (j %in% colnames(object@meta))
+    j.meta <- j.object[is.meta]
+    j.feature <- j.object[!is.meta]
+
+    # Find and get feature data
+    data <- NULL
     if (!is.null(assay)) {
-      data <- data.frame(slot(object@assays[[assay]], slot))[, j.feature, drop = F]
+      if (!is.null(slot)) {
+        if (length(j.feature) >= 1) {
+          data <- data.frame(slot(object@assays[[assay]], slot))[, j.feature, drop = F]
+        }
+      } else {
+        stop("Must provide a slot")
+      }
+    } else {
+      if (length(j.feature) >= 1) {
+        stop("Object level features but no assay was provided")
+      }
     }
 
-    if (sum(is.meta) > 0) {
-      meta <- data.frame(getImageDataByCell(object, j.meta, slot = slot, drop = F))
-      data <- cbind(data, meta)
+    # Find and get metadata
+    if (length(j.meta) >= 1) {
+      cur.meta <- object@meta[, j.meta, drop = F]
+
+      if (!is.null(data)) {
+        data <- cbind(data, cur.meta)
+      } else {
+        data <- cur.meta
+      }
+    }
+
+    # Find and get image data
+    image.data <- NULL
+    if (length(j.image) >= 1) {
+      image.data <- data.frame(getImageDataByObject(object, j.image, assay.image, slot = slot, drop = F))
+    }
+
+    if (!is.null(data) && !is.null(image.data)) {
+      data <- cbind(data, image.data)
+    } else if (!is.null(image.data)) {
+      data <- image.data
     }
 
     return(data[, j, drop = drop])
@@ -150,18 +199,19 @@ setMethod(
 #-------------------------------------------------------------------------------
 #' Fetch image data or meta data from a tglow object per object (cell).
 #'
-#' @description Select columns from image.data@slot, image.meta and return them
+#' @description Select columns from assay.image, image.meta and return them
 #' as a data.frame per object (cell).
 #'
-#' @param object TglowDataset
-#' @param j Character with column names from image.meta or image.data to select
-#' @param slot Slot to fetch features fromdata or scale.data
+#' @param object A \linkS4class{TglowDataset}
+#' @param j Character with column names from image.meta or assay.image to select
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
+#' @param slot Slot to fetch features from data or scale.data
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
 setMethod(
-  "getImageDataByCell", signature("TglowDataset"),
-  function(object, j, slot, drop) {
+  "getImageDataByObject", signature("TglowDataset"),
+  function(object, j, assay.image, slot, drop) {
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")
     }
@@ -169,7 +219,7 @@ setMethod(
       stop("j can not have NA")
     }
 
-    data <- getImageData(object, j, slot, drop = F)[object@image.ids, , drop = F]
+    data <- getImageData(object, j, assay.image, slot, drop = F)[object@image.ids, , drop = F]
     rownames(data) <- object@object.ids
     return(data[, j, drop = drop])
   }
@@ -178,18 +228,19 @@ setMethod(
 #-------------------------------------------------------------------------------
 #' Fetch image data or meta data from a tglow object
 #'
-#' @description Select columns from image.data@slot, image.meta and return them
+#' @description Select columns from assay.image, image.meta and return them
 #' as a data.frame per image.
 #'
-#' @param object TglowDataset
-#' @param j character with column names from image.meta or image.data to select
+#' @param object A \linkS4class{TglowDataset}
+#' @param j character with column names from image.meta or assay.image to select
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot slot to fetch features fromdata or scale.data
 #' @param drop should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
 setMethod(
   "getImageData", signature("TglowDataset"),
-  function(object, j, slot, drop) {
+  function(object, j, assay.image, slot, drop) {
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")
     }
@@ -198,12 +249,20 @@ setMethod(
     }
 
     is.meta <- j %in% colnames(object@image.meta)
-    is.data <- j %in% colnames(object@image.data@data)
+
+    if (!is.null(assay.image)) {
+      is.data <- j %in% colnames(slot(object, assay.image)@data)
+    }
 
     meta <- data.frame(object@image.meta[, j[is.meta], drop = F])
-    data <- data.frame(slot(object@image.data, slot)[, j[is.data], drop = F])
 
-    output <- cbind(meta, data)
+    if (!is.null(assay.image)) {
+      data <- data.frame(slot(slot(object, assay.image), slot)[, j[is.data], drop = F])
+      output <- cbind(meta, data)
+    } else {
+      output <- meta
+    }
+
     return(output[, j, drop = drop])
   }
 )

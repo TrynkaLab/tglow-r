@@ -150,7 +150,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' @description Transform a assay using boxcox transform. If assay="image.data", result is stored in slot image.data.trans.
 #' Lambda values are added to the features data.frame: 0=log, 1=no transformation
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class(TglowDataset)
 #' @param assay The assay to use.
 #' @param assay.out The name of the output assay. Defaults to paste0(assay, "-trans")
 #' @param trim Logical indicating to trim zero variance columns and NA's after applying boxcox transform
@@ -167,13 +167,11 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #'
 #'
 #'
-#' @returns Tglow object with new boxcox assay
+#' @returns \linkS4class{TglowDataset} with new boxcox assay
 #' @export
 apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, rfast.zerotol = 1e-10, ...) {
     # Checks for input
-    if (!is(dataset, "TglowDataset")) {
-        stop("dataset must be of class TglowDataset")
-    }
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (assay == "image.data") {
         mat <- slot(dataset@image.data, slot)
@@ -214,7 +212,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 
     res <- new("TglowAssay",
         data = TglowMatrix(mat),
-        scale.data = TglowMatrix(fast_colscale(mat)),
+        scale.data = TglowMatrix(fast_colscale(mat, na.rm=T)),
         features = features
     )
 

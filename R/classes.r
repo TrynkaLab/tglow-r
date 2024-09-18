@@ -1,5 +1,6 @@
 setClassUnion(name = "MatrixOrNull", members = c("matrix", "NULL"))
 setClassUnion(name = "TglowMatrixOrNull", members = c("matrix", "NULL"))
+setClassUnion(name = "NumericOrNull", members = c("numeric", "NULL"))
 
 #-------------------------------------------------------------------------------
 #' TglowMatrix
@@ -94,4 +95,23 @@ setClass("TglowFilter",
         transpose = FALSE,
         active = TRUE
     )
+)
+
+
+#-------------------------------------------------------------------------------
+#' TglowReduction
+#'
+#' @slot x Slot to store PCA / UMAP coordinates
+#' @slot sdev optional standard deviations
+#' @slot sdev_total optional sum of sdev
+#' @slot object Optional PCA / UMAP object
+#'
+setClass("TglowReduction",
+    slots = list(
+        x = "matrix",
+        var = "NumericOrNull",
+        var_total = "NumericOrNull",
+        object = "ANY"
+    ),
+    prototype = list(var = NULL, var_total = NULL, object = NULL)
 )

@@ -111,3 +111,56 @@ merge_filesets <- function(data) {
 
   return(out)
 }
+
+#-------------------------------------------------------------------------------
+#' Check a dataset, assay, slot
+#'
+#' @description Check a dataset, assay slot for validity or throw an error
+#'
+check_dataset_assay_slot <- function(dataset, assay, slot, assay.image = NULL) {
+  # Checks for input
+  if (!is.null(dataset)) {
+    if (!is(dataset, "TglowDataset")) {
+      stop("Dataset must be of class TglowDataset")
+    }
+  }
+
+  if (!is.null(assay)) {
+    if (assay %in% c(names(dataset@assays), c("image.data", "image.data.trans", "image.data.norm"))) {
+      if (assay %in% c(names(dataset@assays))) {
+        if (!is(dataset[[assay]], "TglowAssay")) {
+          stop("Assay must be of class TglowAssay")
+        }
+      }
+    } else {
+      stop(paste0("Assay ", assay, " not available in dataset"))
+    }
+  }
+
+  if (!is.null(slot)) {
+    if (!slot %in% c("data", "scale.data")) {
+      stop("Slot must be 'data' or 'scale.data'")
+    }
+  }
+
+  if (!is.null(assay.image)) {
+    if (!assay.image %in% c("image.data", "image.data.trans", "image.data.norm")) {
+      stop("Assay.image must be in c('image.data', 'image.data.trans', 'image.data.norm')")
+    }
+  }
+}
+
+
+
+#-------------------------------------------------------------------------------
+#' Check a list of TglowFilters for validitiy
+#'
+#' @description Check a list of TglowFilters for validitiy
+#'
+check_filter_list <- function(filters) {
+  for (filter in filters) {
+    if (!is(filter, "TglowFilter")) {
+      stop(paste0("Filter must be of class TglowFilter: ", filter))
+    }
+  }
+}
