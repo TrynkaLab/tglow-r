@@ -10,7 +10,7 @@ find_outliers_pca(
   qc.group = NULL,
   thresh = 3.5,
   pc.thresh = 0.75,
-  pc.max = 500,
+  pc.max = NULL,
   pc.n = NULL,
   slot = "data",
   method = "z",

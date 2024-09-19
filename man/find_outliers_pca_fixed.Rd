@@ -17,7 +17,7 @@ find_outliers_pca_fixed(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{assay}{The assay to use}
 

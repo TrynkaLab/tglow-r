@@ -76,11 +76,12 @@ setMethod(
       object@image.ids <- object@image.ids[i, drop = F]
       object@image.data <- object@image.data[unique(object@image.ids), , drop = F]
       object@image.meta <- object@image.meta[unique(object@image.ids), , drop = F]
+      
       if (!is.null(object@image.data.trans)) {
         object@image.data.trans <- object@image.data.trans[unique(object@image.ids), , drop = F]
       }
-      if (!is.null(object@image.data.trans)) {
-        object@image.data.norm <- object@image.data[unique(object@image.ids), , drop = F]
+      if (!is.null(object@image.data.norm)) {
+        object@image.data.norm <- object@image.data.norm[unique(object@image.ids), , drop = F]
       }
 
       # Filter dimension reductions

@@ -24,7 +24,7 @@
 
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
 #' @export
-find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.thresh = 0.75, pc.max = 500, pc.n = NULL, slot = "data", method = "z", return.pcs = FALSE, use_irlba = TRUE, rfast.zerotol = 1e-10) {
+find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.thresh = 0.75, pc.max = NULL, pc.n = NULL, slot = "data", method = "z", return.pcs = FALSE, use_irlba = TRUE, rfast.zerotol = 1e-10) {
     # Check inputs
     check_dataset_assay_slot(dataset, assay, slot)
 
@@ -80,6 +80,10 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
         }
 
         # Again define PCs to less then the smallest dimension
+        if (is.null(pc.max)) {
+            pc.max <- round(ncol(data) * 0.50)
+        }
+        
         if (nrow(cur.data) < pc.max) {
             pc.final <- nrow(cur.data) - 1
         } else {
@@ -165,7 +169,7 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
 #' This does not use existing dimension reductions to avoid issues when running with different QC groups.
 #'
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param thresh Threshold in absolute PC to consider an outlier
 #' @param qc.group A vector indicating if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once

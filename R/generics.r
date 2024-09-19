@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
-setGeneric("getImageData", function(object, j, assay.image, slot = "data", drop = TRUE) {
+setGeneric("getImageData", function(object, j, assay.image = NULL, slot = "data", drop = TRUE) {
     standardGeneric("getImageData")
 })
 
 #-------------------------------------------------------------------------------
-setGeneric("getImageDataByObject", function(object, j, assay.image, slot = "data", drop = TRUE) {
+setGeneric("getImageDataByObject", function(object, j, assay.image = NULL, slot = "data", drop = TRUE) {
     standardGeneric("getImageDataByObject")
 })
 

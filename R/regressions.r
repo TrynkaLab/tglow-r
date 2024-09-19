@@ -20,7 +20,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
     check_dataset_assay_slot(dataset, assay, slot)
 
     cur.assay <- slot(dataset[[assay]], slot)@.Data
-    cur.ident <- as.character(getDataByObject(tglow, ident, assay = assay, slot = slot))
+    cur.ident <- as.character(getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
 
     if (is.null(cur.ident)) {
         stop("Ident not valid")

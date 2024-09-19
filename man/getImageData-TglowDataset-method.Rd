@@ -4,7 +4,7 @@
 \alias{getImageData,TglowDataset-method}
 \title{Fetch image data or meta data from a tglow object}
 \usage{
-\S4method{getImageData}{TglowDataset}(object, j, assay.image, slot = "data", drop = TRUE)
+\S4method{getImageData}{TglowDataset}(object, j, assay.image = NULL, slot = "data", drop = TRUE)
 }
 \arguments{
 \item{object}{A \linkS4class{TglowDataset}}

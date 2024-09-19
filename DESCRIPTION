@@ -10,6 +10,7 @@ Imports:
 Suggests: 
 RoxygenNote: 7.3.1
 Collate: 
+    'aggregate.r'
     'annoy.r'
     'classes.r'
     'clustering.r'
