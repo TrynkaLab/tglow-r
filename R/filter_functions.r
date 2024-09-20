@@ -46,6 +46,7 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 #' @param na.fail Should NA be treated as fail, defaults to yes
 #'
 #' @returns A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail
+#' @importFrom progress progress_bar
 #' @export
 calculate_feature_filters <- function(dataset, filters, assay, slot, features = NULL, na.fail = TRUE) {
     # Check inputs
@@ -82,16 +83,16 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 
         cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
 
-        pb <- txtProgressBar(min = 0, max = ncol(data), style = 3)
+        pb <- progress_bar$new(format = paste0("[INFO] ", filter@name, " [:bar] :current/:total (:percent) eta :eta"), total = ncol(data))
+        pb$tick(0)
         res[cur.features, filter@name] <- apply(data[, cur.features], 2, function(x) {
-            setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
+            pb$tick()
             if (is.na(filter@threshold) || is.null(filter@threshold)) {
                 return(do.call(filter@func, list(vec = x)))
             } else {
                 return(do.call(filter@func, list(vec = x, thresh = filter@threshold)))
             }
         })
-        close(pb)
     }
 
     if (na.fail) {

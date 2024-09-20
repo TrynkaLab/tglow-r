@@ -9,20 +9,24 @@ NULL
 #' Matches images based on <plate>, <well>, <field>
 #'
 #' @param path path to tglow output dir
-#' @param pattern The pattern that uniquely identfies a well. Use .zip for type B and the _experiment.tsv
+#' @param pattern The pattern that uniquely identfies a well. Use '.zip' for type 'B' and the '_experiment.tsv' for type 'A'
 #' for type A
-#' @param type Must be A or B
-#' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
-#' See read.cellprofiler.fileset.a for detaills
-#' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
-#' see
-#' See read.cellprofiler.fileset.b for detaills
+#' @param type Must be 'A' or 'B'. See details
 #' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
 #' @param verbose Should I be chatty?
-#' @param ... Remaining parameters passed to read.cellprofiler.fileset.a/b
+#' @param col.object The collumn name in the features which contains the per object object identifier
+#' @param col.meta.img.id The collumn name in the image level data which contains the image id
+#' @param ... Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #'
+#' @details
+#' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
+#' See r\code{\link{read_cellprofiler_fileset_a}} for detaills
+#'
+#' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
+#' See r\code{\link{read_cellprofiler_fileset_b}} for detaills
+#' @importFrom progress progress_bar
 #' @export
-read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, ...) {
+read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
   files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T)
 
   if (type == "A") {
@@ -35,16 +39,17 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, ..
     prefixes <- prefixes[n]
   }
 
+  # TODO: Replace this global with a function argument
   # Reset global fileset index
   assign("FILESET_ID", 0, envir = .GlobalEnv)
 
   # Read filesets
   filesets <- list()
-  i <- 0
-  for (pre in prefixes) {
-    i <- i + 1
-    cat("\r[INFO] reading fileset ", i, "/", length(prefixes))
 
+  pb <- progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta", total = length(prefixes))
+  pb$tick(0)
+  for (pre in prefixes) {
+    pb$tick()
     if (type == "A") {
       cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, ...)
     } else if (type == "B") {
@@ -78,8 +83,8 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, ..
   features$type <- classes[features$id]
 
   features <- features[colnames(output$cells), ]
-  rownames(output$cells) <- output$cells$cells_ObjectNumber_Global
-  rownames(output$meta) <- output$meta$ImageNumber_Global
+  rownames(output$cells) <- output$cells[, col.object]
+  rownames(output$meta) <- output$meta[, col.meta.img.id]
 
   return(c(output, list(features = features)))
 }
@@ -151,7 +156,7 @@ read_cellprofiler_fileset_a <- function(prefix,
   }
 
   # Read header of _cells.tsv
-  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, nrows = 3)
+  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, nrows = 3, showProgress = FALSE)
 
   # If the file has no cells empty
   if (nrow(cells) != 3) {
@@ -166,14 +171,14 @@ read_cellprofiler_fileset_a <- function(prefix,
   }
 
   # Read content of _cells.tsv
-  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, skip = 2)
+  cells <- data.table::fread(paste0(prefix, pat.cells), data.table = F, skip = 2, showProgress = FALSE)
   colnames(cells) <- cn
 
   # Read _image.tsv (metadata)
-  img <- data.table::fread(paste0(prefix, pat.img), data.table = F)
+  img <- data.table::fread(paste0(prefix, pat.img), data.table = F, showProgress = FALSE)
 
   # Read _objectRelation.ships.tsv
-  orl <- data.table::fread(paste0(prefix, pat.orl), data.table = F)
+  orl <- data.table::fread(paste0(prefix, pat.orl), data.table = F, showProgress = FALSE)
 
 
   # Standardize ID's across filesets into the following format
@@ -243,16 +248,17 @@ read_cellprofiler_fileset_b <- function(prefix,
   index$FileName <- basename(index$Name)
 
 
+  tmpdir <- tempdir()
+
   # Clean up the tmpdir
   unlink(paste0(tmpdir, "/features"), recursive = T)
 
   # Unzip into tmp folder
-  tmpdir <- tempdir()
   unzip(prefix, exdir = tmpdir)
 
-  cells <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.cells, index$FileName), "Name"]), data.table = F)
-  img <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.img, index$FileName), "Name"]), data.table = F)
-  orl <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F)
+  cells <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.cells, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
+  img <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.img, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
+  orl <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
 
   if (nrow(cells) == 0) {
     warning("No cells detected for ", index[grep(pat.cells, index$FileName), "Name"], " returning NULL.")
@@ -277,7 +283,7 @@ read_cellprofiler_fileset_b <- function(prefix,
 
     for (i in 1:nrow(index)) {
       obj <- index[i, "object"]
-      cur <- data.table::fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T)
+      cur <- data.table::fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T, showProgress = FALSE)
 
       # Remove these columns from the merging strategy
       exclude.cols <- c("Group.1", grep("ObjectNumber", colnames(cur), value = T), grep("Number_Object_Number", colnames(cur), value = T))

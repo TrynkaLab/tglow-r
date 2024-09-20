@@ -4,27 +4,42 @@
 \alias{read_cellprofiler_dir}
 \title{Read a cellprofiler fileset directory tree}
 \usage{
-read_cellprofiler_dir(path, pattern, type, n = NULL, verbose = F, ...)
+read_cellprofiler_dir(
+  path,
+  pattern,
+  type,
+  n = NULL,
+  verbose = F,
+  col.object = "cell_ObjectNumber_Global",
+  col.meta.img.id = "ImageNumber_Global",
+  ...
+)
 }
 \arguments{
 \item{path}{path to tglow output dir}
 
-\item{pattern}{The pattern that uniquely identfies a well. Use .zip for type B and the _experiment.tsv
+\item{pattern}{The pattern that uniquely identfies a well. Use '.zip' for type 'B' and the '_experiment.tsv' for type 'A'
 for type A}
 
-\item{type}{Must be A or B
-Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
-See read.cellprofiler.fileset.a for detaills
-Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
-see
-See read.cellprofiler.fileset.b for detaills}
+\item{type}{Must be 'A' or 'B'. See details}
 
 \item{n}{Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read}
 
 \item{verbose}{Should I be chatty?}
 
-\item{...}{Remaining parameters passed to read.cellprofiler.fileset.a/b}
+\item{col.object}{The collumn name in the features which contains the per object object identifier}
+
+\item{col.meta.img.id}{The collumn name in the image level data which contains the image id}
+
+\item{...}{Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}}
 }
 \description{
 Matches images based on <plate>, <well>, <field>
+}
+\details{
+Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
+See r\code{\link{read_cellprofiler_fileset_a}} for detaills
+
+Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
+See r\code{\link{read_cellprofiler_fileset_b}} for detaills
 }

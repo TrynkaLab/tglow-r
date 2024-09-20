@@ -194,8 +194,8 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' https://github.com/RfastOfficial/Rfast/issues/115
 #'
 #'
-#'
 #' @returns \linkS4class{TglowDataset} with new boxcox assay
+#' @importFrom progress progress_bar
 #' @export
 apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, rfast.zerotol = 1e-10, ...) {
     # Checks for input
@@ -215,16 +215,16 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     ncol.orig <- ncol(mat)
 
     # Apply transform
-    pb <- txtProgressBar(min = 0, max = ncol(mat), style = 3)
+    pb <- progress_bar$new(format = paste0("[INFO] Transforming [:bar] :current/:total (:percent) eta :eta"), total = ncol(mat))
+
     lambdas <- c()
     mat <- apply(mat, 2, function(x) {
-        setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
+        pb$tick()
         res <- boxcox_transform(x, add.lambda = T, ...)
 
         lambdas <<- c(lambdas, res$lambda)
         return(res$x)
     })
-    close(pb)
 
     features$lambda <- lambdas
     if (trim) {

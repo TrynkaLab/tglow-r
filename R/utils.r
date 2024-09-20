@@ -41,7 +41,9 @@ get_feature_meta_from_names <- function(feature.names) {
 #' @param data List output from \code{\link{tglow.read.fileset}}
 #'
 #' @returns The mered output from \code{\link{tglow.read.fileset}}
+#' @importFrom dplyr bind_rows
 #' @export
+
 merge_filesets <- function(data) {
   if (class(data) != "list") {
     stop("Data argument must be a list.")
