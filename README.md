@@ -61,6 +61,26 @@ install.packages(res, lib=libdir)
 11. Finding cluster markers using t-test
 12. Finding associations using linear models
 
+# Loading data into a TglowDataset
+Currently built arround the output of the tglow-pipeline, will write some more general constructors soon.
+Have a look at the help text for `read_cellprofiler_dir`, `tglow_dataset_from_list`, `read_cellprofiler_fileset_a` and `read_cellprofiler_fileset_b` 
+as there might be some options & patterns to set depending how you export the data from cellprofiler.
+
+```
+path    <- "../../pipeline_disulfram/results/cellprofiler_v1"
+
+# Read the data in the new format, merging strategy takes applies the function
+# to the child objects, na.rm controls if NA's should be removed when calculating
+# this.
+output  <- read_cellprofiler_dir(path, pattern=".zip", type="B", 
+                                 merging.strategy="mean", na.rm=T)
+                                 
+# Convert to tglow object
+tglow <- tglow_dataset_from_list(output, assay="cells")
+```
+
+The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)`
+
 # Using TglowDataset
 For more detaills also see the function definitions
 
