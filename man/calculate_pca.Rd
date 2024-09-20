@@ -16,7 +16,7 @@ calculate_pca(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{assay}{The assay to use}
 
@@ -36,7 +36,7 @@ calculate_pca(
 \linkS4class{TglowDataset} with populated PCA slot
 }
 \description{
-Calculate a principal component analysis on a tglow dataset and add it to
+Calculate a principal component analysis on a \linkS4class{TglowDataset} and add it to
 the reductions. Does not re-scale by default and assumes scale.data
 is scaled has mean 0 variance 1, which is not true if using modified zscore
 }

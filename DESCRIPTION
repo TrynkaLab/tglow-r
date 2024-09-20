@@ -25,6 +25,7 @@ Collate:
     'methods_tglow_dataset.r'
     'methods_tglow_matrix.r'
     'methods_tglow_reduction.r'
+    'plotting.r'
     'qc_functions.r'
     'reductions.r'
     'regressions.r'

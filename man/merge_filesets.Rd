@@ -4,10 +4,12 @@
 \alias{merge_filesets}
 \title{Merge list of filesets into one}
 \usage{
-merge_filesets(data)
+merge_filesets(data, skip.orl = FALSE)
 }
 \arguments{
 \item{data}{List output from \code{\link{tglow.read.fileset}}}
+
+\item{skip.orl}{Should object relationships be skipped}
 }
 \value{
 The mered output from \code{\link{tglow.read.fileset}}

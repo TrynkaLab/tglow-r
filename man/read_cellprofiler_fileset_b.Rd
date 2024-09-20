@@ -15,7 +15,8 @@ read_cellprofiler_fileset_b(
   pat.cells = ".*cell.txt",
   pat.orl = ".*Object relationships.txt",
   pat.others = "^.*_([a-z]+\\\\d*).txt$",
-  na.rm = F
+  na.rm = F,
+  skip.orl = F
 )
 }
 \value{

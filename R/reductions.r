@@ -2,11 +2,11 @@
 #' Calculate the PCA on an assay
 #'
 #' @description
-#' Calculate a principal component analysis on a tglow dataset and add it to
+#' Calculate a principal component analysis on a \linkS4class{TglowDataset} and add it to
 #' the reductions. Does not re-scale by default and assumes scale.data
 #' is scaled has mean 0 variance 1, which is not true if using modified zscore
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param pc.n How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{base::prcomp()}}
@@ -71,14 +71,14 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' Calculate the UMAP on an assay
 #'
 #' @description
-#' Calculate UMAP on a tglow dataset and add it to the reductions
+#' Calculate UMAP on a \linkS4class{TglowDataset} and add it to the reductions
 #'
 #' @details
 #' Uses an existing reduction if possible. When downsampling objects it returns
 #' a matrix in the reductions slot which has nrow(dataset) with objects which were
 #' omitted set to NA to ensure downstream ordering is maintained
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param reduction The reduction to use for calculating UMAPs. If NULL re-calculated
 #' @param assay The assay to use
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"

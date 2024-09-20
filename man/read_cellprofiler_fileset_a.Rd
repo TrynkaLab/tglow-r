@@ -10,7 +10,8 @@ read_cellprofiler_fileset_a(
   add.global.id = T,
   pat.img = "_image.tsv",
   pat.cells = "_cells.tsv",
-  pat.orl = "_objectRelationships.tsv"
+  pat.orl = "_objectRelationships.tsv",
+  skip.orl = FALSE
 )
 }
 \value{

@@ -13,6 +13,7 @@ NULL
 #' for type A
 #' @param type Must be 'A' or 'B'. See details
 #' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
+#' @param skip.orl Skip reading of object relationships, as this can get quite large with many children and is not used
 #' @param verbose Should I be chatty?
 #' @param col.object The collumn name in the features which contains the per object object identifier
 #' @param col.meta.img.id The collumn name in the image level data which contains the image id
@@ -26,7 +27,7 @@ NULL
 #' See r\code{\link{read_cellprofiler_fileset_b}} for detaills
 #' @importFrom progress progress_bar
 #' @export
-read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
+read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
   files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T)
 
   if (type == "A") {
@@ -51,9 +52,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, co
   for (pre in prefixes) {
     pb$tick()
     if (type == "A") {
-      cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, ...)
+      cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
     } else if (type == "B") {
-      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, ...)
+      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
@@ -70,7 +71,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, co
   }
 
   cat("\n[INFO] Merging filesets\n")
-  output <- merge_filesets(filesets)
+  output <- merge_filesets(filesets, skip.orl = skip.orl)
 
   cat("[INFO] names: ", names(output), "\n")
 
@@ -83,6 +84,13 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, co
   features$type <- classes[features$id]
 
   features <- features[colnames(output$cells), ]
+  selector <- !is.na(output$cells[, col.object])
+
+  if (sum(!selector) != 0) {
+    warning(paste0("Detected ", sum(selector), " objects with NA in ", col.object, " removing these"))
+  }
+
+  output$cells <- output$cells[selector, ]
   rownames(output$cells) <- output$cells[, col.object]
   rownames(output$meta) <- output$meta[, col.meta.img.id]
 
@@ -149,7 +157,8 @@ read_cellprofiler_fileset_a <- function(prefix,
                                         add.global.id = T,
                                         pat.img = "_image.tsv",
                                         pat.cells = "_cells.tsv",
-                                        pat.orl = "_objectRelationships.tsv") {
+                                        pat.orl = "_objectRelationships.tsv",
+                                        skip.orl = FALSE) {
   if (add.global.id) {
     assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
     global.prefix <- paste0("FS", FILESET_ID)
@@ -178,8 +187,11 @@ read_cellprofiler_fileset_a <- function(prefix,
   img <- data.table::fread(paste0(prefix, pat.img), data.table = F, showProgress = FALSE)
 
   # Read _objectRelation.ships.tsv
-  orl <- data.table::fread(paste0(prefix, pat.orl), data.table = F, showProgress = FALSE)
-
+  if (skip.orl) {
+    orl <- NULL
+  } else {
+    orl <- data.table::fread(paste0(prefix, pat.orl), data.table = F, showProgress = FALSE)
+  }
 
   # Standardize ID's across filesets into the following format
   # FS#I#O#
@@ -196,11 +208,13 @@ read_cellprofiler_fileset_a <- function(prefix,
 
     # ORL, object relationships
     #-----------
-    if (nrow(orl) > 0) {
-      orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
-      orl[, "Second Image Number Global"] <- paste0(global.prefix, "_I", orl[, "Second Image Number"])
-      orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
-      orl[, "Second Object Number Global"] <- paste0(global.prefix, "_I", orl[, "Second Image Number"], "_O", orl[, "Second Object Number"])
+    if (!skip.orl) {
+      if (nrow(orl) > 0) {
+        orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
+        orl[, "Second Image Number Global"] <- paste0(global.prefix, "_I", orl[, "Second Image Number"])
+        orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
+        orl[, "Second Object Number Global"] <- paste0(global.prefix, "_I", orl[, "Second Image Number"], "_O", orl[, "Second Object Number"])
+      }
     }
   }
 
@@ -238,7 +252,8 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         pat.cells = ".*cell.txt",
                                         pat.orl = ".*Object relationships.txt",
                                         pat.others = "^.*_([a-z]+\\d*).txt$",
-                                        na.rm = F) {
+                                        na.rm = F,
+                                        skip.orl = F) {
   if (add.global.id) {
     assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
     global.prefix <- paste0("FS", FILESET_ID)
@@ -258,7 +273,12 @@ read_cellprofiler_fileset_b <- function(prefix,
 
   cells <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.cells, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
   img <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.img, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
-  orl <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
+
+  if (skip.orl) {
+    orl <- NULL
+  } else {
+    orl <- data.table::fread(paste0(tmpdir, "/", index[grep(pat.orl, index$FileName), "Name"]), data.table = F, showProgress = FALSE)
+  }
 
   if (nrow(cells) == 0) {
     warning("No cells detected for ", index[grep(pat.cells, index$FileName), "Name"], " returning NULL.")
@@ -281,7 +301,7 @@ read_cellprofiler_fileset_b <- function(prefix,
   if (nrow(index) > 0) {
     index$object <- gsub(pat.others, "\\1", index$FileName)
 
-    for (i in 1:nrow(index)) {
+    for (i in seq_len(nrow(index))) {
       obj <- index[i, "object"]
       cur <- data.table::fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T, showProgress = FALSE)
 
@@ -345,11 +365,14 @@ read_cellprofiler_fileset_b <- function(prefix,
     img[, "ImageNumber_Global"] <- paste0(global.prefix, "_I", img[, "ImageNumber"])
     # ORL, object relationships
     #-----------
-    if (nrow(orl) > 0) {
-      orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
-      orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
-      orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
-      orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
+
+    if (!skip.orl) {
+      if (nrow(orl) > 0) {
+        orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
+        orl[, "First Image Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"])
+        orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
+        orl[, "First Object Number Global"] <- paste0(global.prefix, "_I", orl[, "First Image Number"], "_O", orl[, "First Object Number"])
+      }
     }
   }
 

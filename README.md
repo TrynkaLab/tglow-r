@@ -279,3 +279,15 @@ dim(tglow@image.meta)
 - filter_unique_val_sum
 - filter_zero_var
 - filter_zero_var_sum
+
+#### Plotting
+- plot_boxline
+- plot_hex
+- plot_hist_dens_grouped
+- plot_img
+- plot_img_set
+- plot_simple_hm
+- plot_xy
+- tglow_plot_execution_time
+- tglow_plot_location_hex
+- theme_plain

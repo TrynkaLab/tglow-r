@@ -39,13 +39,13 @@ get_feature_meta_from_names <- function(feature.names) {
 #' or have the items, cells, meta, orl,  [children], [features], [cells_norm]
 #'
 #' @param data List output from \code{\link{tglow.read.fileset}}
-#'
+#' @param skip.orl Should object relationships be skipped
 #' @returns The mered output from \code{\link{tglow.read.fileset}}
 #' @importFrom dplyr bind_rows
 #' @export
 
-merge_filesets <- function(data) {
-  if (class(data) != "list") {
+merge_filesets <- function(data, skip.orl = FALSE) {
+  if (is(data, "list")) {
     stop("Data argument must be a list.")
   }
 
@@ -57,12 +57,15 @@ merge_filesets <- function(data) {
   ncol.meta <- as.numeric(lapply(data, function(x) {
     ncol(x[["meta"]])
   }))
-  ncol.orl <- as.numeric(lapply(data, function(x) {
-    ncol(x[["orl"]])
-  }))
-  # ncol.nucl <- as.numeric(lapply(data, function(x){ncol(x[["nucl"]])}))
 
-  selector <- (ncol.cells == as.numeric(names(which.max(table(ncol.cells))))) & (ncol.meta == as.numeric(names(which.max(table(ncol.meta))))) & (ncol.orl == as.numeric(names(which.max(table(ncol.orl)))))
+  if (!skip.orl) {
+    ncol.orl <- as.numeric(lapply(data, function(x) {
+      ncol(x[["orl"]])
+    }))
+    selector <- (ncol.cells == as.numeric(names(which.max(table(ncol.cells))))) & (ncol.meta == as.numeric(names(which.max(table(ncol.meta))))) & (ncol.orl == as.numeric(names(which.max(table(ncol.orl)))))
+  } else {
+    selector <- (ncol.cells == as.numeric(names(which.max(table(ncol.cells))))) & (ncol.meta == as.numeric(names(which.max(table(ncol.meta)))))
+  }
 
   if (sum(selector) != length(selector)) {
     msg <- paste0(
@@ -71,7 +74,7 @@ merge_filesets <- function(data) {
       "The following filesets are at issue:\n"
     )
 
-    for (i in seq_along(data)[!selector]) {
+    for (i in seq_len(length(data))[!selector]) {
       msg <- paste0(msg, i, ", ")
     }
 
@@ -84,10 +87,15 @@ merge_filesets <- function(data) {
   out$meta <- dplyr::bind_rows(lapply(data[selector], function(x) {
     x[["meta"]]
   }), )
-  out$orl <- dplyr::bind_rows(lapply(data[selector], function(x) {
-    x[["orl"]]
-  }), )
-  # out$nucl <- dplyr::bind_rows(lapply(data[selector], function(x){x[["nucl"]]}),)
+
+  if (!skip.orl) {
+    out$orl <- dplyr::bind_rows(lapply(data[selector], function(x) {
+      x[["orl"]]
+    }), )
+  } else {
+    out$orl <- NULL
+  }
+
 
   if ("features" %in% names(data[[1]])) {
     out$features <- dplyr::bind_rows(lapply(data[selector], function(x) {

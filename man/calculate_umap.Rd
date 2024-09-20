@@ -17,7 +17,7 @@ calculate_umap(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{reduction}{The reduction to use for calculating UMAPs. If NULL re-calculated}
 
@@ -39,7 +39,7 @@ calculate_umap(
 \linkS4class{TglowDataset} with populated reduction slot
 }
 \description{
-Calculate UMAP on a tglow dataset and add it to the reductions
+Calculate UMAP on a \linkS4class{TglowDataset} and add it to the reductions
 }
 \details{
 Uses an existing reduction if possible. When downsampling objects it returns

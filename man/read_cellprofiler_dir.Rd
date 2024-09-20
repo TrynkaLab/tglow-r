@@ -9,6 +9,7 @@ read_cellprofiler_dir(
   pattern,
   type,
   n = NULL,
+  skip.orl = TRUE,
   verbose = F,
   col.object = "cell_ObjectNumber_Global",
   col.meta.img.id = "ImageNumber_Global",
@@ -24,6 +25,8 @@ for type A}
 \item{type}{Must be 'A' or 'B'. See details}
 
 \item{n}{Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read}
+
+\item{skip.orl}{Skip reading of object relationships, as this can get quite large with many children and is not used}
 
 \item{verbose}{Should I be chatty?}
 
