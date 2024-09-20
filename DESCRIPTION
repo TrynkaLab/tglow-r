@@ -21,7 +21,6 @@ Collate:
     'filters.r'
     'generics.r'
     'io_cellprofiler.r'
-    'logging.r'
     'methods_tglow_assay.r'
     'methods_tglow_dataset.r'
     'methods_tglow_matrix.r'

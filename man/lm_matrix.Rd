@@ -11,7 +11,7 @@ lm_matrix(response, design, covariates.dont.use = NULL)
 
 \item{design}{The common design matrix to regress response againsts}
 
-\item{covariates.dont.use}{Fit the covariates, but don't output them or use them for calculating residuals (affects r2 etc)}
+\item{covariates.dont.use}{Only use if you understand the implications. See detaills}
 }
 \value{
 A list with regression results
@@ -22,4 +22,10 @@ Fit a linear model using OLS and find coefficients
 \details{
 This is more efficient as the b component of the design matrix can be re-used between regressions
 b <- chol2inv(chol(crossprod(design)))
+
+`covariates.dont.use`
+Fit the model with these covariates included, but don't use them for calculating residuals (affects r2, se etc)
+The covariates for these variables are removed in the output. When specifying more complex models in formula
+use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't
+want to consider the interaction term, add 'b:c'. To remove the intercept, add '(Intercept)'
 }
