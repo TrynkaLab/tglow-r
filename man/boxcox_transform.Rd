@@ -22,7 +22,7 @@ boxcox_transform(
 
 \item{fudge}{Fudgefactor to apply either log transform, or just leave it as is}
 
-\item{downsample}{Calculate labmda's on a random sample of the data. Either NULL (no downsampling), an integer (selects x values), or a selection vector.}
+\item{downsample}{Calculate labmda's on a random sample of the data. Either NULL (no downsampling), an integer (selects x values), or a selection vector}
 
 \item{add.lambda}{Return a list with two items instead, one transformed x, two, the lamda used}
 }

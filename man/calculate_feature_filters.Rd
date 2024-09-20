@@ -27,7 +27,7 @@ calculate_feature_filters(
 \item{na.fail}{Should NA be treated as fail, defaults to yes}
 }
 \value{
-A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail.
+A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail
 }
 \description{
 Calculate a feature filter table on a \linkS4class{TglowDataset}

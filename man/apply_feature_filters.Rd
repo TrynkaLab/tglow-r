@@ -19,7 +19,7 @@ The filtered \linkS4class{TglowDataset}
 \description{
 Apply a logical matrix or a logical array with filters on the columns and features on the rows
 to a tglow dataset. Each assay is seperately subsetted to remove features
-which are not selected.
+which are not selected
 
-If filter.res is a matrix, all rows must be true.
+If filter.res is a matrix, all rows must be true
 }

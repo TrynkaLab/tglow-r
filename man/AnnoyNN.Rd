@@ -28,7 +28,7 @@ AnnoyNN(
 \item{k}{Number of neighbors}
 
 \item{search.k}{During the query it will inspect up to search_k nodes which
-gives you a run-time tradeoff between better accuracy and speed.}
+gives you a run-time tradeoff between better accuracy and speed}
 
 \item{include.distance}{Include the corresponding distances}
 

@@ -16,8 +16,8 @@
 #'
 #' @details
 #' Here I use the Seurat implementation of the kNN, which is NOT and exact
-#' kNN graph, but it is very fast. Practically it should perform pretty well.
-#' The parameter k controls how many nearest neighbors to find.
+#' kNN graph, but it is very fast. Practically it should perform pretty well
+#' The parameter k controls how many nearest neighbors to find
 #' The distance matrix is built from the prinicpal components
 #'
 #'

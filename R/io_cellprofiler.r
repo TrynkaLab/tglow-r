@@ -10,14 +10,14 @@ NULL
 #'
 #' @param path path to tglow output dir
 #' @param pattern The pattern that uniquely identfies a well. Use .zip for type B and the _experiment.tsv
-#' for type A.
-#' @param type Must be A or B.
-#' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv.
+#' for type A
+#' @param type Must be A or B
+#' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
 #' See read.cellprofiler.fileset.a for detaills
-#' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells.
+#' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
 #' see
 #' See read.cellprofiler.fileset.b for detaills
-#' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read.
+#' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
 #' @param verbose Should I be chatty?
 #' @param ... Remaining parameters passed to read.cellprofiler.fileset.a/b
 #'
@@ -85,9 +85,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, verbose = F, ..
 }
 
 #-------------------------------------------------------------------------------
-#' Add a global id to a matrix of image files.
+#' Add a global id to a matrix of image files
 #' Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
-#' which will be duplicated and have a globally unique variable added.
+#' which will be duplicated and have a globally unique variable added
 #' Output of this is stored in the same column name but with suffix _Global
 #'
 #' @export
@@ -121,7 +121,7 @@ add_global_ids <- function(matrix) {
 #-------------------------------------------------------------------------------
 #' Read a cell level fileset type A
 #'
-#' Reads a CellProfiler fileset into a list.
+#' Reads a CellProfiler fileset into a list
 #' Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
 #' and all features are matched
 #'
@@ -136,7 +136,7 @@ add_global_ids <- function(matrix) {
 #' - features [optional]
 #'
 #'
-#' Output is NULL if no cells are detected.
+#' Output is NULL if no cells are detected
 #'
 #' @export
 read_cellprofiler_fileset_a <- function(prefix,
@@ -212,15 +212,15 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' Read a cell level fileset type B
 #'
 #' Reads a zip file with cellprofiler features, each file other then
-#' _Image, _Experiment and _Object Relationships are assumed to be an object.
-#' Will match objects on order with an appropriate matching strategy.
+#' _Image, _Experiment and _Object Relationships are assumed to be an object
+#' Will match objects on order with an appropriate matching strategy
 #'
 #' @returns list with data frames:
 #' - cells (cell level features)
 #' - meta (image level features)
 #' - objectRelations
 #' - features [optional]
-#' Output is NULL if no cells are detected.
+#' Output is NULL if no cells are detected
 #'
 #' @export
 read_cellprofiler_fileset_b <- function(prefix,

@@ -45,12 +45,20 @@ Logical indicating if object is an outlier in pca space, or a list if return.pcs
 }
 \description{
 Find outliers in the PCA space of a TglowAssay. Works for both
-assays and image.data.
+assays and image.data
 }
 \details{
 To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
-as a special case.
-This does not use existing dimension reductions to avoid issues when running with different QC groups.
+as a special case
+
+
+This does not use existing dimension reductions to avoid issues when running with different QC groups
+
+
 NA values are removed on a column basis and a warning message is raised. If you want
-to handle them differenlty, could make a new assay where the NA's are handled manually.
+to handle them differenlty, could make a new assay where the NA's are handled manually
+
+By default, estimates the 0.25 * ncol(assay) PC's assuming this is enough PC's to get to 75%. If this is
+not enough a warning is raised, and you can provide pc.max to override this behaviour or set use_irlba
+to FALSE to compute all components using \code{\link[=prcomp]{base::prcomp()}}
 }

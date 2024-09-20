@@ -3,7 +3,8 @@
 #'
 #' @description
 #' Calculate a principal component analysis on a tglow dataset and add it to
-#' the reductions.
+#' the reductions. Does not re-scale by default and assumes scale.data
+#' is scaled has mean 0 variance 1, which is not true if using modified zscore
 #'
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
@@ -12,10 +13,11 @@
 #' @param reduction.name The name to save the PCA results under. Defualts to PCA-<assay>
 #' @param ret.prcomp Instead of returning just the PCs and variances, return the whole prcomp object
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
-#'
+#' @param rescale Logical if matrix will be rescaled. This is advisable if using modified z-score
+
 #' @returns \linkS4class{TglowDataset} with populated PCA slot
 #' @export
-calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, reduction.name = NULL, ret.prcomp = FALSE, use_irlba = FALSE) {
+calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, reduction.name = NULL, ret.prcomp = FALSE, use_irlba = FALSE, rescale = FALSE) {
     # Checks for input
     # check_dataset_assay_slot(dataset, assay, slot)
     if (is.null(slot(dataset[[assay]], slot))) {
@@ -23,6 +25,11 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
     }
 
     data <- slot(dataset@assays[[assay]], slot)
+
+    if (rescale) {
+        cat("[INFO] Rescaling data to mean 0 variance 1\n")
+        data <- fast_colscale(data@.Data)
+    }
 
     # Remove features with ANY NA
     cur.data <- data[, matrixStats::colSums2(is.na(data)) == 0]
@@ -64,12 +71,12 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' Calculate the UMAP on an assay
 #'
 #' @description
-#' Calculate UMAP on a tglow dataset and add it to the reductions.
+#' Calculate UMAP on a tglow dataset and add it to the reductions
 #'
 #' @details
 #' Uses an existing reduction if possible. When downsampling objects it returns
 #' a matrix in the reductions slot which has nrow(dataset) with objects which were
-#' omitted set to NA to ensure downstream ordering is maintained.
+#' omitted set to NA to ensure downstream ordering is maintained
 #'
 #' @param dataset A tglow dataset
 #' @param reduction The reduction to use for calculating UMAPs. If NULL re-calculated
@@ -78,7 +85,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' @param pc.n How many PC's to calculate
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
 #' @param reduction.name The name to save the UMAP results under. Defualts to UMAP-<assay>
-#' @param downsample Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids.
+#' @param downsample Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids
 #' @param ... Arguments passed to \code{\link{uwot::umap()}}
 #'
 #' @returns \linkS4class{TglowDataset} with populated reduction slot
@@ -118,7 +125,7 @@ calculate_umap <- function(dataset, reduction, assay = NULL, slot = "scale.data"
     }
 
     # Don't return the output directly from UMAP, but rather make sure when a downsample is
-    # done the whole matrix is returned.
+    # done the whole matrix is returned
     res <- matrix(NA, nrow = nrow(dataset), ncol = 2)
     umap <- uwot::umap(pcs@x[sample, 1:pc.n], ...)
 

@@ -4,7 +4,15 @@
 \alias{fast_colscale}
 \title{Faster alternative to scale a matrix}
 \usage{
-fast_colscale(x, center = TRUE, scale = TRUE, add_attr = TRUE, na.rm = F)
+fast_colscale(
+  x,
+  center = TRUE,
+  scale = TRUE,
+  add_attr = TRUE,
+  na.rm = F,
+  scale.method = "mean",
+  reference.group = NULL
+)
 }
 \arguments{
 \item{x}{A matrix}
@@ -16,13 +24,17 @@ fast_colscale(x, center = TRUE, scale = TRUE, add_attr = TRUE, na.rm = F)
 \item{add_attr}{Should means and variances be added to output}
 
 \item{na.rm}{Should NA's be removed during mean and variance calculations}
+
+\item{scale.method}{Scaling method, either `mean` for z-score or `median` modified z-score}
+
+\item{reference.group}{Calculate means/medians, sds/mads only on these samples but apply it to all}
 }
 \value{
 The scaled matrix
 }
 \description{
-Sourced from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
-Yields a 10-20% speedup
+Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
+Yields a 10-20% speedup and adds modfied z-score scaling
 }
 \examples{
 # Generate a matrix

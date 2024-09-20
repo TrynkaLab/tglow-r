@@ -25,10 +25,10 @@ list with data frames:
 - features [optional]
 
 
-Output is NULL if no cells are detected.
+Output is NULL if no cells are detected
 }
 \description{
-Reads a CellProfiler fileset into a list.
+Reads a CellProfiler fileset into a list
 Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
 and all features are matched
 }

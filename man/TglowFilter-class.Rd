@@ -6,7 +6,7 @@
 \title{TglowFilter}
 \description{
 An object to describe a filter for either objects (cells) or
-features.
+features
 }
 \section{Slots}{
 

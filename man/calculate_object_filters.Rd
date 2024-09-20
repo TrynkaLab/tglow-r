@@ -25,12 +25,12 @@ calculate_object_filters(
 
 \item{grouping}{A vector specifying the grouping for some filters}
 
-\item{features}{An optional subset of features to use for calculation.}
+\item{features}{An optional subset of features to use for calculation}
 
 \item{na.fail}{Should NA be treated as fail, defaults to yes}
 }
 \value{
-A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail.
+A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail
 }
 \description{
 Calculate an object filter table on a \linkS4class{TglowDataset}

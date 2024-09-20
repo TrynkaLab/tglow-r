@@ -16,5 +16,5 @@ The filtered \linkS4class{TglowDataset}
 }
 \description{
 Apply image level filter to a TglowDataset. All objects in that image are
-removed. If filter.res is a matrix, all rows must be true to keep the image.
+removed. If filter.res is a matrix, all rows must be true to keep the image
 }

@@ -43,6 +43,6 @@ of components. For A more flexible implementation see \code{\link{find_outliers_
 }
 \details{
 To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
-as a special case.
-This does not use existing dimension reductions to avoid issues when running with different QC groups.
+as a special case
+This does not use existing dimension reductions to avoid issues when running with different QC groups
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/methods_tglow_dataset.r
 \name{getImageDataByObject,TglowDataset-method}
 \alias{getImageDataByObject,TglowDataset-method}
-\title{Fetch image data or meta data from a tglow object per object (cell).}
+\title{Fetch image data or meta data from a tglow object per object (cell)}
 \usage{
 \S4method{getImageDataByObject}{TglowDataset}(object, j, assay.image = NULL, slot = "data", drop = TRUE)
 }
@@ -22,5 +22,5 @@ A data frame with the corresponding columns
 }
 \description{
 Select columns from assay.image, image.meta and return them
-as a data.frame per object (cell).
+as a data.frame per object (cell)
 }

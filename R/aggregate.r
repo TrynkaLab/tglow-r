@@ -3,22 +3,22 @@
 #'
 #' @description Aggregate tglow objects using a grouping variable
 #'
-#' @details Aggregates objects using mean, median or sum based on a grouping variable.
-#' Strings are returned if there is a single unique value, otherwise they are dropped by default.
-#' Set drop.multival.string = FALSE to retain multival strings, which are pasted together using sep.
-#' drop.na.col removes any columns if drop.multival.string = TRUE and the result has only NA's left.
+#' @details Aggregates objects using mean, median or sum based on a grouping variable
+#' Strings are returned if there is a single unique value, otherwise they are dropped by default
+#' Set drop.multival.string = FALSE to retain multival strings, which are pasted together using sep
+#' drop.na.col removes any columns if drop.multival.string = TRUE and the result has only NA's left
 #'
-#' Both assays and image.data, image.data.trans and image.data.norm are aggregated.
+#' Both assays and image.data, image.data.trans and image.data.norm are aggregated
 #'
 #' @param input Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset
 #' @param grouping Grouping variable of nrow input. For aggregate_by_imagecol, grouping must be a column name on image.meta
 #' @param method Aggregation method: "mean", "median", "sum"
 #' @param group.order The row order of output
 #' @param na.rm Should NA's be removed
-#' @param drop.multival.string When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets.
+#' @param drop.multival.string When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets
 #' @param drop.na.col If after aggregating, a column is fully NA, should it be dropped?
 #' @param sep Seperator string when concatenating multiple strings
-#' @returns A logical where TRUE should be kept and FALSE values should be removed.
+#' @returns A logical where TRUE should be kept and FALSE values should be removed
 #'
 #' @rdname tglow_aggregate
 #' @export
@@ -69,7 +69,8 @@ aggregate_assay <- function(assay, grouping, method, group.order = NULL, na.rm =
 
     if (!is.null(assay@scale.data)) {
         new.scale.data <- aggregate_tglow_matrix(assay@scale.data, grouping, method, group.order, na.rm)
-        new.scale.data <- TglowMatrix(new.scale.data)
+        # Re-scale to ensure mean 0 sd 1 of result
+        new.scale.data <- TglowMatrix(fast_colscale(new.scale.data))
     } else {
         new.scale.data <- NULL
     }
@@ -139,7 +140,6 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         stop("Input must be TglowDataset")
     }
 
-
     if (!grouping %in% colnames(object@image.meta)) {
         stop("Grouping must be a single character indicating a column in image.meta")
     }
@@ -176,7 +176,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         new.image.data.norm <- NULL
     }
 
-    new.meta <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
+    new.meta       <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
     new.image.meta <- aggregate_metadata(object@image.meta, grouping.image, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
 
     # Put everything on a new TglowObject

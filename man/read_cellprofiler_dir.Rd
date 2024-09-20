@@ -10,16 +10,16 @@ read_cellprofiler_dir(path, pattern, type, n = NULL, verbose = F, ...)
 \item{path}{path to tglow output dir}
 
 \item{pattern}{The pattern that uniquely identfies a well. Use .zip for type B and the _experiment.tsv
-for type A.}
+for type A}
 
-\item{type}{Must be A or B.
-Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv.
+\item{type}{Must be A or B
+Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
 See read.cellprofiler.fileset.a for detaills
-Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells.
+Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
 see
 See read.cellprofiler.fileset.b for detaills}
 
-\item{n}{Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read.}
+\item{n}{Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read}
 
 \item{verbose}{Should I be chatty?}
 

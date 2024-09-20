@@ -11,7 +11,8 @@ calculate_pca(
   pc.n = NULL,
   reduction.name = NULL,
   ret.prcomp = FALSE,
-  use_irlba = FALSE
+  use_irlba = FALSE,
+  rescale = FALSE
 )
 }
 \arguments{
@@ -28,11 +29,14 @@ calculate_pca(
 \item{ret.prcomp}{Instead of returning just the PCs and variances, return the whole prcomp object}
 
 \item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
+
+\item{rescale}{Logical if matrix will be rescaled. This is advisable if using modified z-score}
 }
 \value{
 \linkS4class{TglowDataset} with populated PCA slot
 }
 \description{
 Calculate a principal component analysis on a tglow dataset and add it to
-the reductions.
+the reductions. Does not re-scale by default and assumes scale.data
+is scaled has mean 0 variance 1, which is not true if using modified zscore
 }

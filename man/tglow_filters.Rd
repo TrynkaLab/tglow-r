@@ -77,12 +77,12 @@ filter_sum(vec, thresh, grouping, func)
 \item{grouping}{Optional grouping for filters applied on a subgroup of vec, not all filters respect this!}
 }
 \value{
-A logical where TRUE should be kept and FALSE values should be removed.
+A logical where TRUE should be kept and FALSE values should be removed
 }
 \description{
-Filters come in 2 variants, the base function, which is applied over a vector or value.
-The base then has a <filter>.sum function which sums over multiple vectors or values.
+Filters come in 2 variants, the base function, which is applied over a vector or value
+The base then has a <filter>.sum function which sums over multiple vectors or values
 }
 \details{
-Uses Rfast whose variance calculations are not exactly zero, so set the zero threshold to 1e-10 by default.
+Uses Rfast whose variance calculations are not exactly zero, so set the zero threshold to 1e-10 by default
 }

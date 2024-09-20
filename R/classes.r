@@ -33,9 +33,9 @@ setClass("TglowAssay",
 #' TglowDataset
 #'
 #' @description
-#' Object to store HCI features along side object (cell) and image level metadata.
-#' Matrices are assumed to have row and column names set in the constructor function.
-#' This is important for downstream functionality.
+#' Object to store HCI features along side object (cell) and image level metadata
+#' Matrices are assumed to have row and column names set in the constructor function
+#' This is important for downstream functionality
 #'
 #' @slot assays List of TglowAssays containing the data
 #' @slot meta Data frame containing object (cell) level metadata
@@ -74,7 +74,7 @@ setClass("TglowDataset",
 #' TglowFilter
 #'
 #' @description An object to describe a filter for either objects (cells) or
-#' features.
+#' features
 #'
 #' @slot name Filter name
 #' @slot column_pattern Collumn pattern to apply filters on. "all" represents all

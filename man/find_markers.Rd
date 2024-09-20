@@ -15,13 +15,13 @@ find_markers(
 )
 }
 \arguments{
-\item{dataset}{A \linkS4class(TglowDataset)}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{ident}{A column in meta, image.meta, assay, assay.image to use as class labels}
 
 \item{assay}{The assay to use}
 
-\item{slot}{The slot to use for calculating filters. Can be "data" or "scale.data"}
+\item{slot}{The slot to use for finding markers. Can be "data" or "scale.data"}
 
 \item{assay.image}{The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
@@ -34,5 +34,5 @@ A data.frame with t-test results
 }
 \description{
 Find marker features using a two sample t-test. By default top 10 positive results
-for a class are returned.
+for a class are returned
 }

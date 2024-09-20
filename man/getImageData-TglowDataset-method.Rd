@@ -22,5 +22,5 @@ A data frame with the corresponding columns
 }
 \description{
 Select columns from assay.image, image.meta and return them
-as a data.frame per image.
+as a data.frame per image
 }

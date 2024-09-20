@@ -18,7 +18,7 @@
 #' @param n.trees More trees gives higher precision when querying
 #' @param k Number of neighbors
 #' @param search.k During the query it will inspect up to search_k nodes which
-#' gives you a run-time tradeoff between better accuracy and speed.
+#' gives you a run-time tradeoff between better accuracy and speed
 #' @param include.distance Include the corresponding distances
 #' @param index optional index object, will be recomputed if not provided
 #'
@@ -86,7 +86,7 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
 #' @param query A set of data to be queried against the index
 #' @param k Number of neighbors
 #' @param search.k During the query it will inspect up to search_k nodes which
-#' gives you a run-time tradeoff between better accuracy and speed.
+#' gives you a run-time tradeoff between better accuracy and speed
 #' @param include.distance Include the corresponding distances in the result
 #'
 #' @return A list with 'nn.idx' (for each element in 'query', the index of the

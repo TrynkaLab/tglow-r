@@ -24,10 +24,10 @@ list with data frames:
 - meta (image level features)
 - objectRelations
 - features [optional]
-Output is NULL if no cells are detected.
+Output is NULL if no cells are detected
 }
 \description{
 Reads a zip file with cellprofiler features, each file other then
-_Image, _Experiment and _Object Relationships are assumed to be an object.
-Will match objects on order with an appropriate matching strategy.
+_Image, _Experiment and _Object Relationships are assumed to be an object
+Will match objects on order with an appropriate matching strategy
 }

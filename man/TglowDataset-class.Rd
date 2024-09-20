@@ -5,9 +5,9 @@
 \alias{TglowDataset-class}
 \title{TglowDataset}
 \description{
-Object to store HCI features along side object (cell) and image level metadata.
-Matrices are assumed to have row and column names set in the constructor function.
-This is important for downstream functionality.
+Object to store HCI features along side object (cell) and image level metadata
+Matrices are assumed to have row and column names set in the constructor function
+This is important for downstream functionality
 }
 \section{Slots}{
 

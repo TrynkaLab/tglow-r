@@ -115,10 +115,10 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-#' Get image data and features per object (cell).
+#' Get image data and features per object (cell)
 #'
 #' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
-#' and return them as a data.frame.
+#' and return them as a data.frame
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from assay, assay.image, image.meta to select
@@ -150,7 +150,7 @@ setMethod(
 
     # Object level features
     j.object <- j[!is.image]
-    is.meta <- (j %in% colnames(object@meta))
+    is.meta <- (j.object %in% colnames(object@meta))
     j.meta <- j.object[is.meta]
     j.feature <- j.object[!is.meta]
 
@@ -198,10 +198,10 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-#' Fetch image data or meta data from a tglow object per object (cell).
+#' Fetch image data or meta data from a tglow object per object (cell)
 #'
 #' @description Select columns from assay.image, image.meta and return them
-#' as a data.frame per object (cell).
+#' as a data.frame per object (cell)
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from image.meta or assay.image to select
@@ -230,7 +230,7 @@ setMethod(
 #' Fetch image data or meta data from a tglow object
 #'
 #' @description Select columns from assay.image, image.meta and return them
-#' as a data.frame per image.
+#' as a data.frame per image
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j character with column names from image.meta or assay.image to select

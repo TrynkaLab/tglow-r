@@ -29,7 +29,7 @@ calculate_umap(
 
 \item{reduction.name}{The name to save the UMAP results under. Defualts to UMAP-<assay>}
 
-\item{downsample}{Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids.}
+\item{downsample}{Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids}
 
 \item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
 
@@ -39,10 +39,10 @@ calculate_umap(
 \linkS4class{TglowDataset} with populated reduction slot
 }
 \description{
-Calculate UMAP on a tglow dataset and add it to the reductions.
+Calculate UMAP on a tglow dataset and add it to the reductions
 }
 \details{
 Uses an existing reduction if possible. When downsampling objects it returns
 a matrix in the reductions slot which has nrow(dataset) with objects which were
-omitted set to NA to ensure downstream ordering is maintained.
+omitted set to NA to ensure downstream ordering is maintained
 }

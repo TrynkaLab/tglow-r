@@ -5,11 +5,11 @@ NULL
 setMethod(
   "$", signature("TglowAssay"),
   function(x, name) {
-    dx <- x@data[, name]
+    dx <- x@data@.Data[, name]
     sx <- NULL
 
     if (!is.null(x@scale.data)) {
-      sx <- x@scale.data[, name]
+      sx <- x@scale.data@.Data[, name]
     }
     return(list(data = dx, scale.data = sx))
   }

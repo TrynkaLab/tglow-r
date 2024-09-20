@@ -16,9 +16,9 @@ apply_boxcox(
 )
 }
 \arguments{
-\item{dataset}{A \linkS4class(TglowDataset)}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use.}
+\item{assay}{The assay to use}
 
 \item{assay.out}{The name of the output assay. Defaults to paste0(assay, "-trans")}
 
@@ -28,7 +28,7 @@ apply_boxcox(
 
 \item{verbose}{Raise a warning if columns are trimmed}
 
-\item{rfast.zerotol}{threshold to consider variances zero in Rfast see details.}
+\item{rfast.zerotol}{threshold to consider variances zero in Rfast. See details}
 
 \item{...}{Arguments passed to \code{\link{boxcox_transform}}}
 }
@@ -36,11 +36,12 @@ apply_boxcox(
 \linkS4class{TglowDataset} with new boxcox assay
 }
 \description{
-Transform a assay using boxcox transform. If assay="image.data", result is stored in slot image.data.trans.
+Transform a assay using boxcox transform. If assay="image.data", result is stored in slot image.data.trans
 Lambda values are added to the features data.frame: 0=log, 1=no transformation
 }
 \details{
-NOTE: Currently NOT using Rfast::colVars() as there are inconsistencies with matrixStats::colVars()
+`rfast.zerotol`
+NOTE: Currently NOT using \code{\link{Rfast::colVars()}} as there are inconsistencies with \code{\link{matrixStats::colVars()}}
 Rfast's does not return zero variances, so we have to set some minial value to consider as 0
 https://github.com/RfastOfficial/Rfast/issues/62
 https://github.com/RfastOfficial/Rfast/issues/115

@@ -48,7 +48,7 @@ aggregate_by_imagecol(
 
 \item{na.rm}{Should NA's be removed}
 
-\item{drop.multival.string}{When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets.}
+\item{drop.multival.string}{When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets}
 
 \item{drop.na.col}{If after aggregating, a column is fully NA, should it be dropped?}
 
@@ -57,16 +57,16 @@ aggregate_by_imagecol(
 \item{input}{Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset}
 }
 \value{
-A logical where TRUE should be kept and FALSE values should be removed.
+A logical where TRUE should be kept and FALSE values should be removed
 }
 \description{
 Aggregate tglow objects using a grouping variable
 }
 \details{
-Aggregates objects using mean, median or sum based on a grouping variable.
-Strings are returned if there is a single unique value, otherwise they are dropped by default.
-Set drop.multival.string = FALSE to retain multival strings, which are pasted together using sep.
-drop.na.col removes any columns if drop.multival.string = TRUE and the result has only NA's left.
+Aggregates objects using mean, median or sum based on a grouping variable
+Strings are returned if there is a single unique value, otherwise they are dropped by default
+Set drop.multival.string = FALSE to retain multival strings, which are pasted together using sep
+drop.na.col removes any columns if drop.multival.string = TRUE and the result has only NA's left
 
-Both assays and image.data, image.data.trans and image.data.norm are aggregated.
+Both assays and image.data, image.data.trans and image.data.norm are aggregated
 }

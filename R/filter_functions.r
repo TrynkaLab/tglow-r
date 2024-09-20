@@ -45,7 +45,7 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 #' @param features An optional subset of features to use for calculation
 #' @param na.fail Should NA be treated as fail, defaults to yes
 #'
-#' @returns A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail.
+#' @returns A logical matrix of ncol(dataset[[assay]]) x length(filters) where T indicates filter pass and F indicates filter fail
 #' @export
 calculate_feature_filters <- function(dataset, filters, assay, slot, features = NULL, na.fail = TRUE) {
     # Check inputs
@@ -114,10 +114,10 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 #' @param assay The assay to use for calculating filters
 #' @param slot The slot to use for calculating filters: "data" or "scale.data"
 #' @param grouping A vector specifying the grouping for some filters
-#' @param features An optional subset of features to use for calculation.
+#' @param features An optional subset of features to use for calculation
 #' @param na.fail Should NA be treated as fail, defaults to yes
 #'
-#' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail.
+#' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail
 #' @export
 calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail=TRUE) {
     # Check inputs
@@ -183,9 +183,9 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 #' @description
 #' Apply a logical matrix or a logical array with filters on the columns and features on the rows
 #' to a tglow dataset. Each assay is seperately subsetted to remove features
-#' which are not selected.
+#' which are not selected
 #'
-#' If filter.res is a matrix, all rows must be true.
+#' If filter.res is a matrix, all rows must be true
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param filter.res The matrix of filter output from \code{\link{calculate_feature_filters}} or a named logical vector
@@ -238,7 +238,7 @@ apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
 #'
 #' @description
 #' Apply image level filter to a TglowDataset. All objects in that image are
-#' removed. If filter.res is a matrix, all rows must be true to keep the image.
+#' removed. If filter.res is a matrix, all rows must be true to keep the image
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param filter.res A logical matrix or vector indicating which images to keep
