@@ -11,7 +11,7 @@ FILESET_ID=0
 #'Find the index of the value in x that is closest to value
 #'
 #' @returns The position in X where value is closest to
-nearest.index <- function(x, value) {
+nearest_index <- function(x, value) {
   which.min(abs(x-value))
 }
 
@@ -38,18 +38,18 @@ tglow.fetch.representative.cell <- function(dataset, feature, assay="cells", met
   
   if (metric == "mean") {
     m   <- mean(x, na.rm=na.rm)
-    out <- nearest.index(x, m)
+    out <- nearest_index(x, m)
   } else if (metric == "median") {
     m   <- median(x, na.rm=na.rm)
-    out <- nearest.index(x, m)
+    out <- nearest_index(x, m)
   } else if (metric == "upper.q") {
     if (is.null(q)) {q <- 0.75}
     m <- quantile(x, probs=q)
-    out <- nearest.index(x, m)
+    out <- nearest_index(x, m)
   } else if (metric == "lower.q") {
     if (is.null(q)) {q <- 0.25}
     m <- quantile(x, probs=q)
-    out <- nearest.index(x, m)
+    out <- nearest_index(x, m)
   }
   
   if (n > 0){

@@ -52,6 +52,11 @@ tglow_plot_execution_time <- function(object) {
 
     # Calculate average execution time
     df.plot <- meta[, grep("ExecutionTime", colnames(meta))]
+
+    if (ncol(df.plot) <= 0) {
+        stop("No columns of pattern 'ExecutionTime' found on object@image.meta")
+    }
+
     df.plot <- data.frame(name = gsub("ExecutionTime_", "", colnames(df.plot)), time = colMeans(df.plot, na.rm = T))
 
     # df.plot$time <- (df.plot$time / sum(df.plot$time)) *100

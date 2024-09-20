@@ -65,9 +65,18 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
         cur.data <- data[qc.group == group, ]
 
         # Check if there enough cells
-        if (sum(qc.group == group) < 2) {
+        if (sum(qc.group == group) < 3) {
             warning("Need at least two cells in group, skipping")
+            final.outliers[qc.group == group] <- FALSE
             next
+        }
+
+        if (!is.null(pc.n)) {
+            if (sum(qc.group == group) <= pc.n) {
+                warning("Need more samples then n.pc, skipping")
+                final.outliers[qc.group == group] <- FALSE
+                next
+            }
         }
 
         cat("[INFO] Rescaling data for group\n")

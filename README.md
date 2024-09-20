@@ -194,6 +194,8 @@ dim(tglow@image.meta)
 
 # List of functions
 
+Note on naming scheme: Functions with the prefix `tglow_` only apply to either one of the Tglow s4 objects or are specific to the Tglow image processing pipeline.
+The functions without a spcific prefix should be more generically applicable. 
 
 #### S4 Objects
 - TglowDataset
@@ -202,19 +204,21 @@ dim(tglow@image.meta)
 - TglowReduction
 - TglowFilter
 
+#### TglowDataset methods
+- getDataByObject
+- getImageData
+- getImageDataByObject
 
 #### IO
 - read_cellprofiler_dir
 - read_cellprofiler_fileset_a
 - read_cellprofiler_fileset_b
 
-
 #### Constructors
 - TglowMatrix
 - tglow_dataset_from_list
 - tglow_assay_from_list
 - tglow_filters_from_table
-
 
 #### Utils
 - add_global_ids
@@ -224,10 +228,9 @@ dim(tglow@image.meta)
 - aggregate_tglow_matrix
 - get_feature_meta_from_names
 - merge_filesets
-- getDataByObject
-- getImageData
-- getImageDataByObject
-
+- nearest_index
+- fetch_representative_object
+- fetch_representative_object_quantiles
 
 #### QC & Filtering functions
 - apply_feature_filters
@@ -237,14 +240,12 @@ dim(tglow@image.meta)
 - find_outliers_pca
 - find_outliers_pca_fixed
 
-
 #### Transform functions
 - fast_colscale
 - boxcox_transform
 - apply_boxcox
 - mod_zscore
 - scale_assay
-
 
 #### Clustering & reductions
 - apply_clustering
@@ -280,14 +281,25 @@ dim(tglow@image.meta)
 - filter_zero_var
 - filter_zero_var_sum
 
-#### Plotting
+#### Plotting (ggplot wrappers)
 - plot_boxline
 - plot_hex
 - plot_hist_dens_grouped
-- plot_img
-- plot_img_set
 - plot_simple_hm
 - plot_xy
+- plot_img
+- plot_img_set
+- theme_plain
 - tglow_plot_execution_time
 - tglow_plot_location_hex
-- theme_plain
+
+#### Image related functions
+- img_composite
+- img_max_per_channel
+- img_max_project
+- img_norm
+- apply_color
+- hex_to_rgb
+- tglow_read_binmat
+- tglow_build_img_index
+- tglow_read_imgs
