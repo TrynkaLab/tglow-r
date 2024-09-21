@@ -76,7 +76,7 @@ setMethod(
       object@image.ids <- object@image.ids[i, drop = F]
       object@image.data <- object@image.data[unique(object@image.ids), , drop = F]
       object@image.meta <- object@image.meta[unique(object@image.ids), , drop = F]
-      
+
       if (!is.null(object@image.data.trans)) {
         object@image.data.trans <- object@image.data.trans[unique(object@image.ids), , drop = F]
       }
@@ -113,6 +113,79 @@ setMethod(
     object
   }
 )
+#-------------------------------------------------------------------------------
+#' Check if column names are available on a dataset
+#'
+#' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
+#' and return them as a data.frame
+#'
+#' @param object A \linkS4class{TglowDataset}
+#' @param j Character with column names from assay, assay.image, image.meta to select
+#' @param assay The assay to select from
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
+#' @param slot Slot to fetch features from: "data" or "scale.data"
+#' @param drop Should cols be dropped or not
+#' @returns A data frame with the corresponding columns
+#' @export
+setMethod(
+  "isAvailable", signature("TglowDataset"),
+  function(object, j, assay, assay.image, slot, return.names) {
+    # Check the inputs
+    check_dataset_assay_slot(object, assay = assay, slot = slot, assay.image = assay.image)
+
+    if (class(j) != "character") {
+      stop("j must be character vector with column names in meta or assay.")
+    }
+    if (sum(is.na(j)) > 0) {
+      stop("j can not have NA")
+    }
+
+    # Image level features
+    if (!is.null(assay.image)) {
+      is.image <- j %in% colnames(slot(object, assay.image))
+    } else {
+      is.image <- rep(TRUE, length(j))
+    }
+
+    is.image.meta <- j %in% colnames(object@image.meta)
+    is.meta <- j %in% colnames(object@meta)
+
+    if (!is.null(assay)) {
+      is.assay <- j %in% colnames(object[[assay]])
+    } else {
+      is.assay <- rep(TRUE, length(j))
+    }
+
+    exists <- is.meta | is.image.meta | is.meta | is.assay
+
+    if (is.null(assay.image)) {
+      is.image <- rep(NA, length(is.image))
+    }
+
+    if (is.null(assay)) {
+      is.assay <- rep(NA, length(is.assay))
+    }
+
+    exists.sum <- rowSums(cbind(is.image, is.image.meta, is.meta, is.assay), na.rm = T)
+
+
+
+    if (any(exists.sum > 1)) {
+      warning("Collumn names are not unique accross image.data, image.meta, meta, assay")
+    }
+
+    if (!return.names) {
+      return(sum(exists) == length(j))
+    } else {
+      return(list(
+        is.available = sum(exists) == length(j),
+        exists = exists,
+        exists.sum = exists.sum,
+        is.in.slot = list(image.data = is.image, image.meta = is.image.meta, meta = is.meta, assay = is.assay)
+      ))
+    }
+  }
+)
 
 #-------------------------------------------------------------------------------
 #' Get image data and features per object (cell)
@@ -131,22 +204,14 @@ setMethod(
 setMethod(
   "getDataByObject", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, drop) {
-    # Check the imputs
-    check_dataset_assay_slot(object, assay = assay, slot = slot, assay.image = assay.image)
-
-    if (class(j) != "character") {
-      stop("j must be character vector with column names in meta or assay.")
+    # Check the inputs
+    if (!isAvailable(object, j, assay, assay.image, slot, return.names = FALSE)) {
+      stop("One or more items in j was not available. You can check which with isAvailable(...,return.names=T)")
     }
-    if (sum(is.na(j)) > 0) {
-      stop("j can not have NA")
-    }
-
-    # Figure out from which table to retieve which features
-    j <- as.character(j)
 
     # Image level features
     is.image <- (j %in% colnames(object@image.meta)) | (j %in% colnames(object@image.data@data))
-    j.image  <- j[is.image]
+    j.image <- j[is.image]
 
     # Object level features
     j.object <- j[!is.image]
@@ -159,7 +224,7 @@ setMethod(
     if (!is.null(assay)) {
       if (!is.null(slot)) {
         if (length(j.feature) >= 1) {
-          data <- data.frame(slot(object@assays[[assay]], slot))[, j.feature, drop = F]
+          data <- data.frame(slot(object@assays[[assay]], slot)@.Data[, j.feature, drop = F])
         }
       } else {
         stop("Must provide a slot")
@@ -242,11 +307,9 @@ setMethod(
 setMethod(
   "getImageData", signature("TglowDataset"),
   function(object, j, assay.image, slot, drop) {
-    if (class(j) != "character") {
-      stop("j must be character vector with column names in meta or assay.")
-    }
-    if (sum(is.na(j)) > 0) {
-      stop("j can not have NA")
+    # Check the inputs
+    if (!isAvailable(object, j, assay = NULL, assay.image = assay.image, slot, return.names = FALSE)) {
+      stop("One or more items in j was not available. You can check which with isAvailable(...,return.names=T)")
     }
 
     is.meta <- j %in% colnames(object@image.meta)

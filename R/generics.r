@@ -12,3 +12,8 @@ setGeneric("getImageDataByObject", function(object, j, assay.image = NULL, slot 
 setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NULL, slot = "data", drop = TRUE) {
     standardGeneric("getDataByObject")
 })
+
+#-------------------------------------------------------------------------------
+setGeneric("isAvailable", function(object, j, assay, assay.image, slot, return.names = FALSE) {
+    standardGeneric("isAvailable")
+})

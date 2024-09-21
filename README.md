@@ -208,6 +208,7 @@ The functions without a spcific prefix should be more generically applicable.
 - getDataByObject
 - getImageData
 - getImageDataByObject
+- isAvailable
 
 #### IO
 - read_cellprofiler_dir

@@ -29,6 +29,7 @@ setMethod(
   "[",
   "TglowMatrix",
   function(x, i, j, drop = F) {
-    return(TglowMatrix(x@.Data[i, j, drop = drop]))
+    x@.Data <- x@.Data[i, j, drop = drop]
+    return(x)
   }
 )

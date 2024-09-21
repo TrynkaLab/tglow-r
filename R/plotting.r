@@ -6,7 +6,7 @@
 #' @param base_family Text font
 #' @param legend Keep the legend
 #'
-#' @importFrom ggplot2 theme theme_grey
+#' @importFrom ggplot2 theme theme_grey %+replace%
 #' @export
 theme_plain <- function(p, base_size = 11, base_family = "ArialMT", legend = TRUE) {
     p <- p + theme_grey(base_size = base_size, base_family = base_family) %+replace%
@@ -411,16 +411,21 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
 #' @param density Plot as a density plot instead
 #'
 #' @returns A ggplot2 object
-#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_vline geom_histogram scale_fill_viridis_d facet_wrap geom_density
+#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_vline geom_histogram scale_fill_viridis_d facet_wrap geom_density scale_color_viridis_d
 #' @export
 plot_hist_dens_grouped <- function(x,
-                                   z,
-                                   xlab,
+                                   z = NULL,
+                                   xlab = "Value",
                                    main = NULL,
                                    bins = 100,
                                    facet = NULL,
                                    facet.ncol = NULL,
                                    density = FALSE) {
+                                    
+    if (is.null(z)) {
+        z <- "1"
+    }                             
+                                    
     # Build the plot
     df.plot <- data.frame(
         x = x,
@@ -453,7 +458,7 @@ plot_hist_dens_grouped <- function(x,
             geom_vline(xintercept = med, color = "red", linetype = "dashed", size = 1) + # Add vertical line for the median
             xlab(xlab) +
             ggtitle(main) +
-            scale_col_viridis_d()
+            scale_color_viridis_d()
     }
 
     if (!is.null(facet)) {

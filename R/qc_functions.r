@@ -21,7 +21,7 @@
 #'
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
-#' @param qc.group A vector indicating if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once
+#' @param qc.group A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once
 #' @param thresh Threshold in absolute PC to consider an outlier
 #' @param pc.thresh The percentage of variance of PC's to select for outlier detection
 #' @param pc.max The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}
@@ -29,37 +29,56 @@
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
-
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
+#'
+#' @importFrom irlba prcomp_irlba
 #' @export
-find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.thresh = 0.75, pc.max = NULL, pc.n = NULL, slot = "data", method = "z", return.pcs = FALSE, use_irlba = TRUE, rfast.zerotol = 1e-10) {
+find_outliers_pca <- function(dataset,
+                              assay,
+                              qc.group = NULL,
+                              thresh = 3.5,
+                              pc.thresh = 0.75,
+                              pc.max = NULL,
+                              pc.n = NULL,
+                              slot = "data",
+                              method = "z",
+                              return.pcs = FALSE,
+                              use_irlba = TRUE) {
     # Check inputs
     check_dataset_assay_slot(dataset, assay, slot)
 
-    if (assay %in% c("image.data", "image.data.trans", "image.data.norm")) {
-        cur.assay <- slot(dataset, assay)
-    } else {
-        cur.assay <- dataset[[assay]]
-    }
-
-    if (is.null(slot(cur.assay, slot))) {
-        stop("Could not find data in slot, ", slot, "\n")
-    }
-
-    data <- slot(cur.assay, slot)
-
-    # Define results matrix
-    final.outliers <- rep(NA, nrow(data))
-    final.pca <- list()
 
     if (is.null(qc.group)) {
         cat("[INFO] No QC group provided, setting all objects to same group\n")
         qc.group <- rep(1, nrow(data))
     }
 
+    if (assay %in% c("image.data", "image.data.trans", "image.data.norm")) {
+        cur.assay <- slot(dataset, assay)
+        if (is.character(qc.group) && length(qc.group) == 1) {
+            qc.group <- getImageData(dataset, qc.group, assay = assay, slot = slot)
+        }
+    } else {
+        cur.assay <- dataset[[assay]]
+        if (is.character(qc.group) && length(qc.group) == 1) {
+            qc.group <- getDataByObject(dataset, qc.group, assay = assay, slot = slot)
+        }
+    }
+
+    if (is.null(slot(cur.assay, slot))) {
+        stop("Could not find data in slot, ", slot, "\n")
+    }
+
+    data <- slot(cur.assay, slot)@.Data
+
+    # Define results matrix
+    final.outliers <- rep(NA, nrow(data))
+    final.pca <- list()
+
     # Now for each group
-    for (group in unique(qc.group)) {
-        cat("[INFO] Calculating outliers for for ", group, "\n")
+    unique.groups <- unique(qc.group)
+    for (group in unique.groups) {
+        cat("[INFO] Calculating outliers for for ", group, " ", which(group == unique.groups), "/", length(unique.groups), "\n")
 
         # Subset data
         cur.data <- data[qc.group == group, ]
@@ -79,7 +98,6 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
             }
         }
 
-        cat("[INFO] Rescaling data for group\n")
         cur.data <- fast_colscale(cur.data, add_attr = F)
 
         # Remove features with ANY NA
@@ -90,7 +108,6 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
         }
 
         # Remove features with zero variance
-        # cur.data <- cur.data[, Rfast::colVars(cur.data) > rfast.zerotol]
         cur.data <- cur.data[, matrixStats::colVars(cur.data) > 0]
         if (ncol(cur.data) != (ncol(data) - n.rn.na)) {
             warning(paste0("Removed ", ncol(data) - ncol(cur.data), " features with zero variance"))
@@ -121,13 +138,12 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
         }
 
         cat("[INFO] Calculating  ", pc.final, " pc's on ", nrow(cur.data), " samples and, ", ncol(cur.data), " features\n")
-
         if (use_irlba) {
             # Calculate PCAs
-            pca <- irlba::prcomp_irlba(cur.data, n = pc.final)
+            pca <- irlba::prcomp_irlba(cur.data, n = pc.final, center = F, scale = F)
             pc.var <- pca$sdev^2 / pca$totalvar
         } else {
-            pca <- prcomp(cur.data)
+            pca <- prcomp(cur.data, center = F, scale = F)
             pc.var <- pca$sdev^2 / sum(pca$sdev^2)
         }
 
@@ -168,7 +184,7 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
     if (return.pcs) {
         return(list(outliers = final.outliers, pcs = final.pca))
     } else {
-        return(final.outliers)
+        return(list(outliers = final.outliers))
     }
 }
 
@@ -176,11 +192,14 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
 #-------------------------------------------------------------------------------
 #' Find outliers in PCA space
 #'
-#' @description Find outliers in the PCA space of a TglowAssay. Works for both
-#' assays and image.data. This is a simple implementation based on a fixed number
-#' of components. For A more flexible implementation see \code{\link{find_outliers_pca}}
+#' @description deprecated Use `find_outliers_pca_fixed()` instead
+#' Find outliers in the PCA space of a TglowAssay. Works for both
+#' assays and image.data.
 #'
 #' @details
+#' deprecated Use `find_outliers_pca_fixed()` instead
+#' This is a simple implementation based on a fixed number
+#' of components. For A more flexible implementation see \code{\link{find_outliers_pca}}
 #' To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
 #' as a special case
 #' This does not use existing dimension reductions to avoid issues when running with different QC groups
@@ -195,6 +214,10 @@ find_outliers_pca <- function(dataset, assay, qc.group = NULL, thresh = 3.5, pc.
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
+#'
+#' @importFrom irlba prcomp_irlba
+#'
+#'
 #' @export
 find_outliers_pca_fixed <- function(dataset, assay, thresh = 3.5, qc.group = NULL, pc.n = 5, slot = "data", method = "z", return.pcs = FALSE, use_irlba = TRUE) {
     # Check inputs
@@ -250,6 +273,6 @@ find_outliers_pca_fixed <- function(dataset, assay, thresh = 3.5, qc.group = NUL
     if (return.pcs) {
         return(list(outliers = final.outliers, pcs = pca))
     } else {
-        return(final.outliers)
+        return(list(outliers = final.outliers))
     }
 }

@@ -15,8 +15,7 @@ find_outliers_pca(
   slot = "data",
   method = "z",
   return.pcs = FALSE,
-  use_irlba = TRUE,
-  rfast.zerotol = 1e-10
+  use_irlba = TRUE
 )
 }
 \arguments{

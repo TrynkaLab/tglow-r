@@ -41,6 +41,11 @@ fast_colscale <- function(x,
                           na.rm = F,
                           scale.method = "mean",
                           reference.group = NULL) {
+
+    if (is(x, "TglowMatrix")) {
+        x <- x@.Data
+    }                            
+                            
     if (is.null(reference.group)) {
         x.ref <- x
     } else {
@@ -202,10 +207,10 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     check_dataset_assay_slot(dataset, assay, slot)
 
     if (assay == "image.data") {
-        mat <- slot(dataset@image.data, slot)
+        mat <- slot(dataset@image.data, slot)@.Data
         features <- dataset@image.data@features
     } else {
-        mat <- slot(dataset[[assay]], slot)
+        mat <- slot(dataset[[assay]], slot)@.Data
         features <- dataset[[assay]]@features
 
         if (is.null(assay.out)) {
