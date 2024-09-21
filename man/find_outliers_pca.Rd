@@ -23,7 +23,7 @@ find_outliers_pca(
 
 \item{assay}{The assay to use}
 
-\item{qc.group}{A vector indicating if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once}
+\item{qc.group}{A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once}
 
 \item{thresh}{Threshold in absolute PC to consider an outlier}
 

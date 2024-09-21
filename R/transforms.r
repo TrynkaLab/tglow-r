@@ -291,7 +291,6 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' the controls on a plate you would set grouping to getDataByObject(object, "plate")
 #' and reference.group to getDataByObject(object, "is_control")
 #'
-
 #' @export
 scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
     if (!is(assay, "TglowAssay")) {

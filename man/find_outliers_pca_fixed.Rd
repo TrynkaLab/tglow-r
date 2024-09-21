@@ -37,11 +37,14 @@ find_outliers_pca_fixed(
 Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
 }
 \description{
+deprecated Use `find_outliers_pca_fixed()` instead
 Find outliers in the PCA space of a TglowAssay. Works for both
-assays and image.data. This is a simple implementation based on a fixed number
-of components. For A more flexible implementation see \code{\link{find_outliers_pca}}
+assays and image.data.
 }
 \details{
+deprecated Use `find_outliers_pca_fixed()` instead
+This is a simple implementation based on a fixed number
+of components. For A more flexible implementation see \code{\link{find_outliers_pca}}
 To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
 as a special case
 This does not use existing dimension reductions to avoid issues when running with different QC groups

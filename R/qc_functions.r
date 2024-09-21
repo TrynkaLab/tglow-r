@@ -73,6 +73,7 @@ find_outliers_pca <- function(dataset,
 
     # Define results matrix
     final.outliers <- rep(NA, nrow(data))
+    names(final.outliers) <- rownames(data)
     final.pca <- list()
 
     # Now for each group
@@ -178,7 +179,7 @@ find_outliers_pca <- function(dataset,
         }
 
         # Add results to the outlier list
-        final.outliers[qc.group == group] <- outliers
+        final.outliers[rownames(cur.data)] <- outliers
     }
 
     if (return.pcs) {

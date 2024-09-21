@@ -6,8 +6,8 @@
 \usage{
 plot_hist_dens_grouped(
   x,
-  z,
-  xlab,
+  z = NULL,
+  xlab = "Value",
   main = NULL,
   bins = 100,
   facet = NULL,
