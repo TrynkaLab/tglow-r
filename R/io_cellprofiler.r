@@ -46,7 +46,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 
   # Read filesets
   filesets <- list()
-
+  null.filesets <- 0
   pb <- progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta", total = length(prefixes))
   pb$tick(0)
   for (pre in prefixes) {
@@ -66,8 +66,15 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
         cat("\n[DEBUG] cols:", ncol(cur$cells), " cols meta", ncol(cur$meta), " cols orl:", ncol(cur$orl), "\n")
       }
     } else {
-      warning("Fileset was NULL, skipped.")
+      null.filesets = null.filesets + 1
+      #warning("Fileset was NULL, skipped.")
     }
+  }
+  
+  if (null.filesets != 0) {
+    msg <- paste0("Dectected ", null.filesets, "/", length(filesets), " as NULL (no cells)")
+    warning(msg)
+    cat(paste0("[WARN] ", msg, "\n"))
   }
 
   cat("\n[INFO] Merging filesets\n")

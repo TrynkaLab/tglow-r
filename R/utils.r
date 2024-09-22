@@ -44,7 +44,7 @@ get_feature_meta_from_names <- function(feature.names) {
 #' @importFrom dplyr bind_rows
 #' @export
 merge_filesets <- function(data, skip.orl = FALSE) {
-  if (is(data, "list")) {
+  if (!is(data, "list")) {
     stop("Data argument must be a list.")
   }
 
@@ -77,6 +77,7 @@ merge_filesets <- function(data, skip.orl = FALSE) {
       msg <- paste0(msg, i, ", ")
     }
 
+    cat(paste0("[WARN] ", msg, "\n"))
     warning(msg)
   }
 
