@@ -198,14 +198,15 @@ Filters can be easily configured based on a filter table, making it easy to temp
 
 | Keyword         | Description                                                                                                                                                                    |
 |-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| transpose       | If transpose is true, multicol or sum filters are first transposed, so the columns become the objects, not the features                                                        |
 | name            | Filter name                                                                                                                                                                     |
 | column_pattern  | What features to apply the filters to for feature filters, or what features to use to calculate the filters for object filters. The pattern 'all' is a special case that applies to all features |
 | metadata_group  | Optional - Calculate filters within in a group of objects (not all filters respect this)                                                                                        |
 | type            | The filter function above                                                                                                                                                       |
 | value           | Threshold value passed ot filter                                                                                                                                                |
+| transpose       | If transpose is true, data are first transposed, so the columns become the objects, not the features                                                                            |
 | note            | Place to store extra info                                                                                                                                                       |
 | active          | Should the filter be applied at runtime                                                                                                                                         |
+                                                                                                                                  |
 
 
 
