@@ -9,9 +9,9 @@
 #' @description Filters come in 2 variants, the base function, which is applied over a vector or value
 #' The base then has a <filter>.sum function which sums over multiple vectors or values
 #'
-#' @details 
+#' @details
 #' Uses Rfast whose variance calculations are not exactly zero, so set the zero threshold to 1e-10 by default
-#' 
+#'
 #' @param vec Input vector or value
 #' @param thresh Filter threshold value
 #' @param grouping Optional grouping for filters applied on a subgroup of vec, not all filters respect this!
@@ -73,7 +73,7 @@ filter_near_zero_var_sum <- function(...) {
 #' @rdname tglow_filters
 #' @export
 filter_zero_var <- function(vec, thresh = 0) {
-    #return(Rfast::Var(vec[!is.na(vec)]) > thresh)
+    # return(Rfast::Var(vec[!is.na(vec)]) > thresh)
     return(var(vec[!is.na(vec)]) > thresh)
 }
 
@@ -83,22 +83,20 @@ filter_zero_var_sum <- function(...) {
     filter_sum(..., func = filter_zero_var)
 }
 
-
-
 #-------------------------------------------------------------------------------
 #' Coefficient of variation filter
 #' @rdname tglow_filters
 #' @export
 filter_coef_var <- function(vec, thresh) {
     cur.var <- var(vec[!is.na(vec)])
-    #cur.var[cur.var < 1e-10] <- 0
+    # cur.var[cur.var < 1e-10] <- 0
     return((sqrt(cur.var) / mean(vec[!is.na(vec)])) > thresh)
 }
 
 #' @rdname tglow_filters
 #' @export
 filter_coef_var_sum <- function(...) {
-    filter_sum(..., func = filter_zero_var)
+    filter_sum(..., func = filter_coef_var)
 }
 
 #-------------------------------------------------------------------------------
@@ -159,9 +157,11 @@ filter_mod_z <- function(vec, thresh, grouping = NULL, absolute = T, method = "m
 }
 #' @rdname tglow_filters
 #' @export
-Met <- function(...) {
+filter_mod_z_sum <- function(...) {
     filter_sum(..., func = filter_mod_z)
 }
+
+#-------------------------------------------------------------------------------
 #' @rdname tglow_filters
 #' @export
 filter_mod_z_perc <- function(vec, thresh, thresh2, grouping = NULL) {
@@ -188,4 +188,13 @@ filter_sum <- function(vec, thresh, grouping, func) {
     res[is.na(res)] <- T
 
     return(rowSums(res, na.rm = T) == ncol(vec))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Blacklist filter, always returns false
+#' @rdname tglow_filters
+#' @export
+filter_blacklist <- function(vec, thresh, grouping = NULL) {
+    return(FALSE)
 }

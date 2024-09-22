@@ -192,9 +192,58 @@ dim(tglow@image.meta)
 ``` 
 
 
+### Setting up filters
+Filters can be easily configured based on a filter table, making it easy to template sets of operations. Filters are NOT applied in order, but run independently. If you do want to run filters in order, you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table` to create the filter objects. The filter table should have the following columns, and one sheet for feature level filters, and one for object level filters. Exact layouts are customizable, see the help of `tglow_filters_from_table`
+
+
+| Keyword         | Description                                                                                                                                                                    |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| transpose       | If transpose is true, multicol or sum filters are first transposed, so the columns become the objects, not the features                                                        |
+| name            | Filter name                                                                                                                                                                     |
+| column_pattern  | What features to apply the filters to for feature filters, or what features to use to calculate the filters for object filters. The pattern 'all' is a special case that applies to all features |
+| metadata_group  | Optional - Calculate filters within in a group of objects (not all filters respect this)                                                                                        |
+| type            | The filter function above                                                                                                                                                       |
+| value           | Threshold value passed ot filter                                                                                                                                                |
+| note            | Place to store extra info                                                                                                                                                       |
+| active          | Should the filter be applied at runtime                                                                                                                                         |
+
+
+
+##### Available filters
+
+| Filter Types                  | Description                                                              | Respects Grouping | Note                                                                                       |
+|-------------------------------|--------------------------------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------|
+| filter_coef_var               | Coefficient of variation                                                | FALSE             |                                                                                            |
+| filter_coef_var_sum           | Coefficient of variation sum. All columns must pass                    | FALSE             |                                                                                            |
+| filter_inf                    | Infinite values                                                         | FALSE             |                                                                                            |
+| filter_inf_median             | Infinite median value                                                   | FALSE             |                                                                                            |
+| filter_inf_median_sum         | Infinite median value sum. All columns must pass                       | FALSE             |                                                                                            |
+| filter_inf_mutlicol           | Infinite values  - multiple columns                                      | FALSE             |                                                                                            |
+| filter_max                    | Maximum value                                                           | FALSE             |                                                                                            |
+| filter_max_sum                | Maximum value sum. All columns must pass                                | FALSE             |                                                                                            |
+| filter_min                    | Minimum value                                                           | FALSE             |                                                                                            |
+| filter_min_sum                | Minimum value sum. All columns must pass                                | FALSE             |                                                                                            |
+| filter_mod_z                  | Absolute modified z-score < thresh                                      | TRUE              |                                                                                            |
+| filter_mod_z_sum              | Absolute modified z-score < thresh sum. All columns must pass          | TRUE              |                                                                                            |
+| filter_mod_z_perc             | Absolute modified z-score < thresh sum. Percentage of columns must pass  | TRUE              |                                                                                            |
+| filter_na                     | NA filter                                                               | FALSE             |                                                                                            |
+| filter_na_multicol            | NA filter - multiple columns                                            | FALSE             |                                                                                            |
+| filter_near_zero_var          | Near zero variance from caret                                           | FALSE             | These are quite slow and intensive to compute, recommend filter_coef_var instead          |
+| filter_near_zero_var_sum      | Near zero variance from caret sum. All columns must pass               | FALSE             | These are quite slow and intensive to compute, recommend filter_coef_var instead          |
+| filter_unique_val             | Minimal number of unique values                                          | FALSE             |                                                                                            |
+| filter_unique_val_sum         | Minimal number of unique values sum. All columns must pass              | FALSE             |                                                                                            |
+| filter_zero_var               | Exactly 0 variance                                                      | FALSE             | Should also be covered by filter_coef_var                                                  |
+| filter_zero_var_sum           | Exactly 0 variance sum. All columns must pass                           | FALSE             | Should also be covered by filter_coef_var                                                  |
+| filter_blacklist              | Always FALSE                                                            | FALSE             |                                                                                            |
+
+
+
+
+
+
 # List of functions
 
-Note on naming scheme: Functions with the prefix `tglow_` only apply to either one of the Tglow s4 objects or are specific to the Tglow image processing pipeline.
+Note on naming scheme: Functions with the prefix `tglow_` either retlate to one of the Tglow s4 objects or are specific to the Tglow image processing pipeline.
 The functions without a spcific prefix should be more generically applicable. 
 
 #### S4 Objects
@@ -271,6 +320,7 @@ The functions without a spcific prefix should be more generically applicable.
 - filter_min
 - filter_min_sum
 - filter_mod_z
+- filter_mod_z_sum
 - filter_mod_z_perc
 - filter_na
 - filter_na_multicol
@@ -281,6 +331,7 @@ The functions without a spcific prefix should be more generically applicable.
 - filter_unique_val_sum
 - filter_zero_var
 - filter_zero_var_sum
+- filter_blacklist
 
 #### Plotting (ggplot wrappers)
 - plot_boxline
