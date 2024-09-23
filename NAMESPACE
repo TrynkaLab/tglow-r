@@ -3,7 +3,6 @@
 S3method(.DollarNames,TglowAssay)
 S3method(.DollarNames,TglowDataset)
 S3method(.DollarNames,TglowMatrix)
-export(Met)
 export(TglowMatrix)
 export(add_global_ids)
 export(aggregate_assay)
