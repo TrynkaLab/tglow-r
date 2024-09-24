@@ -1,5 +1,4 @@
 setClassUnion(name = "MatrixOrNull", members = c("matrix", "NULL"))
-setClassUnion(name = "TglowMatrixOrNull", members = c("matrix", "NULL"))
 setClassUnion(name = "NumericOrNull", members = c("numeric", "NULL"))
 
 #-------------------------------------------------------------------------------
@@ -7,6 +6,7 @@ setClassUnion(name = "NumericOrNull", members = c("numeric", "NULL"))
 #'
 #' Wrapper arround matrix to enable the use of $
 setClass("TglowMatrix", contains = "matrix")
+setClassUnion(name = "TglowMatrixOrNull", members = c("matrix", "NULL"))
 
 #-------------------------------------------------------------------------------
 #' TglowAssay
@@ -27,6 +27,7 @@ setClass("TglowAssay",
     ),
     prototype = list(scale.data = NULL)
 )
+setClassUnion(name = "TglowAssayOrNull", members = c("TglowAssay", "NULL"))
 
 
 #-------------------------------------------------------------------------------
@@ -57,8 +58,8 @@ setClass("TglowDataset",
         object.ids = "character",
         image.meta = "data.frame",
         image.data = "TglowAssay",
-        image.data.trans = "TglowAssay",
-        image.data.norm = "TglowAssay",
+        image.data.trans = "TglowAssayOrNull",
+        image.data.norm = "TglowAssayOrNull",
         image.ids = "character",
         reduction = "list",
         graph = "ANY",
@@ -66,7 +67,9 @@ setClass("TglowDataset",
     ),
     prototype = list(
         reduction = list(),
-        graph = NULL
+        graph = NULL,
+        image.data.trans = NULL,
+        image.data.norm = NULL
     )
 )
 
