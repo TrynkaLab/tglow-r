@@ -14,7 +14,9 @@ remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-cor
 
 ## On Sanger farm22 - latest dev version
 
-If using R from the headnode or jammy64 you should be able to install directly through gitlab, using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core`. If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there into a local tmp library inside the container.
+If using R from the headnode or jammy64 you should be able to install directly through gitlab, using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core`.
+
+If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there into a local tmp library inside the container. Alternatively you can ofcourse install into your personal library as well prior to launching Rstuio Sever and provide that in RStudio start, but this is a bit annoying for development, as you would need to re-start when re-installing.
 
 ``` 
 module load HGI/softpack/groups/cell_activation_tc/tglow-r/5
@@ -26,7 +28,7 @@ The latest dev version is in `/software/teamtrynka/installs/tglow-r-core`
 # Install the latest tglow R package in a tmpdir
 tmpdir <- tempdir()
 path   <- paste0(tmpdir, "/tglowr")
-libdir <- paste0("/tmp/rlibs-tglow")
+libdir <- paste0(tmpdir, "/rlibs-tglow")
 
 dir.create(path)
 dir.create(libdir)
@@ -43,6 +45,8 @@ res  <- devtools::build(pkg=path, path=path)
 remove.packages("tglowr", lib=libdir)
 install.packages(res, lib=libdir)
 ```
+
+You can then load the library using `library("tglowr", lib=paste0(tempdir(), "/rlibs-tglow"))` for as long as the session persists.
 
 # Overview of workflow
 

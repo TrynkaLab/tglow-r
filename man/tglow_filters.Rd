@@ -20,9 +20,10 @@
 \alias{filter_inf}
 \alias{filter_inf_mutlicol}
 \alias{filter_mod_z}
-\alias{Met}
+\alias{filter_mod_z_sum}
 \alias{filter_mod_z_perc}
 \alias{filter_sum}
+\alias{filter_blacklist}
 \title{Filters to apply to TglowDatasets}
 \usage{
 filter_min(vec, thresh, grouping = NULL)
@@ -63,11 +64,13 @@ filter_inf_mutlicol(vec, thresh, grouping)
 
 filter_mod_z(vec, thresh, grouping = NULL, absolute = T, method = "mod.z")
 
-Met(...)
+filter_mod_z_sum(...)
 
 filter_mod_z_perc(vec, thresh, thresh2, grouping = NULL)
 
 filter_sum(vec, thresh, grouping, func)
+
+filter_blacklist(vec, thresh, grouping = NULL)
 }
 \arguments{
 \item{vec}{Input vector or value}

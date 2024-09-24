@@ -113,20 +113,7 @@ setMethod(
     object
   }
 )
-#-------------------------------------------------------------------------------
-#' Check if column names are available on a dataset
-#'
-#' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
-#' and return them as a data.frame
-#'
-#' @param object A \linkS4class{TglowDataset}
-#' @param j Character with column names from assay, assay.image, image.meta to select
-#' @param assay The assay to select from
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
-#' @param slot Slot to fetch features from: "data" or "scale.data"
-#' @param drop Should cols be dropped or not
-#' @returns A data frame with the corresponding columns
-#' @export
+
 setMethod(
   "isAvailable", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, return.names) {
@@ -167,9 +154,7 @@ setMethod(
     }
 
     exists.sum <- rowSums(cbind(is.image, is.image.meta, is.meta, is.assay), na.rm = T)
-
-
-
+    
     if (any(exists.sum > 1)) {
       warning("Collumn names are not unique accross image.data, image.meta, meta, assay")
     }
@@ -187,20 +172,7 @@ setMethod(
   }
 )
 
-#-------------------------------------------------------------------------------
-#' Get image data and features per object (cell)
-#'
-#' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
-#' and return them as a data.frame
-#'
-#' @param object A \linkS4class{TglowDataset}
-#' @param j Character with column names from assay, assay.image, image.meta to select
-#' @param assay The assay to select from
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
-#' @param slot Slot to fetch features from: "data" or "scale.data"
-#' @param drop Should cols be dropped or not
-#' @returns A data frame with the corresponding columns
-#' @export
+
 setMethod(
   "getDataByObject", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, drop) {
@@ -262,19 +234,7 @@ setMethod(
   }
 )
 
-#-------------------------------------------------------------------------------
-#' Fetch image data or meta data from a tglow object per object (cell)
-#'
-#' @description Select columns from assay.image, image.meta and return them
-#' as a data.frame per object (cell)
-#'
-#' @param object A \linkS4class{TglowDataset}
-#' @param j Character with column names from image.meta or assay.image to select
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
-#' @param slot Slot to fetch features from data or scale.data
-#' @param drop Should cols be dropped or not
-#' @returns A data frame with the corresponding columns
-#' @export
+
 setMethod(
   "getImageDataByObject", signature("TglowDataset"),
   function(object, j, assay.image, slot, drop) {
@@ -291,19 +251,7 @@ setMethod(
   }
 )
 
-#-------------------------------------------------------------------------------
-#' Fetch image data or meta data from a tglow object
-#'
-#' @description Select columns from assay.image, image.meta and return them
-#' as a data.frame per image
-#'
-#' @param object A \linkS4class{TglowDataset}
-#' @param j character with column names from image.meta or assay.image to select
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"
-#' @param slot slot to fetch features fromdata or scale.data
-#' @param drop should cols be dropped or not
-#' @returns A data frame with the corresponding columns
-#' @export
+
 setMethod(
   "getImageData", signature("TglowDataset"),
   function(object, j, assay.image, slot, drop) {

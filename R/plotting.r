@@ -39,12 +39,13 @@ theme_plain <- function(p, base_size = 11, base_family = "ArialMT", legend = TRU
 #' Plot the execution time of CellProfiler modules
 #'
 #' @param object A TglowDataset
-#'
+#' @param object As percentage, logical. Should values be returned as a percentage
+
 #' @returns ggplot object containing the plot
 #'
 #' @importFrom ggplot2 ggplot aes geom_bar theme element_text element_blank element_line ylab xlab
 #' @export
-tglow_plot_execution_time <- function(object) {
+tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
     if (!is(object, "TglowDataset")) {
         stop("Object must be a TglowDataset")
     }
@@ -59,7 +60,9 @@ tglow_plot_execution_time <- function(object) {
 
     df.plot <- data.frame(name = gsub("ExecutionTime_", "", colnames(df.plot)), time = colMeans(df.plot, na.rm = T))
 
-    # df.plot$time <- (df.plot$time / sum(df.plot$time)) *100
+    if (as.percentage) {
+        df.plot$time <- (df.plot$time / sum(df.plot$time)) * 100
+    }
 
     df.plot <- df.plot[order(df.plot$time, decreasing = T), ]
     df.plot$name <- factor(df.plot$name, levels = unique(df.plot$name))
@@ -421,11 +424,10 @@ plot_hist_dens_grouped <- function(x,
                                    facet = NULL,
                                    facet.ncol = NULL,
                                    density = FALSE) {
-                                    
     if (is.null(z)) {
         z <- "1"
-    }                             
-                                    
+    }
+
     # Build the plot
     df.plot <- data.frame(
         x = x,
