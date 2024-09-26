@@ -9,7 +9,7 @@ calculate_lm(
   assay,
   assay.image = NULL,
   slot,
-  slot.covar,
+  slot.covar = "scale.data",
   covariates,
   formula = NULL,
   grouping = NULL,

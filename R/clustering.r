@@ -87,7 +87,7 @@ calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method
     }
 
     # Make a vector of the cluster memberships for each cell
-    dataset@meta[,col.out] <- membership(cl)
+    dataset@meta[,col.out] <- as.character(membership(cl))
 
     return(dataset)
 }

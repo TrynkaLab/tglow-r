@@ -11,7 +11,8 @@ find_markers(
   slot,
   assay.image = NULL,
   return.top = 10,
-  ref.classes = NULL
+  ref.classes = NULL,
+  na.rm = T
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ find_markers(
 \item{return.top}{Return the top x values by t-statistic. Defaults to 10}
 
 \item{ref.classes}{A vector of values to compare class mean against. Default NULL uses all other classes as reference}
+
+\item{na.rm}{Should NA's be removed during t-test}
 }
 \value{
 A data.frame with t-test results

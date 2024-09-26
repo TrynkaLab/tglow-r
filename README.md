@@ -411,6 +411,7 @@ The functions without a spcific prefix should be more generically applicable.
 - plot_xy
 - tglow_plot_execution_time
 - tglow_plot_location_hex
+- tglow_dimplot
 - theme_plain
 
 #### Utility Functions

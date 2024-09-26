@@ -9,7 +9,7 @@ apply_correction_lm(
   assay,
   assay.image = NULL,
   slot,
-  slot.covar,
+  slot.covar = NULL,
   covariates,
   formula = NULL,
   assay.out = NULL,

@@ -83,6 +83,93 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 
 
 #-------------------------------------------------------------------------------
+#' Plot a reduction
+#'
+#' @description Plot a reduction on a \linkS4class{TglowDataset}
+#'
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param reduction A name of a reduction on dataset
+#' @param ident The item to use for coloring points, passed to \code{\link{getDataByObject}}
+#' @param assay The assay to use for coloring, passed to \code{\link{getDataByObject}}
+#' @param slot The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"
+#' @param downsample Should downsampling be applied prior to plot. NA's are removed first
+#' @param log.ident Should color vector be log2 transformed
+#' @param axis.x Which dimension from reduction to plot in x
+#' @param axis.y Which dimension from reduction to plot in y
+#' @param xlab Override xlab
+#' @param ylab Override ylab
+#' @param no.colscale Skip adding colorscale
+#' @param ... Remaining arguments passed to \code{\link{plot_xy}}
+#'
+#' @export
+tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, ...) {
+    if (!reduction %in% names(object@reduction)) {
+        stop("Reduction not found on object")
+    }
+
+    if (!is.numeric(downsample) && !is.integer(downsample) && !is.logical(downsample)) {
+        stop("Downsample must be a number indicating samples to select, or a numeric or logical selection vector")
+    }
+
+    dim <- object@reduction[[reduction]]@x[, c(axis.x, axis.y)]
+
+    if (is.null(ident)) {
+        col <- "blue"
+    } else {
+        col <- getDataByObject(object, ident, assay = assay, slot = slot)
+        col <- col[rowSums(is.na(dim)) != ncol(dim)]
+    }
+
+    dim <- dim[rowSums(is.na(dim)) != ncol(dim), ]
+
+    if (!is.null(downsample)) {
+        if (length(downsample) == 1) {
+            if (downsample > nrow(dim)) {
+                stop("Downsample larger then number of non NA rows")
+            }
+
+            downsample <- sample.int(nrow(dim), downsample)
+        }
+
+        dim <- dim[downsample, , drop = F]
+        col <- col[downsample]
+    }
+
+
+    if (is.null(xlab)) {
+        xlab <- paste0(reduction, " - ", axis.x)
+    }
+
+    if (is.null(ylab)) {
+        ylab <- paste0(reduction, " - ", axis.y)
+    }
+
+    if (log.ident) {
+        col <- log2(log.ident)
+    }
+
+    p <- theme_plain(plot_xy(
+        dim[, axis.x],
+        dim[, axis.y],
+        col = col,
+        do.lm = F,
+        xlab = xlab,
+        ylab = ylab,
+        ...
+    ))
+
+    if (is.numeric(col)) {
+        p <- p + scale_color_viridis_c(name = ident)
+    } else {
+        p <- p + scale_color_viridis_d(name = ident)
+    }
+
+    return(p)
+}
+
+
+
+#-------------------------------------------------------------------------------
 #' Plot a hexbin colored on a 3rd variable
 #'
 #' @param dataset A \linkS4class{TglowDataset}

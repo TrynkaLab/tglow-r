@@ -84,13 +84,13 @@ filter_zero_var_sum <- function(...) {
 }
 
 #-------------------------------------------------------------------------------
-#' Coefficient of variation filter
+#' Absolute coefficient of variation filter
 #' @rdname tglow_filters
 #' @export
 filter_coef_var <- function(vec, thresh) {
-    cur.var <- var(vec[!is.na(vec)])
+    #cur.var <- var(vec[!is.na(vec)])
     # cur.var[cur.var < 1e-10] <- 0
-    return((sqrt(cur.var) / mean(vec[!is.na(vec)])) > thresh)
+    return(abs((sd(vec[!is.na(vec)]) / mean(vec[!is.na(vec)]))) > thresh)
 }
 
 #' @rdname tglow_filters

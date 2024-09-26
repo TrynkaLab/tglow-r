@@ -12,11 +12,12 @@
 #' @param slot The slot to use for finding markers. Can be "data" or "scale.data"
 #' @param return.top Return the top x values by t-statistic. Defaults to 10
 #' @param ref.classes A vector of values to compare class mean against. Default NULL uses all other classes as reference
+#' @param na.rm Should NA's be removed during t-test
 #'
 #' @returns A data.frame with t-test results
 #' @importFrom progress progress_bar
 #' @export
-find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL) {
+find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL, na.rm = T) {
     # Check input
     check_dataset_assay_slot(dataset, assay, slot)
 
@@ -28,6 +29,11 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
     }
 
     classes <- unique(cur.ident)
+
+    if (length(classes) <= 1) {
+        stop("Ident only has one class")
+    }
+
     res <- data.frame(matrix(NA, nrow = ncol(cur.assay) * length(classes), ncol = 9))
     colnames(res) <- c("class", "feature", "t-stat", "df", "pval", "mean.diff", "mean.se", "mean.ref", "mean.class")
     i <- 1
@@ -45,11 +51,11 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
         for (col in colnames(cur.assay)) {
             pb$tick()
 
-            tmp <- t.test(cur.assay[ident.is.class, col], cur.assay[ident.is.ref, col])
+            tmp <- t.test(cur.assay[ident.is.class, col], cur.assay[ident.is.ref, col], na.rm = na.rm)
 
             res[i, "class"] <- class
             res[i, "feature"] <- col
-            res[i, "tstat"] <- tmp$statistic
+            res[i, "t-stat"] <- tmp$statistic
             res[i, "df"] <- tmp$parameter
             res[i, "pval"] <- tmp$p.value
             res[i, "mean.diff"] <- tmp$estimate[1] - tmp$estimate[2]
@@ -66,7 +72,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
         subsets <- list()
         for (class in classes) {
             tmp <- res[res$class == class, ]
-            tmp <- tmp[order(tmp$tstat, decreasing = T), ]
+            tmp <- tmp[order(tmp$`t-stat`, decreasing = T), ]
             subsets[[class]] <- tmp[1:return.top, ]
         }
 
@@ -111,7 +117,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-apply_correction_lm <- function(object, assay, assay.image = NULL, slot, slot.covar, covariates, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
+apply_correction_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = NULL, covariates, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
     check_dataset_assay_slot(object, assay, slot)
 
     data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
@@ -205,7 +211,7 @@ apply_correction_lm <- function(object, assay, assay.image = NULL, slot, slot.co
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar, covariates, formula = NULL, grouping = NULL, covariates.dont.use = NULL) {
+calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = "scale.data", covariates, formula = NULL, grouping = NULL, covariates.dont.use = NULL) {
     check_dataset_assay_slot(object, assay, slot)
 
     data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
@@ -318,12 +324,12 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL) {
         r2.adj <- 1 - (1 - r2) * (length(rs) - 1) / df
 
         # Calculate F-statistic
-        msr <- (tss - rss) / (ncol(design.tmp)-1)
+        msr <- (tss - rss) / (ncol(design.tmp) - 1)
         f.stat <- msr / mse
-        p <- 1 - pf(f.stat, ncol(design.tmp)-1, df)
+        p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
 
         model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df)
     }
 
-    return(list(coef = coef, se = se, model.stats = model.stats, df=df, df.m=ncol(design.tmp)-1))
+    return(list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1))
 }
