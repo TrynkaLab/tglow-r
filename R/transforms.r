@@ -24,8 +24,8 @@
 #' `scale.method - median`
 #'
 #' Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
-#' 
-#' 
+#'
+#'
 #' @examples
 #' # Generate a matrix
 #' r <- matrix(runif(100000 * 1000), nrow = 100000, ncol = 1000)

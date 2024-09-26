@@ -36,7 +36,7 @@
 #' @importFrom igraph graph_from_edgelist membership cluster_louvain cluster_leiden
 #' @importFrom RANN nn2
 #' @export
-apply_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method = "louvain", resolution = 0.1, exact.nn = FALSE, col.out="clusters") {
+calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method = "louvain", resolution = 0.1, exact.nn = FALSE, col.out="clusters") {
     if (!reduction %in% names(dataset@reduction)) {
         stop(paste0("Reduction ", reduction, " not found in dataset"))
     }

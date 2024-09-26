@@ -261,11 +261,8 @@ Filters can be easily configured based on a filter table, making it easy to temp
 | transpose       | If transpose is true, data are first transposed, so the columns become the objects, not the features                                                                            |
 | note            | Place to store extra info                                                                                                                                                       |
 | active          | Should the filter be applied at runtime                                                                                                                                         |
-                                                                                                                                  |
 
-
-
-##### Available filters
+#### Available filters
 
 | Filter Types                  | Description                                                              | Respects Grouping | Note                                                                                       |
 |-------------------------------|--------------------------------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------|
@@ -309,62 +306,56 @@ The functions without a spcific prefix should be more generically applicable.
 - TglowReduction
 - TglowFilter
 
-#### TglowDataset methods
+#### Generic Methods
+
+- colnames
+- ncol
+- nrow
+- rownames
+
+#### Data Structures and Manipulation
+
+- objectIds
+- objectIds<-
+- isAvailable
 - getDataByObject
 - getImageData
 - getImageDataByObject
-- isAvailable
+  
+#### Data Import and Export
 
-#### IO
 - read_cellprofiler_dir
 - read_cellprofiler_fileset_a
 - read_cellprofiler_fileset_b
+- tglow_read_binmat
+- tglow_read_imgs
 
-#### Constructors
-- TglowMatrix
-- tglow_dataset_from_list
-- tglow_assay_from_list
-- tglow_filters_from_table
 
-#### Utils
+#### Data Aggregation and Merging
+
+- add_features_to_assay
 - add_global_ids
 - aggregate_assay
 - aggregate_by_imagecol
 - aggregate_metadata
 - aggregate_tglow_matrix
-- get_feature_meta_from_names
 - merge_filesets
-- nearest_index
-- fetch_representative_object
-- fetch_representative_object_quantiles
 
-#### QC & Filtering functions
+#### Data Transformation and Scaling
+
+- apply_boxcox
+- boxcox_transform
+- fast_colscale
+- mod_zscore
+- scale_assay
+
+#### Filtering and Data Cleaning
+
 - apply_feature_filters
 - apply_image_filters
 - calculate_feature_filters
 - calculate_object_filters
-- find_outliers_pca
-- find_outliers_pca_fixed
-
-#### Transform functions
-- fast_colscale
-- boxcox_transform
-- apply_boxcox
-- mod_zscore
-- scale_assay
-
-#### Clustering & reductions
-- apply_clustering
-- calculate_pca
-- calculate_umap
-
-#### Regression functions
-- lm_matrix
-- calculate_lm
-- apply_correction_lm
-- find_markers
-
-#### Filters
+- filter_blacklist
 - filter_coef_var
 - filter_coef_var_sum
 - filter_inf
@@ -376,8 +367,8 @@ The functions without a spcific prefix should be more generically applicable.
 - filter_min
 - filter_min_sum
 - filter_mod_z
-- filter_mod_z_sum
 - filter_mod_z_perc
+- filter_mod_z_sum
 - filter_na
 - filter_na_multicol
 - filter_near_zero_var
@@ -387,27 +378,49 @@ The functions without a spcific prefix should be more generically applicable.
 - filter_unique_val_sum
 - filter_zero_var
 - filter_zero_var_sum
-- filter_blacklist
 
-#### Plotting (ggplot wrappers)
-- plot_boxline
-- plot_hex
-- plot_hist_dens_grouped
-- plot_simple_hm
-- plot_xy
-- plot_img
-- plot_img_set
-- theme_plain
-- tglow_plot_execution_time
-- tglow_plot_location_hex
+#### Statistical Analysis
 
-#### Image related functions
+- apply_correction_lm
+- calculate_lm
+- calculate_pca
+- calculate_umap
+- calculate_clustering
+- find_markers
+- find_outliers_pca
+- find_outliers_pca_fixed
+- lm_matrix
+
+#### Image Processing
+
 - img_composite
 - img_max_per_channel
 - img_max_project
 - img_norm
+
+#### Plotting and Visualization
+
 - apply_color
 - hex_to_rgb
-- tglow_read_binmat
+- plot_boxline
+- plot_hex
+- plot_hist_dens_grouped
+- plot_img
+- plot_img_set
+- plot_simple_hm
+- plot_xy
+- tglow_plot_execution_time
+- tglow_plot_location_hex
+- theme_plain
+
+#### Utility Functions
+
+- nearest_index
+- tglow_assay_from_list
 - tglow_build_img_index
-- tglow_read_imgs
+- tglow_dataset_from_list
+- tglow_filters_from_table
+- get_feature_meta_from_names
+- fetch_representative_object
+- fetch_representative_object_quantiles
+    

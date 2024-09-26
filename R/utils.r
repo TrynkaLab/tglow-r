@@ -326,3 +326,82 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
 
   return(list(ids = c(lower, l10, l25, l50, l75, l90, upper), names = cn))
 }
+
+
+
+#-------------------------------------------------------------------------------
+#' Add features to an existing assay
+#'
+#' @description Adds features to an existing assay
+#'
+#' @param assay A \linkS4class{TglowAssay}
+#' @param slot The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE
+#' @param features A vector or matrix of features to append
+#' @param names The feature names, default to colnames(features)
+#' @param meta Feature metadata matching colnames(assay@features), each row is a feature when features is a matrix
+#' @param preserve.other Instead of setting the other slot to NA, skip this step
+#'
+#' @returns The assay with the extra columns on slot
+#' @export
+add_features_to_assay <- function(assay, slot, features, names = NULL, meta = NULL, preserve.other = FALSE) {
+  if (is.numeric(features) && !is.matrix(features)) {
+    if (length(features) != nrow(assay)) {
+      stop("Features must have the same length as assay")
+    }
+
+    if (is.null(names) && is.null(names(features))) {
+      stop("Must provide names argument")
+    }
+
+    features <- matrix(features, ncol = 1)
+  } else if (is.numeric(features) && is.matrix(features)) {
+    if (nrow(features) != nrow(assay)) {
+      stop("Features must have the same number of rows as assay")
+    }
+    if (is.null(names) && is.null(colnames(features))) {
+      stop("Must either set colnames(features) or provide names argument")
+    }
+
+    if (is.null(names)) {
+      names <- colnames(features)
+    }
+  } else {
+    stop("Features must be numeric matrix or numeric vector")
+  }
+
+  if (slot == "data") {
+    ncol <- ncol(assay@data)
+    assay@data@.Data <- cbind(assay@data@.Data, features)
+    colnames(assay@data)[(ncol + 1):(ncol + ncol(features))] <- names
+
+    if (!preserve.other && !is.null(assay@scale.data)) {
+      assay@scale.data@.Data <- cbind(assay@scale.data@.Data, matrix(NA, nrow(features), ncol(features)))
+      colnames(assay@scale.data)[(ncol + 1):(ncol + ncol(features))] <- names
+    }
+  }
+
+  if (slot == "scale.data") {
+    ncol <- ncol(assay@scale.data)
+    assay@scale.data@.Data <- cbind(assay@scale.data@.Data, features)
+    colnames(assay@scale.data)[(ncol + 1):(ncol + ncol(features))] <- names
+
+    if (!preserve.other && !is.null(assay@data)) {
+      assay@data@.Data <- cbind(assay@data@.Data, matrix(NA, nrow(features), ncol(features)))
+      colnames(assay@data)[(ncol + 1):(ncol + ncol(features))] <- names
+    }
+  }
+
+  if (is.null(meta)) {
+    meta <- matrix(NA, nrow = ncol(features), ncol = ncol(assay@features))
+    meta[, 1] <- names
+    colnames(meta) <- colnames(assay@features)
+    rownames(meta) <- names
+  } else {
+    if (!all(colnames(meta) == colnames(assay@features))) {
+      stop("Column names in meta must match those in assay@features")
+    }
+  }
+
+  assay@features <- rbind(assay@features, meta)
+  return(assay)
+}

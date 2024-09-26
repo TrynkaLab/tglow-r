@@ -147,7 +147,7 @@ plot(um[, 1],
 
 #-------------------------------------------------------------------------------
 # Clustering
-tglow <- apply_clustering(tglow, reduction = "PCA.trans", resolution = 0.2, k = 10, method = "louvain")
+tglow <- calculate_clustering(tglow, reduction = "PCA.trans", resolution = 0.2, k = 10, method = "louvain")
 
 table(tglow@meta$clusters)
 

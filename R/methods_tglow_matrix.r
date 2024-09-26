@@ -29,7 +29,6 @@ setMethod(
   "[",
   "TglowMatrix",
   function(x, i, j, drop = F) {
-    
     if (drop) {
       if ((!missing(i) && !missing(j)) && (length(i) == 1 || length(j) == 1)) {
         return(x@.Data[i, j, drop = drop])
