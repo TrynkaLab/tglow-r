@@ -258,7 +258,7 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         pat.img = ".*Image.txt",
                                         pat.cells = ".*cell.txt",
                                         pat.orl = ".*Object relationships.txt",
-                                        pat.others = "^.*_([a-z]+\\d*).txt$",
+                                        pat.others = "^.*_([a-zA-Z]+\\d*).txt$",
                                         na.rm = F,
                                         skip.orl = F) {
   if (add.global.id) {
@@ -268,7 +268,6 @@ read_cellprofiler_fileset_b <- function(prefix,
 
   index <- unzip(prefix, list = T)
   index$FileName <- basename(index$Name)
-
 
   tmpdir <- tempdir()
 
@@ -324,14 +323,18 @@ read_cellprofiler_fileset_b <- function(prefix,
         cells[, c(colnames(cur), paste0(obj, "_QC_Object_Count"))] <- NA
         warning(paste0(obj, " assay for ", index[i, "Name"], " is empty. Returning NA for these cols."))
       } else if (merging.strategy == "mean") {
-        cur <- cur[as.logical(cur[[parent.col]] != 0), ]
+        cat("[DEBUG] ", as.character(index[i, ]), "\n")
+        
+        cur           <- cur[as.logical(cur[[parent.col]] != 0), ]
         colnames(cur) <- paste0(obj, "_", colnames(cur))
-        selector <- paste0(cur[[paste0(obj, "_ImageNumber")]], "_", cur[[paste0(obj, "_", parent.col)]])
-        counts <- table(selector)
+        selector      <- paste0(cur[[paste0(obj, "_ImageNumber")]], "_", cur[[paste0(obj, "_", parent.col)]])
+        counts        <- table(selector)
+        cat("[DEBUG] NA's in selector", sum(is.na(selector)), "\n")
+        cur$Group.1  <- selector
         # exclude.cols      <- c("Group.1", grep("ObjectNumber", colnames(cur), value=T), grep("Number_Object_Number", colnames(cur), value=T))
+        cat("[DEBUG] Slice: ", head(cur$Group.1), "\n")
 
-        cur$Group.1 <- selector
-
+        # Calculate the mean per group
         tmp <- as.data.frame(cur[, lapply(.SD, mean, na.rm = na.rm), by = Group.1, .SDcols = colnames(cur)[!colnames(cur) %in% exclude.cols]])
         rownames(tmp) <- tmp$Group.1
 
@@ -346,7 +349,7 @@ read_cellprofiler_fileset_b <- function(prefix,
         cells[selector, colnames(tmp)] <- tmp[selector, ]
       } else if (merging.strategy == "none") {
         if (add.global.id) {
-          cur <- add.global.ids(cur)
+          cur <- add_global_ids(cur)
         }
         children[[index[i, "object"]]] <- cur
       } else {

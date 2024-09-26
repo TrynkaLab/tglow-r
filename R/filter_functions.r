@@ -84,7 +84,6 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
         cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
 
         pb <- progress_bar$new(format = paste0("[INFO] ", filter@name, " [:bar] :current/:total (:percent) eta :eta"), total = length(cur.features))
-        pb$tick(0)
         res[cur.features, filter@name] <- apply(data[, cur.features, drop=FALSE], 2, function(x) {
             pb$tick()
             if (is.na(filter@threshold) || is.null(filter@threshold)) {

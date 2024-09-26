@@ -195,6 +195,75 @@ dim(tglow@image.meta)
 ?getImageDataByObject()
 ``` 
 
+##### Getting and setting object IDs
+
+Object ID's can be viewed in two ways
+```
+# Accessing the slot directly
+tglow@object.ids
+
+# Or using objectIds
+objectIds(tglow)
+```
+
+The method `objectIds` is implemented for `TglowDataset`, `TglowAssay` and `TglowReduction`
+
+
+To set object ID's you can use the `<-` operator. 
+
+```
+# Set object ID's for all assays, reductions and metadata
+objectIds(tglow) <- paste0("O", 1:nrow(tglow))
+```
+
+> NOTE: You can also do it manually through the slots, but this is not reccomended, as it can lead to issues when not all slots are set properly, as it assumed all slots have the rownames set to enable easy slicing by object ID. Similarly, you could call `objectIds(tglow@assays[[1]]) <- 1:nrow(tglow)` but this will likely break downstream functionality.
+
+
+##### Matching TglowDatasets together based on matching metadata
+
+You can align two datasets on a matching ID. Filesets might not always be read in the same order, so the default `ObjectNumber_Global` id's are not guaranteed to match when using cellprofiler results from different runs. Given we use the same cellpose masks and if you have configured cellprofiler to NOT relabel cells  you can use the ObjectNumber to match between datasets
+
+```
+# Fetch the data you need to match in set 1
+rn                   <- getDataByObject(tglow.new, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
+rn$ObjectNumber      <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
+
+# Assign the new ID's to set 1
+objectIds(tglow.new) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
+
+# Fetch the data you need to match in set 2
+rn               <- getDataByObject(tglow, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
+rn$ObjectNumber  <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
+
+# Assign the new ID's to set 2
+objectIds(tglow) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
+
+# Overlap the ID's 
+ol              <- intersect(tglow@object.ids, tglow.new@object.ids)
+
+tglow.new <- tglow.new[ol,]
+tglow     <- tglow[ol,]
+
+
+
+```
+rn                   <- getDataByObject(tglow.new, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
+rn$ObjectNumber      <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
+objectIds(tglow.new) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
+
+rn               <- getDataByObject(tglow, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
+rn$ObjectNumber  <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
+
+objectIds(tglow) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
+
+ol              <- intersect(tglow@object.ids, tglow.new@object.ids)
+
+tglow.new <- tglow.new[ol,]
+tglow     <- tglow[ol,]
+
+```
+
+
 
 ### Setting up filters
 Filters can be easily configured based on a filter table, making it easy to template sets of operations. Filters are NOT applied in order, but run independently. If you do want to run filters in order, you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table` to create the filter objects. The filter table should have the following columns, and one sheet for feature level filters, and one for object level filters. Exact layouts are customizable, see the help of `tglow_filters_from_table`

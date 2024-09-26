@@ -1,4 +1,25 @@
 #-------------------------------------------------------------------------------
+#' Get and set object Ids
+#'
+#' @description Get and set object Id's on TglowDataset, TglowAssay and TglowReduction
+#' @param object The object to get or set
+#' @param value If setting using <- the new object ids to assing
+#'
+#' @returns The object with the new Ids
+#'
+#' @rdname objectIds
+#' @export
+setGeneric("objectIds", function(object) {
+    standardGeneric("objectIds")
+})
+
+#' @rdname objectIds
+#' @export
+setGeneric("objectIds<-", function(object, value) {
+  standardGeneric("objectIds<-")
+})
+
+#-------------------------------------------------------------------------------
 #' Fetch image data or meta data from a tglow object
 #'
 #' @description Select columns from assay.image, image.meta and return them
@@ -66,6 +87,6 @@ setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NU
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
-setGeneric("isAvailable", function(object, j, assay, assay.image, slot, return.names = FALSE) {
+setGeneric("isAvailable", function(object, j, assay, assay.image = NULL, slot, return.names = FALSE) {
     standardGeneric("isAvailable")
 })

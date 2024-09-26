@@ -70,7 +70,12 @@ setMethod(
 
       # Filter meta
       object@meta <- object@meta[i, , drop = F]
-      object@object.ids <- object@object.ids[i, drop = F]
+
+      if (is.null(names(object@object.ids))) {
+        names(object@object.ids) <- object@object.ids
+      }
+
+      object@object.ids <- object@object.ids[i]
 
       # Select images
       object@image.ids <- object@image.ids[i, drop = F]
@@ -114,6 +119,44 @@ setMethod(
   }
 )
 
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "objectIds", signature("TglowDataset"),
+  function(object) {
+    return(object@object.ids)
+  }
+)
+
+setMethod(
+  "objectIds<-", signature("TglowDataset"),
+  function(object, value) {
+    if (length(value) != nrow(object)) {
+      stop("New id's must have same length as object")
+    }
+
+    if (length(unique(value)) != length(value)) {
+      stop("New id's must be unique")
+    }
+
+    object@object.ids       <- value
+    names(object@image.ids) <- value
+
+    rownames(object@meta)    <- value
+
+    for (assay in names(object@assays)) {
+      objectIds(object@assays[[assay]]) <- value
+    }
+
+    for (reduction in names(object@reduction)) {
+      objectIds(object@reduction[[reduction]]) <- value
+    }
+
+    object
+  }
+)
+
+#-------------------------------------------------------------------------------
 setMethod(
   "isAvailable", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, return.names) {
@@ -154,7 +197,7 @@ setMethod(
     }
 
     exists.sum <- rowSums(cbind(is.image, is.image.meta, is.meta, is.assay), na.rm = T)
-    
+
     if (any(exists.sum > 1)) {
       warning("Collumn names are not unique accross image.data, image.meta, meta, assay")
     }
@@ -172,7 +215,7 @@ setMethod(
   }
 )
 
-
+#-------------------------------------------------------------------------------
 setMethod(
   "getDataByObject", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, drop) {
@@ -234,7 +277,7 @@ setMethod(
   }
 )
 
-
+#-------------------------------------------------------------------------------
 setMethod(
   "getImageDataByObject", signature("TglowDataset"),
   function(object, j, assay.image, slot, drop) {
@@ -251,7 +294,7 @@ setMethod(
   }
 )
 
-
+#-------------------------------------------------------------------------------
 setMethod(
   "getImageData", signature("TglowDataset"),
   function(object, j, assay.image, slot, drop) {

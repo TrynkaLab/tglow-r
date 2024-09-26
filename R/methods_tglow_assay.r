@@ -128,3 +128,34 @@ setMethod(
     object
   }
 )
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "objectIds", signature("TglowAssay"),
+  function(object) {
+    return(rownames(object@data))
+  }
+)
+
+
+setMethod(
+  "objectIds<-", signature("TglowAssay"),
+  function(object, value) {
+    if (length(value) != nrow(object)) {
+      stop("New id's must have same length as object")
+    }
+
+    if (length(unique(value)) != length(value)) {
+      stop("New id's must be unique")
+    }
+
+    if (!is.null(object@data)) {
+      rownames(object@data) <- value
+    }
+
+    if (!is.null(object@scale.data)) {
+      rownames(object@scale.data) <- value
+    }
+    object
+  }
+)
