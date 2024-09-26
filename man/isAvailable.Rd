@@ -4,16 +4,16 @@
 \alias{isAvailable}
 \title{Check if column names are available on a dataset}
 \usage{
-isAvailable(object, j, assay, assay.image, slot, return.names = FALSE)
+isAvailable(object, j, assay, assay.image = NULL, slot, return.names = FALSE)
 }
 \arguments{
 \item{object}{A \linkS4class{TglowDataset}}
 
 \item{j}{Character with column names from assay, assay.image, image.meta to select}
 
-\item{assay}{The assay to select from}
+\item{assay}{The assay to select from. If not fetcing assay columns, leave at NULL}
 
-\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"}
+\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL}
 
 \item{slot}{Slot to fetch features from: "data" or "scale.data"}
 

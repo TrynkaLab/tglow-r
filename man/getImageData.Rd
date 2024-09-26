@@ -11,7 +11,7 @@ getImageData(object, j, assay.image = NULL, slot = "data", drop = TRUE)
 
 \item{j}{character with column names from image.meta or assay.image to select}
 
-\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm"}
+\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL}
 
 \item{slot}{slot to fetch features fromdata or scale.data}
 

@@ -14,7 +14,7 @@ read_cellprofiler_fileset_b(
   pat.img = ".*Image.txt",
   pat.cells = ".*cell.txt",
   pat.orl = ".*Object relationships.txt",
-  pat.others = "^.*_([a-z]+\\\\d*).txt$",
+  pat.others = "^.*_([a-zA-Z]+\\\\d*).txt$",
   na.rm = F,
   skip.orl = F
 )

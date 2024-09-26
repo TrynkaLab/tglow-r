@@ -4,10 +4,10 @@
 \alias{tglow_plot_execution_time}
 \title{Chart of average execution times}
 \usage{
-tglow_plot_execution_time(object)
+tglow_plot_execution_time(object, as.percentage = FALSE)
 }
 \arguments{
-\item{object}{A TglowDataset}
+\item{object}{As percentage, logical. Should values be returned as a percentage}
 }
 \value{
 ggplot object containing the plot
