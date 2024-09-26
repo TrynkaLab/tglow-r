@@ -12,6 +12,7 @@ plot_hex(
   lm.col = "lightgrey",
   xlab = "x",
   ylab = "y",
+  main = NULL,
   facet = NULL,
   ...
 )
@@ -30,6 +31,8 @@ plot_hex(
 \item{xlab}{xlab}
 
 \item{ylab}{ylab}
+
+\item{main}{title}
 
 \item{facet}{Vector to facet on}
 

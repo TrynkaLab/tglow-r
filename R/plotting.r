@@ -225,6 +225,11 @@ tglow_plot_location_hex <- function(dataset,
         df.plot$z <- scale(df.plot$z)
     }
 
+    if (is.null(main) && is.character(feature.z)) {
+        main <- feature.z
+    }
+
+
     p1 <- ggplot(
         data = df.plot,
         mapping = aes(x = x, y = y, z = z)
@@ -244,7 +249,10 @@ tglow_plot_location_hex <- function(dataset,
         ggtitle(main) +
         scale_fill_viridis_c(name = zlab)
 
-    return(p1)
+
+
+
+    return(theme_plain(p1))
 }
 
 #-------------------------------------------------------------------------------
@@ -257,13 +265,14 @@ tglow_plot_location_hex <- function(dataset,
 #' @param lm.col Color of the line
 #' @param xlab xlab
 #' @param ylab ylab
+#' @param main title
 #' @param facet Vector to facet on
 #' @param ... Arguments to facet_wrap
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_smooth geom_hex facet_wrap
 #' @export
-plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", facet = NULL, ...) {
+plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main = NULL, facet = NULL, ...) {
     df.plot <- data.frame(x = x, y = y)
 
     if (!is.null(facet)) {
@@ -278,6 +287,17 @@ plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "
     if (do.lm) {
         p1 <- p1 + geom_smooth(method = "lm", col = lm.col)
     }
+
+    # Add title
+    if (is.null(main) & do.lm) {
+        main <- paste0(
+            main.prefix, "R: ", format(ct$estimate, digits = 2),
+            " p-value: ", format(ct$`p.value`, digits = 2, scientific = T)
+        )
+    } else {
+        main <- NA
+    }
+    p1 <- p1 + ggtitle(p1)
 
     if (!is.null(facet)) {
         p1 <- p1 + facet_wrap(~facet, ...)
