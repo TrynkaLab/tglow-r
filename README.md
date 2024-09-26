@@ -244,25 +244,7 @@ ol              <- intersect(tglow@object.ids, tglow.new@object.ids)
 tglow.new <- tglow.new[ol,]
 tglow     <- tglow[ol,]
 
-
-
 ```
-rn                   <- getDataByObject(tglow.new, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
-rn$ObjectNumber      <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
-objectIds(tglow.new) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
-
-rn               <- getDataByObject(tglow, c("plate_id", "well", "Metadata_field", "cell_ObjectNumber_Global"))
-rn$ObjectNumber  <- gsub("FS\\d+_I\\d+_O(\\d+)", "\\1", rn$cell_ObjectNumber_Global)
-
-objectIds(tglow) <- paste0(rn$plate_id, "_", rn$well, "_", rn$Metadata_field, "_", rn$ObjectNumber)
-
-ol              <- intersect(tglow@object.ids, tglow.new@object.ids)
-
-tglow.new <- tglow.new[ol,]
-tglow     <- tglow[ol,]
-
-```
-
 
 
 ### Setting up filters

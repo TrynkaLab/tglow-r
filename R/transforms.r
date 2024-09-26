@@ -3,7 +3,7 @@
 #'
 #' @description
 #' Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
-#' Yields a 10-20% speedup and adds modfied z-score scaling
+#' Yields a 10-20 percent speedup and adds modfied z-score scaling
 #'
 #' @param x A matrix
 #' @param center Should data be centered
@@ -15,6 +15,17 @@
 #'
 #' @returns The scaled matrix
 #'
+#' @details
+#'
+#' `scale.method - mean`
+#'
+#'  Standard centering/scaling: (x-mean(x)) / sd(x)
+#'
+#' `scale.method - median`
+#'
+#' Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
+#' 
+#' 
 #' @examples
 #' # Generate a matrix
 #' r <- matrix(runif(100000 * 1000), nrow = 100000, ncol = 1000)
@@ -41,11 +52,10 @@ fast_colscale <- function(x,
                           na.rm = F,
                           scale.method = "mean",
                           reference.group = NULL) {
-
     if (is(x, "TglowMatrix")) {
         x <- x@.Data
-    }                            
-                            
+    }
+
     if (is.null(reference.group)) {
         x.ref <- x
     } else {

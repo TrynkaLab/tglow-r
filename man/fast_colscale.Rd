@@ -34,7 +34,16 @@ The scaled matrix
 }
 \description{
 Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
-Yields a 10-20% speedup and adds modfied z-score scaling
+Yields a 10-20 percent speedup and adds modfied z-score scaling
+}
+\details{
+`scale.method - mean`
+
+ Standard centering/scaling: (x-mean(x)) / sd(x)
+
+`scale.method - median`
+
+Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
 }
 \examples{
 # Generate a matrix
