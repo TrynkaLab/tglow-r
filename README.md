@@ -93,7 +93,7 @@ Data is organized into a TglowDataset object, which stores image / well level me
 
 ## Operations on TglowDataset
 
-##### Show
+#### Show
 Show will show some usefull info on the object
 ```
 > data(tglow_example)
@@ -107,7 +107,7 @@ TglowData with:  5000  objects (cells),  360  images and  1  assays
 - Object size: 0.05 Gb
 ```
 
-##### Slicing
+#### Slicing
 
 TglowDatasets and assays can be sliced by row
 ```
@@ -137,7 +137,7 @@ TglowAssays can also be slices.
 tglow$raw[50,1]
 ```
 
-##### Accessing assays
+#### Accessing assays
 
 You can acess TglowAssays from the `@assays` slot by using `$` or by `[[]]`
 ```
@@ -146,7 +146,7 @@ tglow$raw
 tglow[["raw"]]
 ```
 
-##### Accessing feature data
+#### Accessing feature data
 You can access the data using slicing `[]` or by using `$` on a TglowAssay or a TglowMatrix. If you use slicing on a TglowAssay, a new assay is returned.
 If you use `$` a list with items `data` and `scale.data` is returned.
 ```
@@ -162,7 +162,7 @@ tglow$raw$cell_AreaShape_Area
 # Returns a numeric with the value
 tglow$raw@data$cell_AreaShape_Area
 ```
-##### Setting assays
+#### Setting assays
 
 You can set TglowAssays using the `@assays` slot. The assays slot is just a list, so you can put anything in it but if you want it to work properly
 `new.assay` must be a TglowAssay
@@ -176,7 +176,7 @@ new.assay <- new("TglowAssay",
 tglow@assays[["new.assay"]] <- new.assay
 ```
 
-##### Accessing metadata
+#### Accessing metadata
 Metadata is stored in two main places. @meta for cell level metadata, and @image.meta with image level metadata (not unique per object).
 To get metadata per cell object there is a convience function `getDataByObject()` which grabs data from any assay, slot or metadata item
 as long as its colnames are uniquely findable. There is also a slot @image.ids whose values should match rownames(image.meta) which indicates
@@ -195,7 +195,7 @@ dim(tglow@image.meta)
 ?getImageDataByObject()
 ``` 
 
-##### Getting and setting object IDs
+#### Getting and setting object IDs
 
 Object ID's can be viewed in two ways
 ```
@@ -219,7 +219,7 @@ objectIds(tglow) <- paste0("O", 1:nrow(tglow))
 > NOTE: You can also do it manually through the slots, but this is not reccomended, as it can lead to issues when not all slots are set properly, as it assumed all slots have the rownames set to enable easy slicing by object ID. Similarly, you could call `objectIds(tglow@assays[[1]]) <- 1:nrow(tglow)` but this will likely break downstream functionality.
 
 
-##### Matching TglowDatasets together based on matching metadata
+#### Matching TglowDatasets together based on matching metadata
 
 You can align two datasets on a matching ID. Filesets might not always be read in the same order, so the default `ObjectNumber_Global` id's are not guaranteed to match when using cellprofiler results from different runs. Given we use the same cellpose masks and if you have configured cellprofiler to NOT relabel cells  you can use the ObjectNumber to match between datasets
 
