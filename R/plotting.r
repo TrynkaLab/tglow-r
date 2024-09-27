@@ -272,7 +272,7 @@ tglow_plot_location_hex <- function(dataset,
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_smooth geom_hex facet_wrap
 #' @export
-plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main = NULL, facet = NULL, ...) {
+plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main.prefix = NULL, main = NULL, facet = NULL, ...) {
     df.plot <- data.frame(x = x, y = y)
 
     if (!is.null(facet)) {
