@@ -4,7 +4,13 @@
 \alias{lm_matrix}
 \title{Calculate linear coefficients}
 \usage{
-lm_matrix(response, design, covariates.dont.use = NULL)
+lm_matrix(
+  response,
+  design,
+  covariates.dont.use = NULL,
+  residuals.only = FALSE,
+  return.residuals = FALSE
+)
 }
 \arguments{
 \item{response}{A matrix with response variables}
@@ -12,6 +18,10 @@ lm_matrix(response, design, covariates.dont.use = NULL)
 \item{design}{The common design matrix to regress response againsts}
 
 \item{covariates.dont.use}{Only use if you understand the implications. See detaills}
+
+\item{residuals.only}{Only return the residual matrix}
+
+\item{return.residuals}{Return residual matrix in the output list. Defaults to T if residual.only = TRUE}
 }
 \value{
 A list with regression results

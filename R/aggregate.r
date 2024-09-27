@@ -93,7 +93,6 @@ aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm
         stop("input must be data.frame")
     }
 
-
     result <- aggregate(data, by = list(grouping), FUN = function(x, method) {
         if (is.numeric(x)) {
             if (method == "mean") {
@@ -123,9 +122,14 @@ aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm
         }
     }, method = method)
 
+    rownames(result) <- result[, 1]
 
     if (drop.na.col) {
         result <- result[, colSums(is.na(result)) != nrow(result)]
+    }
+
+    if (!is.null(group.order)) {
+        return(result[group.order, ])
     }
 
     return(result)
@@ -176,7 +180,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         new.image.data.norm <- NULL
     }
 
-    new.meta       <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
+    new.meta <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
     new.image.meta <- aggregate_metadata(object@image.meta, grouping.image, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
 
     # Put everything on a new TglowObject

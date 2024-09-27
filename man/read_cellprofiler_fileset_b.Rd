@@ -16,7 +16,8 @@ read_cellprofiler_fileset_b(
   pat.orl = ".*Object relationships.txt",
   pat.others = "^.*_([a-zA-Z]+\\\\d*).txt$",
   na.rm = F,
-  skip.orl = F
+  skip.orl = F,
+  verbose = F
 )
 }
 \value{

@@ -89,10 +89,10 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @description Fit a linear model using OLS and correct an assay for specified covariates
 #' @param object A \linkS4class{TglowDataset}
 #' @param assay The assay to use
-#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
-#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param covariates Character vector of covariates to correct for
+#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
+#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param formula The formula to use for regression. Defaults to additive model. See details
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
@@ -117,8 +117,12 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-apply_correction_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = NULL, covariates, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
+correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
     check_dataset_assay_slot(object, assay, slot)
+
+    if (is.null(slot.covar)) {
+        slot.covar <- slot
+    }
 
     data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
 
@@ -137,34 +141,117 @@ apply_correction_lm <- function(object, assay, assay.image = NULL, slot, slot.co
 
     for (group in unique(grouping)) {
         selector <- grouping == group
-        # Calculate the beta's. Use chol2inv on the cholesky decomposition
-        # to invert rather then solve as this is faster. This only works on
-        # positive-definite matrices, but I think this should always be true in this case
-        # (dont quote me on this). If not it throws an error so you can use solve instead
-
-        # Pre-calculate b component on design matrix
-        b <- chol2inv(chol(crossprod(design[selector, ])))
-        pb <- progress_bar$new(format = paste0("[INFO] Regressing group: ", group, " [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
-        for (col in seq_len(ncol(response))) {
-            pb$tick()
-
-            # Calculate effectiszes
-            beta <- crossprod(b, crossprod(design[selector, ], response[selector, col]))
-
-            # Residuals
-            if (is.null(covariates.dont.use)) {
-                residuals[selector, col] <- response[selector, col] - (design[selector, ] %*% beta)
-            } else {
-                # Include covariates for beta fitting, but don't correct for them
-                beta.tmp <- beta[!colnames(design) %in% covariates.dont.use, ]
-                design.tmp <- design[selector, !colnames(design) %in% covariates.dont.use]
-                residuals[selector, col] <- response[selector, col] - (design.tmp %*% beta.tmp)
-            }
-        }
+        residuals[selector, ] <- lm_matrix(response[selector, ], design[selector, ], covariates.dont.use = covariates.dont.use, residuals.only = TRUE)
     }
 
     if (is.null(assay.out)) {
         assay.out <- paste0(assay, ".lm.corrected")
+    }
+
+    cat("[INFO] Regressions done. Scaling residuals\n")
+
+    object@assays[[assay.out]] <- new("TglowAssay",
+        data = TglowMatrix(residuals),
+        scale.data = TglowMatrix(fast_colscale(residuals)),
+        features = object@assays[[assay]]@features
+    )
+
+    return(object)
+}
+
+#-------------------------------------------------------------------------------
+#' Linearly correct for a set of covariates
+#'
+#' @description Fit a linear model using OLS and correct an assay for specified covariates
+#' @param object A \linkS4class{TglowDataset}
+#' @param assay The assay to use
+#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param covariates.group List with specific covariates for groups of features. See detaills
+#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
+#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
+#' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
+#' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
+#' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
+#'
+#' @details
+#'
+#' `covariates.group`
+#'
+#' This must be a list where the name of the list item is a grep pattern of the features to apply the covariates to, and the item is a vector of feature names to correct for
+#'
+#' `grouping`
+#'
+#'  If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
+#'
+#' `covariates.dont.correct`
+#'
+#' The beta's for these variables are removed when calculating the residuals. When specifying more complex models in formula,
+#' use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't
+#' want to consider the interaction term, add 'b:c'. To remove the intercept, add '(Intercept)'
+#'
+#' @returns The \linkS4class{TglowDataset} with a corrected assay
+#' @importFrom progress progress_bar
+#' @export
+correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
+    check_dataset_assay_slot(object, assay, slot)
+
+    if (!is.list(covariates.group)) {
+        stop("grouping.features must be a list")
+    }
+
+    if (is.null(names(covariates.group))) {
+        stop("Names attribute of grouping features must be a grep compatible pattern")
+    }
+
+    for (fgroup in names(covariates.group)) {
+        if (!is.character(covariates.group[[fgroup]])) {
+            stop(paste0(fgroup, " must be a character vector indicating the covariates to correct group for"))
+        }
+    }
+
+    feature.colnames <- list()
+    for (fgroup in names(covariates.group)) {
+        feature.colnames[[fgroup]] <- grep(fgroup, colnames(object@assays[[assay]]), value = TRUE)
+    }
+
+    if (list_has_overlap(feature.colnames)) {
+        stop("Overlap found between features selected by covariates.group, make sure your grep patterns resolve to unique sets!")
+    }
+
+    if (is.null(slot.covar)) {
+        slot.covar <- slot
+    }
+
+    response <- slot(object@assays[[assay]], slot)@.Data
+    residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
+    rownames(residuals) <- rownames(response)
+    colnames(residuals) <- colnames(response)
+
+    if (is.null(grouping)) {
+        grouping <- rep(1, nrow(response))
+    }
+
+    for (group in unique(grouping)) {
+        selector <- grouping == group
+
+        for (fgroup in names(covariates.group)) {
+            data <- getDataByObject(object, covariates.group[[fgroup]], assay, assay.image, slot.covar, drop = F)
+            design <- model.matrix(~., data = data[selector, , drop = FALSE])
+            group.features <- feature.colnames[[fgroup]]
+            cat("[INFO] Running object group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
+
+            res <- lm_matrix(response[selector, group.features],
+                design,
+                covariates.dont.use = covariates.dont.use,
+                residuals.only = TRUE
+            )
+
+            residuals[selector, group.features] <- res
+        }
+    }
+
+    if (is.null(assay.out)) {
+        assay.out <- paste0(assay, ".lm.corrected.featuregroup")
     }
 
     cat("[INFO] Regressions done. Scaling residuals\n")
@@ -256,6 +343,8 @@ calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = "
 #' @param response A matrix with response variables
 #' @param design The common design matrix to regress response againsts
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
+#' @param residuals.only Only return the residual matrix
+#' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #'
 #' @details
 #' This is more efficient as the b component of the design matrix can be re-used between regressions
@@ -270,16 +359,30 @@ calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = "
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL) {
-    coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
-    se <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
-    model.stats <- matrix(NA, nrow = ncol(response), 5)
-    rownames(coef) <- colnames(response)
-    colnames(coef) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
-    rownames(se) <- colnames(response)
-    colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
-    rownames(model.stats) <- colnames(response)
-    colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df")
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE) {
+    if (residuals.only && !return.residuals) {
+        return.residuals <- TRUE
+    }
+
+    # Matrices to save model coefficients
+    if (!residuals.only) {
+        coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
+        se <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
+        model.stats <- matrix(NA, nrow = ncol(response), 5)
+        rownames(coef) <- colnames(response)
+        colnames(coef) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
+        rownames(se) <- colnames(response)
+        colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
+        rownames(model.stats) <- colnames(response)
+        colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df")
+    }
+
+    # Matrix to save residuals
+    if (return.residuals) {
+        residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
+        rownames(residuals) <- rownames(response)
+        colnames(residuals) <- colnames(response)
+    }
 
     # Calculate the beta's. Use chol2inv on the cholesky decomposition
     # to invert rather then solve as this is faster. This only works on
@@ -307,29 +410,46 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL) {
             beta.tmp <- beta[!colnames(design) %in% covariates.dont.use, ]
             design.tmp <- design[, !colnames(design) %in% covariates.dont.use]
         }
-
         rs <- response[, col] - (design.tmp %*% beta.tmp)
 
-        # Residual and total sum of squares
-        rss <- crossprod(rs)
-        tss <- crossprod(response[, col] - mean(response[, col]))
+        # Optionally save residuals
+        if (return.residuals) {
+            residuals[, col] <- rs
+        }
 
-        # RSS / df
-        df <- (length(rs) - ncol(design))
-        mse <- as.numeric(rss / df)
-        se[col, ] <- as.numeric(sqrt(diag(mse * b)))[!colnames(design) %in% covariates.dont.use]
-        coef[col, ] <- as.numeric(beta.tmp)
+        # Optionally save model statistics
+        if (!residuals.only) {
+            # Residual and total sum of squares
+            rss <- crossprod(rs)
+            tss <- crossprod(response[, col] - mean(response[, col]))
 
-        r2 <- 1 - (rss / tss)
-        r2.adj <- 1 - (1 - r2) * (length(rs) - 1) / df
+            # RSS / df
+            df <- (length(rs) - ncol(design))
+            mse <- as.numeric(rss / df)
+            se[col, ] <- as.numeric(sqrt(diag(mse * b)))[!colnames(design) %in% covariates.dont.use]
+            coef[col, ] <- as.numeric(beta.tmp)
 
-        # Calculate F-statistic
-        msr <- (tss - rss) / (ncol(design.tmp) - 1)
-        f.stat <- msr / mse
-        p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
+            r2 <- 1 - (rss / tss)
+            r2.adj <- 1 - (1 - r2) * (length(rs) - 1) / df
 
-        model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df)
+            # Calculate F-statistic
+            msr <- (tss - rss) / (ncol(design.tmp) - 1)
+            f.stat <- msr / mse
+            p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
+
+            model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df)
+        }
     }
 
-    return(list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1))
+    # Return only residual matrix
+    if (residuals.only) {
+        return(residuals)
+    }
+
+    # Return output list
+    out.list <- list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1, residuals = NULL)
+    if (return.residuals) {
+        out.list$residuals <- residuals
+    }
+    return(out.list)
 }

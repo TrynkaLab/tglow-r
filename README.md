@@ -381,7 +381,8 @@ The functions without a spcific prefix should be more generically applicable.
 
 #### Statistical Analysis
 
-- apply_correction_lm
+- correct_lm
+- correct_lm_per_featuregroup
 - calculate_lm
 - calculate_pca
 - calculate_umap

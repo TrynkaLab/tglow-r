@@ -54,23 +54,20 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
     if (type == "A") {
       cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
     } else if (type == "B") {
-      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
+      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
 
     if (!is.null(cur)) {
       filesets[[pre]] <- cur
-
-      if (verbose) {
-        cat("\n[DEBUG] cols:", ncol(cur$cells), " cols meta", ncol(cur$meta), " cols orl:", ncol(cur$orl), "\n")
-      }
+      if (verbose) cat("\n[DEBUG] cols:", ncol(cur$cells), " cols meta", ncol(cur$meta), " cols orl:", ncol(cur$orl), "\n")
     } else {
-      null.filesets = null.filesets + 1
-      #warning("Fileset was NULL, skipped.")
+      null.filesets <- null.filesets + 1
+      # warning("Fileset was NULL, skipped.")
     }
   }
-  
+
   if (null.filesets != 0) {
     msg <- paste0("Dectected ", null.filesets, "/", length(filesets), " as NULL (no cells)")
     warning(msg)
@@ -260,7 +257,8 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         pat.orl = ".*Object relationships.txt",
                                         pat.others = "^.*_([a-zA-Z]+\\d*).txt$",
                                         na.rm = F,
-                                        skip.orl = F) {
+                                        skip.orl = F,
+                                        verbose = F) {
   if (add.global.id) {
     assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
     global.prefix <- paste0("FS", FILESET_ID)
@@ -323,16 +321,17 @@ read_cellprofiler_fileset_b <- function(prefix,
         cells[, c(colnames(cur), paste0(obj, "_QC_Object_Count"))] <- NA
         warning(paste0(obj, " assay for ", index[i, "Name"], " is empty. Returning NA for these cols."))
       } else if (merging.strategy == "mean") {
-        cat("[DEBUG] ", as.character(index[i, ]), "\n")
-        
-        cur           <- cur[as.logical(cur[[parent.col]] != 0), ]
+        if (verbose) cat("[DEBUG] ", as.character(index[i, ]), "\n")
+
+        cur <- cur[as.logical(cur[[parent.col]] != 0), ]
         colnames(cur) <- paste0(obj, "_", colnames(cur))
-        selector      <- paste0(cur[[paste0(obj, "_ImageNumber")]], "_", cur[[paste0(obj, "_", parent.col)]])
-        counts        <- table(selector)
-        cat("[DEBUG] NA's in selector", sum(is.na(selector)), "\n")
-        cur$Group.1  <- selector
+        selector <- paste0(cur[[paste0(obj, "_ImageNumber")]], "_", cur[[paste0(obj, "_", parent.col)]])
+        counts <- table(selector)
+        cur$Group.1 <- selector
+
         # exclude.cols      <- c("Group.1", grep("ObjectNumber", colnames(cur), value=T), grep("Number_Object_Number", colnames(cur), value=T))
-        cat("[DEBUG] Slice: ", head(cur$Group.1), "\n")
+        if (verbose) cat("[DEBUG] NA's in selector", sum(is.na(selector)), "\n")
+        if (verbose) cat("[DEBUG] Slice: ", head(cur$Group.1), "\n")
 
         # Calculate the mean per group
         tmp <- as.data.frame(cur[, lapply(.SD, mean, na.rm = na.rm), by = Group.1, .SDcols = colnames(cur)[!colnames(cur) %in% exclude.cols]])
@@ -349,6 +348,7 @@ read_cellprofiler_fileset_b <- function(prefix,
         cells[selector, colnames(tmp)] <- tmp[selector, ]
       } else if (merging.strategy == "none") {
         if (add.global.id) {
+          cur <- as.data.frame(cur)
           cur <- add_global_ids(cur)
         }
         children[[index[i, "object"]]] <- cur

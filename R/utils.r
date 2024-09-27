@@ -405,3 +405,23 @@ add_features_to_assay <- function(assay, slot, features, names = NULL, meta = NU
   assay@features <- rbind(assay@features, meta)
   return(assay)
 }
+
+
+#-------------------------------------------------------------------------------
+#' Add features to an existing assay
+#'
+#' @param list A list of vectors to overlap
+#' 
+#' @returns logical indicating if any items overlap in the list
+#' @export
+list_has_overlap <- function(list) {
+  n <- length(list)
+  for (i in 1:(n-1)) {
+    for (j in (i+1):n) {
+      if (length(intersect(list[[i]], list[[j]])) > 0) {
+        return(TRUE)
+      }
+    }
+  }
+  return(FALSE)
+}
