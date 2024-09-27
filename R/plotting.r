@@ -271,8 +271,9 @@ tglow_plot_location_hex <- function(dataset,
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_smooth geom_hex facet_wrap
+#' @importFrom stats cor.test
 #' @export
-plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main.prefix = NULL, main = NULL, facet = NULL, ...) {
+plot_hex <- function(x, y, bins = 50, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main.prefix = NULL, main = NULL, facet = NULL, ...) {
     df.plot <- data.frame(x = x, y = y)
 
     if (!is.null(facet)) {
@@ -290,6 +291,8 @@ plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "
 
     # Add title
     if (is.null(main) & do.lm) {
+        
+        ct <- cor.test(df.plot$x, df.plot$y)
         main <- paste0(
             main.prefix, "R: ", format(ct$estimate, digits = 2),
             " p-value: ", format(ct$`p.value`, digits = 2, scientific = T)
@@ -297,7 +300,7 @@ plot_hex <- function(x, y, bins = 250, do.lm = T, lm.col = "lightgrey", xlab = "
     } else {
         main <- NA
     }
-    p1 <- p1 + ggtitle(p1)
+    p1 <- p1 + ggtitle(main)
 
     if (!is.null(facet)) {
         p1 <- p1 + facet_wrap(~facet, ...)
