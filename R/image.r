@@ -65,7 +65,7 @@ img_composite <- function(images, colors) {
         }
 
         rgb <- hex_to_rgb(gplots::col2hex(colors[i]))
-        img <- channel(image, mode = "rgb")
+        img <- EBImage::channel(image, mode = "rgb")
 
         if (is.null(comp)) {
             # Create an RGB image from greyscale
@@ -94,6 +94,7 @@ img_composite <- function(images, colors) {
 #'
 #' @returns A vector with the max values in each channel
 #'
+#' @importFrom EBImage imageData
 #' @export
 img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
     channel.dim <- 3
@@ -101,13 +102,13 @@ img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
 
     for (img in images) {
         if (length(dim(img)) == 3) {
-            for (ch in 1:dim(img)[channel.dim]) {
+            for (ch in seq_len(dim(img)[channel.dim])) {
                 if (quantile(img[, , ch], probs = q) > max[ch]) {
                     max[ch] <- quantile(img[, , ch], probs = q)
                 }
             }
         } else if (length(dim(img)) == 4) {
-            for (ch in 1:dim(img)[channel.dim]) {
+            for (ch in seq_len(dim(img)[channel.dim])) {
                 if (quantile(img[, , ch, ], probs = q) > max[ch]) {
                     max[ch] <- quantile(img[, , ch, ], probs = q)
                 }
@@ -138,20 +139,20 @@ img_norm <- function(images, norm.factors = NULL, q = 1) {
     }
 
     if (length(dim(images[[1]])) == 3) {
-        imgs <- lapply(1:length(images), function(x) {
+        imgs <- lapply(seq_along(images), function(x) {
             clls <- images[[x]]
 
-            for (ch in 1:dim(clls)[3]) {
-                imageData(clls)[, , ch] <- clls[, , ch] / norm.factors[ch]
+            for (ch in seq_len(dim(clls)[3])) {
+                EBImage::imageData(clls)[, , ch] <- clls[, , ch] / norm.factors[ch]
             }
             return(clls)
         })
     } else if (length(dim(images[[1]])) == 4) {
-        imgs <- lapply(1:length(images), function(x) {
+        imgs <- lapply(seq_along()(images), function(x) {
             clls <- images[[x]]
 
-            for (ch in 1:dim(clls)[3]) {
-                imageData(clls)[, , ch, ] <- clls[, , ch, ] / norm.factors[ch]
+            for (ch in seq_len(dim(clls)[3])) {
+                EBImage::imageData(clls)[, , ch, ] <- clls[, , ch, ] / norm.factors[ch]
             }
             return(clls)
         })

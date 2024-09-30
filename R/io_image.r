@@ -124,7 +124,7 @@ tglow_read_imgs <- function(dataset,
         }
     }
 
-    pb <- progress_bar$new(format = "[INFO] Reading images [:bar] :current/:total (:percent) eta :eta", total = length(cell.subset))
+    pb <- progress::progress_bar$new(format = "[INFO] Reading images [:bar] :current/:total (:percent) eta :eta", total = length(cell.subset))
     out <- lapply(cell.subset, function(i) {
         pb$tick()
         cur.group <- dataset@image.meta[dataset@image.ids[i], group.col]
@@ -152,8 +152,8 @@ tglow_read_imgs <- function(dataset,
             subset[["Z"]] <- planes[[1]]
         }
 
-        img <- read.image(cur.img$path, normalize = F, subset = subset)
-        colorMode(img) <- Grayscale
+        img <- RBioFormats::read.image(cur.img$path, normalize = F, subset = subset)
+        EBImage::colorMode(img) <- EBImage::Grayscale
 
         # Append mutliple cycles
         if (!is.null(reg.index)) {
@@ -182,20 +182,20 @@ tglow_read_imgs <- function(dataset,
 
 
                 # Read the registration matrix
-                reg <- read_binmat(cur.reg.index[p2, "path"])
+                reg <- tglowr::read_binmat(cur.reg.index[p2, "path"])
 
-                tmp.img <- read.image(new.img$path, subset = subset, normalize = F)
-                colorMode(tmp.img) <- Grayscale
+                tmp.img <- RBioFormats::read.image(new.img$path, subset = subset, normalize = F)
+                EBImage::colorMode(tmp.img) <- EBImage::Grayscale
 
                 # Recode the matrix so it works with EBImage
                 m <- t(reg)[, 1:2]
                 m[3, ] <- -1 * m[3, ]
 
                 # Apply affine transform
-                tmp.img <- affine(tmp.img, m, filter = "none", antialias = F)
+                tmp.img <- EBImage::affine(tmp.img, m, filter = "none", antialias = F)
 
                 # Combine with the image
-                img <- combine(img, tmp.img)
+                img <- EBImage::combine(img, tmp.img)
             }
         }
 

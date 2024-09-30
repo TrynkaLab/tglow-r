@@ -47,7 +47,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   # Read filesets
   filesets <- list()
   null.filesets <- 0
-  pb <- progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta", total = length(prefixes))
+  pb <- progress::progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta", total = length(prefixes))
   pb$tick(0)
   for (pre in prefixes) {
     pb$tick()

@@ -230,7 +230,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     ncol.orig <- ncol(mat)
 
     # Apply transform
-    pb <- progress_bar$new(format = paste0("[INFO] Transforming [:bar] :current/:total (:percent) eta :eta"), total = ncol(mat))
+    pb <- progress::progress_bar$new(format = paste0("[INFO] Transforming [:bar] :current/:total (:percent) eta :eta"), total = ncol(mat))
 
     lambdas <- c()
     mat <- apply(mat, 2, function(x) {

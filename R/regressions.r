@@ -38,7 +38,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
     colnames(res) <- c("class", "feature", "t-stat", "df", "pval", "mean.diff", "mean.se", "mean.ref", "mean.class")
     i <- 1
 
-    pb <- progress_bar$new(format = "[INFO] Finding markers [:bar] :current/:total (:percent) eta :eta", total = ncol(cur.assay) * length(classes))
+    pb <- progress::progress_bar$new(format = "[INFO] Finding markers [:bar] :current/:total (:percent) eta :eta", total = ncol(cur.assay) * length(classes))
     for (class in classes) {
         ident.is.class <- cur.ident == class
 
@@ -394,7 +394,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     b.tmp <- b[!colnames(design) %in% covariates.dont.use, !colnames(design) %in% covariates.dont.use]
     cat("[INFO] Starting regressions\n")
 
-    pb <- progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
+    pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
 
     for (col in seq_len(ncol(response))) {
         pb$tick()
