@@ -7,11 +7,12 @@
 plot_hex(
   x,
   y,
-  bins = 250,
+  bins = 50,
   do.lm = T,
   lm.col = "lightgrey",
   xlab = "x",
   ylab = "y",
+  main.prefix = NULL,
   main = NULL,
   facet = NULL,
   ...

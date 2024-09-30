@@ -257,7 +257,7 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' Retrieve a set of objects (and its neighbours) based on a feature sumstat
 #'
 #' @description
-#' Fetches (n*2)+1 objects arround the 0th, 25th, 50th, 75th and 100th quantiles
+#' Fetches (n*2)+1 objects arround the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
@@ -274,7 +274,7 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
   if (is.null(name)) {
     name <- feature
   }
-  cur.assay <- slot(dataset@assays[[feature]], slot)@.Data
+  cur.assay <- slot(dataset@assays[[assay]], slot)@.Data
 
   f <- cur.assay[, feature]
   idx <- dataset@object.ids[!is.na(f)]

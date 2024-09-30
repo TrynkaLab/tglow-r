@@ -30,5 +30,5 @@ fetch_representative_object_quantiles(
 A list with row ids and labels for the objects
 }
 \description{
-Fetches (n*2)+1 objects arround the 0th, 25th, 50th, 75th and 100th quantiles
+Fetches (n*2)+1 objects arround the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
 }

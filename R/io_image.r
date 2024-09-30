@@ -92,7 +92,7 @@ tglow_read_binmat <- function(path) {
 #' @param planes The planes to read. A list of Vector of indices per cycle. (default NULL = all planes)
 #' @param max.project Should the stack be max projected per channel? (default TRUE)
 #'
-#' @importFrom EBImage colorMode affine combine Grayscale
+#' @importFrom EBImage colorMode affine combine Grayscale colorMode<-
 #' @importFrom RBioFormats read.image
 #' @returns A list of EBImage objects by object id
 #' @export
@@ -127,7 +127,7 @@ tglow_read_imgs <- function(dataset,
     pb <- progress_bar$new(format = "[INFO] Reading images [:bar] :current/:total (:percent) eta :eta", total = length(cell.subset))
     out <- lapply(cell.subset, function(i) {
         pb$tick()
-        cur.group <- data@image.meta[dataset@image.ids[i], group.col]
+        cur.group <- dataset@image.meta[dataset@image.ids[i], group.col]
         cur.img <- img.index[cur.group, ]
         x.pos <- cur.cells[i, feature.x]
         y.pos <- cur.cells[i, feature.y]

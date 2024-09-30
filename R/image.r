@@ -29,7 +29,7 @@ hex_to_rgb <- function(hex) {
 #'
 #' @returns The scaled image
 #' @export
-apply_color <- function(image, rgb) {
+img_apply_color <- function(image, rgb) {
     image[, , 1] <- image[, , 1] * rgb[1]
     image[, , 2] <- image[, , 2] * rgb[2]
     image[, , 3] <- image[, , 3] * rgb[3]
@@ -160,7 +160,7 @@ img_norm <- function(images, norm.factors = NULL, q = 1) {
     }
 
 
-    return(images)
+    return(imgs)
 }
 
 #-------------------------------------------------------------------------------
