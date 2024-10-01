@@ -46,7 +46,12 @@ setMethod(
     }
 
     if (nrow(object@x) != length(object.names)) {
-      warning("Number of of @x on TglowReduction does not match length of object.names")
+      warning("Number of rows of @x on TglowReduction does not match length of object.names")
+      return(FALSE)
+    }
+
+    if (is.null(rownames(object@x))) {
+      warning("Rownames of @x on TglowReduction are NULL")
       return(FALSE)
     }
 
