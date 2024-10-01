@@ -22,11 +22,13 @@ read_cellprofiler_fileset_b(
 }
 \value{
 list with data frames:
-- cells (cell level features)
-- meta (image level features)
-- objectRelations
-- features [optional]
+\itemize{
+\item cells (cell level features)
+\item meta (image level features)
+\item objectRelations
+\item features \link{optional}
 Output is NULL if no cells are detected
+}
 }
 \description{
 Reads a zip file with cellprofiler features, each file other then

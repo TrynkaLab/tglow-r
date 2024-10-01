@@ -42,7 +42,7 @@ https://github.com/satijalab/seurat/blob/master/R/clustering.R
 More detaills on knn implementations in this paper:
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11014608/
 
-The reason for using this over exact NN is the speed, 
+The reason for using this over exact NN is the speed,
 but other flavours of approximimate NN are available
 Run annoy
 }

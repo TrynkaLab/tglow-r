@@ -37,12 +37,12 @@ for type A}
 \item{...}{Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}}
 }
 \description{
-Matches images based on <plate>, <well>, <field>
+Matches images based on \if{html}{\out{<plate>}}, \if{html}{\out{<well>}}, \if{html}{\out{<field>}}
 }
 \details{
 Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
 See r\code{\link{read_cellprofiler_fileset_a}} for detaills
 
-Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
+Type B: \if{html}{\out{<plate>}}_\if{html}{\out{<well>}}.zip with individual files for each child object. Main object is assumed to be _cells
 See r\code{\link{read_cellprofiler_fileset_b}} for detaills
 }

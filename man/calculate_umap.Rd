@@ -27,7 +27,7 @@ calculate_umap(
 
 \item{pc.n}{How many PC's to calculate}
 
-\item{reduction.name}{The name to save the UMAP results under. Defualts to UMAP-<assay>}
+\item{reduction.name}{The name to save the UMAP results under. Defualts to UMAP-\if{html}{\out{<assay>}}}
 
 \item{downsample}{Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids}
 

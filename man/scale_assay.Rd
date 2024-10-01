@@ -23,18 +23,18 @@ Scale the data slot in a tglow assay and override the scale.data slot
 Defaults to z-score, but can also return modified z-score when providing scale.method
 }
 \details{
-`grouping`
+\code{grouping}
 
 When this is provided, scaling is done within each unique value of this vector
 
-`reference.group`
+\code{reference.group}
 
 When this is provided, the data is scaled to the mean/median, sd/mad of only
 the samples set to TRUE in this vector. It much be a logical vector indicating
 if the object is a reference object. This is usefull to scaling imaging features
 relative to a control sample.
 
-`grouping` and `reference.group`
+\code{grouping} and \code{reference.group}
 
 All selection vectors are assumed to have the same row order as assay
 groupung and reference.group interact, so for example if you want to scale to

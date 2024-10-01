@@ -32,7 +32,7 @@ correct_lm(
 
 \item{formula}{The formula to use for regression. Defaults to additive model. See details}
 
-\item{assay.out}{Name of the output assay. Defaults to <assay>.lm.corrected}
+\item{assay.out}{Name of the output assay. Defaults to \if{html}{\out{<assay>}}.lm.corrected}
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
@@ -45,15 +45,15 @@ The \linkS4class{TglowDataset} with a corrected assay
 Fit a linear model using OLS and correct an assay for specified covariates
 }
 \details{
-`grouping`
+\code{grouping}
 
- If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
+If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
 
-`formula`
+\code{formula}
 
- If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by \code{\link{base::as.formula}}
+If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by \code{\link[stats:formula]{stats::formula()}}
 
-`covariates.dont.correct`
+\code{covariates.dont.correct}
 
 The beta's for these variables are removed when calculating the residuals. When specifying more complex models in formula,
 use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't

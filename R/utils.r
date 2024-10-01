@@ -408,7 +408,7 @@ add_features_to_assay <- function(assay, slot, features, names = NULL, meta = NU
 
 
 #-------------------------------------------------------------------------------
-#' Add features to an existing assay
+#' Check if there is any overlap within a list of vectors
 #'
 #' @param list A list of vectors to overlap
 #' 

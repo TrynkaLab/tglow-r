@@ -6,7 +6,7 @@
 \format{
 A \linkS4class{TglowDataset} with 5000 cells and 989 features
 \itemize{
-  \item assays: Tglow assays - just has a raw assay
+\item assays: Tglow assays - just has a raw assay
 }
 }
 \description{

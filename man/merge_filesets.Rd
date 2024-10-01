@@ -16,5 +16,5 @@ The mered output from \code{\link{tglow.read.fileset}}
 }
 \description{
 Data must be a list of lists with outputs from tglow.read.fileset.a/b
-or have the items, cells, meta, orl,  [children], [features], [cells_norm]
+or have the items, cells, meta, orl,  \link{children}, \link{features}, \link{cells_norm}
 }

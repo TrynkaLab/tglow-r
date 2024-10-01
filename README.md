@@ -81,9 +81,26 @@ output  <- read_cellprofiler_dir(path, pattern=".zip", type="B",
                                  
 # Convert to tglow object
 tglow <- tglow_dataset_from_list(output, assay="cells")
+
+# Check if the dataset is valid
+isValid(tglow)
+
 ```
 
 The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)`
+
+## Checking validity of a TglowDataset
+There are a couple of assumptions made downstream to enable functionality, that might not be met if the TglowDataset is improperly constructed.
+Given construction is based on matching patterns, this can give issues sometimes if the default patterns are not appropriate for your data.
+
+There is a utility method `isValid()` that you can use to check the key assumptions are met. The method is implemented for 
+TglowDataset,TglowAssay,TglowMatrix and TglowReduction. When something is invalid, a warning is raised with more detailled info on what is wrong.
+After fixing the issue, make sure to run `isValid()` again, as it returns FALSE after encountering its first problem in the hirearchy.
+
+>NOTE: Invalidity of an assay might not mean that anything is terribly broken depending on what it is. It might just mean that some operations like 
+slicing a dataset do not work as expected if rownames of a reduction are not set for example. In principle, anything generated through the proper 
+functions should yield a valid Tglow class object. If you find this is not the case, please raise an issue. 
+
 
 # Using TglowDataset
 For more detaills also see the function definitions
@@ -318,6 +335,7 @@ The functions without a spcific prefix should be more generically applicable.
 - objectIds
 - objectIds<-
 - isAvailable
+- isValid
 - getDataByObject
 - getImageData
 - getImageDataByObject
@@ -382,8 +400,10 @@ The functions without a spcific prefix should be more generically applicable.
 #### Statistical Analysis
 
 - correct_lm
+- correct_lmm
 - correct_lm_per_featuregroup
 - calculate_lm
+- calculate_lmm
 - calculate_pca
 - calculate_umap
 - calculate_clustering
@@ -391,6 +411,7 @@ The functions without a spcific prefix should be more generically applicable.
 - find_outliers_pca
 - find_outliers_pca_fixed
 - lm_matrix
+- lmm_matrix
 
 #### Image Processing
 
@@ -425,4 +446,10 @@ The functions without a spcific prefix should be more generically applicable.
 - get_feature_meta_from_names
 - fetch_representative_object
 - fetch_representative_object_quantiles
+- list_has_overlap
     
+
+# Authors
+- Olivier Bakker
+- Julie Matte
+- Madeline Ohl

@@ -24,7 +24,7 @@ calculate_pca(
 
 \item{pc.n}{How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{base::prcomp()}}}
 
-\item{reduction.name}{The name to save the PCA results under. Defualts to PCA-<assay>}
+\item{reduction.name}{The name to save the PCA results under. Defualts to PCA-\if{html}{\out{<assay>}}}
 
 \item{ret.prcomp}{Instead of returning just the PCs and variances, return the whole prcomp object}
 

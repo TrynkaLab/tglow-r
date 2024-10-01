@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.r
 \name{list_has_overlap}
 \alias{list_has_overlap}
-\title{Add features to an existing assay}
+\title{Check if there is any overlap within a list of vectors}
 \usage{
 list_has_overlap(list)
 }
@@ -13,5 +13,5 @@ list_has_overlap(list)
 logical indicating if any items overlap in the list
 }
 \description{
-Add features to an existing assay
+Check if there is any overlap within a list of vectors
 }

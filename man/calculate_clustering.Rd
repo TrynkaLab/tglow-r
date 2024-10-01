@@ -44,12 +44,10 @@ kNN graph, but it is very fast. Practically it should perform pretty well
 The parameter k controls how many nearest neighbors to find
 The distance matrix is built from the prinicpal components
 
-
 Alternatively:
 Build exact knn graph, better but MUCH slower
 Set eps to something not 0 to allow error tolerance and
 get an approximate nn
-
 
 Cluster the graph using louvain (default) or leiden clustering
 The resolution parameter controls how many clusters get generated

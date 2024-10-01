@@ -14,5 +14,5 @@ A data.frame with feature attributes
 }
 \description{
 Constructs a table extracting attributes from the names in the from
-<object>_<category>_<feature-name>
+\if{html}{\out{<object>}}\emph{\if{html}{\out{<category>}}}\if{html}{\out{<feature-name>}}
 }

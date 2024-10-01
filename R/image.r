@@ -148,7 +148,7 @@ img_norm <- function(images, norm.factors = NULL, q = 1) {
             return(clls)
         })
     } else if (length(dim(images[[1]])) == 4) {
-        imgs <- lapply(seq_along()(images), function(x) {
+        imgs <- lapply(seq_along(images), function(x) {
             clls <- images[[x]]
 
             for (ch in seq_len(dim(clls)[3])) {

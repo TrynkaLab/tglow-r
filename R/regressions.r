@@ -106,7 +106,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #'
 #' `formula`
 #'
-#'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by \code{\link{base::as.formula}}
+#'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by [stats::formula()]
 #'
 #' `covariates.dont.correct`
 #'
@@ -125,6 +125,8 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
     }
 
     data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
+
+    covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
 
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
@@ -236,13 +238,15 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
         for (fgroup in names(covariates.group)) {
             data <- getDataByObject(object, covariates.group[[fgroup]], assay, assay.image, slot.covar, drop = F)
+
+            covariates.dont.use.cur <- check_unused_covar(data, covariates.dont.use)
             design <- model.matrix(~., data = data[selector, , drop = FALSE])
             group.features <- feature.colnames[[fgroup]]
             cat("[INFO] Running object group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
 
             res <- lm_matrix(response[selector, group.features],
                 design,
-                covariates.dont.use = covariates.dont.use,
+                covariates.dont.use = covariates.dont.use.cur,
                 residuals.only = TRUE
             )
 
@@ -272,12 +276,13 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @description Fit a linear model using OLS and find coefficients
 #' @param object A \linkS4class{TglowDataset}
 #' @param assay The assay to use
-#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
-#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
-#' @param covariates Character vector of in the model
+#' @param covariates Character vector of independent variables to use in the model
 #' @param formula The formula to use for regression. Defaults to additive model. See details
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
+#' @param assay.covar The assay to grab covariates from. Defaults to assay argument
+#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
+#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
 #'
 #' @details
@@ -287,7 +292,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' `formula`
 #'
-#'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by \code{\link{base::as.formula}}
+#'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by [stats::formula()]
 #'
 #' `covariates.dont.use`
 #'
@@ -298,14 +303,24 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = "scale.data", covariates, formula = NULL, grouping = NULL, covariates.dont.use = NULL) {
+calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL) {
     check_dataset_assay_slot(object, assay, slot)
+
+    if (is.null(slot.covar)) {
+        slot.covar <- slot
+    }
+
+    if (is.null(assay.covar)) {
+        assay.covar <- assay
+    }
 
     data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
 
     if (ncol(data) <= 0) {
         stop("data (covariates) cannot be empty. Are your collumn names correct?")
     }
+
+    covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
 
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
@@ -337,9 +352,106 @@ calculate_lm <- function(object, assay, assay.image = NULL, slot, slot.covar = "
 }
 
 #-------------------------------------------------------------------------------
+#' Check covariates.dont.use and expand factor levels
+check_unused_covar <- function(data, covariates.dont.use) {
+    if (!is.null(covariates.dont.use)) {
+        tmp <- c()
+        for (covar in covariates.dont.use) {
+            if (!covar %in% colnames(data)) {
+                tmp <- c(tmp, covar)
+                next()
+            }
+
+            if (is.factor(data[, covar])) {
+                tmp <- c(tmp, paste0(covar, levels(data[, covar])))
+            } else {
+                tmp <- c(tmp, covar)
+            }
+        }
+        covariates.dont.use <- tmp
+
+        cat("[INFO] Not using beta's of following covariates when calculating residuals: ", covariates.dont.use, "\n")
+    }
+
+    return(covariates.dont.use)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Calculate linear coefficients using a linear mixed model
+#'
+#' @description Fit a linear mixed model using REML / MLE (lme4) and find coefficients
+#' @param object A \linkS4class{TglowDataset}
+#' @param assay The assay to use
+#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param covariates Character vector of independent variables to use in the model
+#' @param formula The formula to use for regression. Defaults to additive model. See details
+#' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
+#' @param assay.covar The assay to grab covariates from. Defaults to assay argument
+#' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
+#' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
+#' @param ... Remaining arguments passed to [tglowr::lmm_matrix()] and then to [lmerTest::lmer()]. See detaills
+#' @details
+#'
+#' Strongly reccomend reading extra parameters available in [tglowr::lmm_matrix()]
+#'
+#' `grouping`
+#'
+#'  Runs seperate regressions per group in the indicated grouping variable. length(grouping) must be nrow(assay)
+#'
+#' `formula`
+#'
+#'  Should be a string interpretable by [stats::formula()] and [lmerTest::lmer()] but should NOT
+#'  have response in the forumla. E.g. when regressing `y ~ x + (1|donor)` forumula should be `~ x + (1|donor)`
+#'  Defaults to a regular additive linear model.
+#'
+#' @returns A list of regression results. If grouping != NULL, there is one list per group
+#' @export
+calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, ...) {
+    check_dataset_assay_slot(object, assay, slot)
+
+    if (is.null(slot.covar)) {
+        slot.covar <- slot
+    }
+
+    if (is.null(assay.covar)) {
+        assay.covar <- assay
+    }
+
+    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
+
+    if (ncol(data) <= 0) {
+        stop("data (covariates) cannot be empty. Are your collumn names correct?")
+    }
+
+    if (is.null(formula)) {
+        formula <- paste("~", paste(colnames(data), collapse = " + "))
+    }
+
+    response <- slot(object@assays[[assay]], slot)@.Data
+
+    if (is.null(grouping)) {
+        res <- lmm_matrix(response, data, formula = formula, ...)
+        return(res)
+    } else {
+        if (length(grouping) != nrow(response)) {
+            stop("grouping must have the same length as nrow(assay)")
+        }
+        results <- list()
+        for (group in unique(grouping)) {
+            cat("[INFO] Starting regressions for group: ", group, "\n")
+            selector <- grouping == group
+            results[[group]] <- lmm_matrix(response[selector, ], data[selector, ], formula = formula, ...)
+        }
+        return(results)
+    }
+}
+
+
+#-------------------------------------------------------------------------------
 #' Calculate linear coefficients
 #'
-#' @description Fit a linear model using OLS and find coefficients
+#' @description Fit a linear mixed model using OLS and find coefficients
 #' @param response A matrix with response variables
 #' @param design The common design matrix to regress response againsts
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
@@ -364,6 +476,12 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         return.residuals <- TRUE
     }
 
+    if (!is.null(covariates.dont.use)) {
+        if (sum(covariates.dont.use %in% colnames(design)) != length(design)) {
+            warning("Not all covariates specified in covariates.dont.use found. Check the output carefully if all is expected. This can happen if covariates.dont.use contains factors")
+        }
+    }
+
     # Matrices to save model coefficients
     if (!residuals.only) {
         coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
@@ -384,6 +502,8 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         colnames(residuals) <- colnames(response)
     }
 
+
+
     # Calculate the beta's. Use chol2inv on the cholesky decomposition
     # to invert rather then solve as this is faster. This only works on
     # positive-definite matrices, but I think this should always be true in this case
@@ -391,7 +511,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 
     # Pre-calculate b component on design matrix
     b <- chol2inv(chol(crossprod(design)))
-    b.tmp <- b[!colnames(design) %in% covariates.dont.use, !colnames(design) %in% covariates.dont.use]
+    # b.tmp <- b[!colnames(design) %in% covariates.dont.use, !colnames(design) %in% covariates.dont.use]
     cat("[INFO] Starting regressions\n")
 
     pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
@@ -419,6 +539,10 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 
         # Optionally save model statistics
         if (!residuals.only) {
+            if (!is.null(covariates.dont.use)) {
+                rs <- rs - mean(rs)
+            }
+
             # Residual and total sum of squares
             rss <- crossprod(rs)
             tss <- crossprod(response[, col] - mean(response[, col]))
@@ -448,6 +572,126 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 
     # Return output list
     out.list <- list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1, residuals = NULL)
+    if (return.residuals) {
+        out.list$residuals <- residuals
+    }
+    return(out.list)
+}
+
+
+
+#-------------------------------------------------------------------------------
+#' Calculate linear coefficients using a Linear mixed model
+#'
+#' @description Fit a linear mixed model using REML / MLE (lme4) and find coefficients
+#' @param response A matrix with response variables
+#' @param design The matrix with predictor variables
+#' @param formula The latter component of the formula. I.e. `~ x + (1|donor)`
+#' @param formula.null The null formula for a LRT. The latter component of the formula. I.e. `~ x + (1|donor)`
+#' @param residuals.only Only return the residual matrix
+#' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
+#' @param refit Refit the models using MLE during the LRT (anova)
+#' @param ... Remaining parameters passed to [lmerTest::lmer()]
+#'
+#' @returns A list with regression results
+#' @importFrom progress progress_bar
+#' @importFrom lmerTest lmer
+#' @importFrom performance model_performance
+#' @importFrom lme4 lFormula
+#' @export
+lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = FALSE, ...) {
+    if (!is(formula, "character")) {
+        stop("formula must be of class character")
+    }
+
+    if (!startsWith(formula, "~")) {
+        stop("formula must be only the 2nd half, starting with ~")
+    }
+
+    if (!is.null(formula.null)) {
+        if (!is(formula.null, "character")) {
+            stop("formula.null must be of class character")
+        }
+
+        if (!startsWith(formula.null, "~")) {
+            stop("formula.null must be only the 2nd half, starting with ~")
+        }
+    }
+
+    if (residuals.only && !return.residuals) {
+        return.residuals <- TRUE
+    }
+
+    # Matrices to save model coefficients
+    if (!residuals.only) {
+        tmp <- lme4::lFormula(paste0(colnames(response)[1], formula), data = cbind(response[, 1, drop = FALSE], design))
+        n.coefs <- ncol(tmp$X)
+
+        coef <- matrix(NA, nrow = ncol(response), ncol = n.coefs)
+        rownames(coef) <- colnames(response)
+        colnames(coef) <- colnames(tmp$X)
+        se <- coef[, ]
+        pval <- coef[, ]
+        df <- coef[, ]
+        model.stats <- matrix(NA, nrow = ncol(response), 5)
+        rownames(model.stats) <- colnames(response)
+        colnames(model.stats) <- c("r2_cond", "r2_marg", "chisqr", "p-value", "df")
+    }
+
+    # Matrix to save residuals
+    if (return.residuals) {
+        residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
+        rownames(residuals) <- rownames(response)
+        colnames(residuals) <- colnames(response)
+    }
+
+    cat("[INFO] Starting regressions\n")
+    pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
+
+    for (col in seq_len(ncol(response))) {
+        pb$tick()
+
+        data.cur <- cbind(response[, col, drop = F], design)
+        form.cur <- as.formula(paste(colnames(data.cur)[1], formula))
+        m <- lmerTest::lmer(form.cur, data = data.cur, ...)
+
+        if (!is.null(formula.null)) {
+            form.null.cur <- as.formula(paste(colnames(data.cur)[1], formula.null))
+            m.null <- lmerTest::lmer(form.null.cur, data = data.cur, ...)
+        }
+
+        if (return.residuals) {
+            residuals[, col] <- residuals(m)
+        }
+
+        if (!residuals.only) {
+            tmp <- coefficients(summary(m))
+            coef[col, ] <- as.numeric(tmp[, 1])
+            se[col, ] <- as.numeric(tmp[, 2])
+            df[col, ] <- as.numeric(tmp[, 3])
+            pval[col, ] <- as.numeric(tmp[, 5])
+
+            # Model R2
+            perf <- performance::model_performance(m)
+            model.stats[col, "r2_cond"] <- perf$R2_conditional
+            model.stats[col, "r2_marg"] <- perf$R2_marginal
+
+            if (!is.null(formula.null)) {
+                lrt <- anova(m.null, m, refit = refit)
+                model.stats[col, "chisqr"] <- lrt$`Chisq`[2]
+                model.stats[col, "p-value"] <- lrt$`Pr(>Chisq)`[2]
+                model.stats[col, "df"] <- lrt$`Df`[2]
+            }
+        }
+    }
+
+    # Return only residual matrix
+    if (residuals.only) {
+        return(residuals)
+    }
+
+    # Return output list
+    out.list <- list(coef = coef, se = se, pval = pval, df = df, model.stats = model.stats, residuals = NULL)
     if (return.residuals) {
         out.list$residuals <- residuals
     }

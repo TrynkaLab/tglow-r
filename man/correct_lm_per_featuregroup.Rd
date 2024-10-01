@@ -29,7 +29,7 @@ correct_lm_per_featuregroup(
 
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
-\item{assay.out}{Name of the output assay. Defaults to <assay>.lm.corrected}
+\item{assay.out}{Name of the output assay. Defaults to \if{html}{\out{<assay>}}.lm.corrected}
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
@@ -42,15 +42,15 @@ The \linkS4class{TglowDataset} with a corrected assay
 Fit a linear model using OLS and correct an assay for specified covariates
 }
 \details{
-`covariates.group`
+\code{covariates.group}
 
 This must be a list where the name of the list item is a grep pattern of the features to apply the covariates to, and the item is a vector of feature names to correct for
 
-`grouping`
+\code{grouping}
 
- If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
+If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
 
-`covariates.dont.correct`
+\code{covariates.dont.correct}
 
 The beta's for these variables are removed when calculating the residuals. When specifying more complex models in formula,
 use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't

@@ -18,7 +18,7 @@ A data frame with the image paths
 }
 \description{
 This assumes images are organized as follows:
-<plate>/<row>/<col>/<field>.ome.tiff
+\if{html}{\out{<plate>}}/\if{html}{\out{<row>}}/\if{html}{\out{<col>}}/\if{html}{\out{<field>}}.ome.tiff
 
-Matches images based on <plate>/<row>/<col>/<field>.ome.tiff
+Matches images based on \if{html}{\out{<plate>}}/\if{html}{\out{<row>}}/\if{html}{\out{<col>}}/\if{html}{\out{<field>}}.ome.tiff
 }

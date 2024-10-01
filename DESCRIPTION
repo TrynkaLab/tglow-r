@@ -9,6 +9,7 @@ Encoding: UTF-8
 Imports: 
 Suggests: 
 RoxygenNote: 7.3.1
+Roxygen: list(markdown = TRUE)
 Collate: 
     'aggregate.r'
     'annoy.r'

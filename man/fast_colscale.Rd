@@ -25,7 +25,7 @@ fast_colscale(
 
 \item{na.rm}{Should NA's be removed during mean and variance calculations}
 
-\item{scale.method}{Scaling method, either `mean` for z-score or `median` modified z-score}
+\item{scale.method}{Scaling method, either \code{mean} for z-score or \code{median} modified z-score}
 
 \item{reference.group}{Calculate means/medians, sds/mads only on these samples but apply it to all}
 }
@@ -37,11 +37,11 @@ Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
 Yields a 10-20 percent speedup and adds modfied z-score scaling
 }
 \details{
-`scale.method - mean`
+\code{scale.method - mean}
 
- Standard centering/scaling: (x-mean(x)) / sd(x)
+Standard centering/scaling: (x-mean(x)) / sd(x)
 
-`scale.method - median`
+\code{scale.method - median}
 
 Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
 }

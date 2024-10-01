@@ -16,7 +16,7 @@ setGeneric("objectIds", function(object) {
 #' @rdname objectIds
 #' @export
 setGeneric("objectIds<-", function(object, value) {
-  standardGeneric("objectIds<-")
+    standardGeneric("objectIds<-")
 })
 
 #-------------------------------------------------------------------------------
@@ -89,4 +89,30 @@ setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NU
 #' @export
 setGeneric("isAvailable", function(object, j, assay, assay.image = NULL, slot, return.names = FALSE) {
     standardGeneric("isAvailable")
+})
+
+
+#-------------------------------------------------------------------------------
+#' Check if a Tglow family of objects is valid
+#'
+#' @description Greedily check if a Tglow family of objects is valid.
+#' Works on TglowDataset, TglowAssay, TglowReduction, TglowMatrix
+#'
+#' @details
+#' Checks are peformed greedily, so as soon as an issue if found, FALSE is returned
+#' and a warning for that issue is raised with more detaills. I.e. finding one issue
+#' does not mean there are not other issues!
+#'
+#' For TglowDataset, object.names can be left at NULL, as it uses @object.ids slot to compare against.
+#' If not NULL it will use the vector of names you supply to check
+#'
+#' TglowAssay, TglowReduction and TglowMatrix must all have object.names supplied, otherwise an error
+#' is thrown.
+#'
+#' @param object A \linkS4class{TglowDataset}
+#' @param object.names A \linkS4class{TglowDataset}
+#' @returns A logical indicating validitiy
+#' @export
+setGeneric("isValid", function(object, object.names = NULL) {
+    standardGeneric("isValid")
 })

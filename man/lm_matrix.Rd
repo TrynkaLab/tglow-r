@@ -27,13 +27,13 @@ lm_matrix(
 A list with regression results
 }
 \description{
-Fit a linear model using OLS and find coefficients
+Fit a linear mixed model using OLS and find coefficients
 }
 \details{
 This is more efficient as the b component of the design matrix can be re-used between regressions
 b <- chol2inv(chol(crossprod(design)))
 
-`covariates.dont.use`
+\code{covariates.dont.use}
 Fit the model with these covariates included, but don't use them for calculating residuals (affects r2, se etc)
 The covariates for these variables are removed in the output. When specifying more complex models in formula
 use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't

@@ -40,7 +40,7 @@ Transform a assay using boxcox transform. If assay="image.data", result is store
 Lambda values are added to the features data.frame: 0=log, 1=no transformation
 }
 \details{
-`rfast.zerotol`
+\code{rfast.zerotol}
 NOTE: Currently NOT using \code{\link{Rfast::colVars()}} as there are inconsistencies with \code{\link{matrixStats::colVars()}}
 Rfast's does not return zero variances, so we have to set some minial value to consider as 0
 https://github.com/RfastOfficial/Rfast/issues/62

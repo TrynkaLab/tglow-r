@@ -84,7 +84,7 @@ A logical where TRUE should be kept and FALSE values should be removed
 }
 \description{
 Filters come in 2 variants, the base function, which is applied over a vector or value
-The base then has a <filter>.sum function which sums over multiple vectors or values
+The base then has a \if{html}{\out{<filter>}}.sum function which sums over multiple vectors or values
 }
 \details{
 Uses Rfast whose variance calculations are not exactly zero, so set the zero threshold to 1e-10 by default

@@ -47,3 +47,35 @@ setMethod(
     return(x)
   }
 )
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "isValid", signature("TglowMatrix"),
+  function(object, object.names) {
+    if (is.null(object.names)) {
+      stop("object.names should be supplied to properly validate the TglowMatrix")
+    }
+
+    if (is.null(rownames(object))) {
+      warning("Rownames of TglowMatrix are NULL")
+      return(FALSE)
+    }
+
+    if (is.null(colnames(object))) {
+      warning("Colnames of TglowMatrix are NULL")
+      return(FALSE)
+    }
+
+    if (nrow(object) != length(object.names)) {
+      warning("Number of rows on TglowMatrix does not match length of object.names")
+      return(FALSE)
+    }
+
+    if (sum(rownames(object) == object.names) != length(object.names)) {
+      warning("Rows of TglowMatrix are in a different order then object.names")
+      return(FALSE)
+    }
+
+    return(TRUE)
+  }
+)

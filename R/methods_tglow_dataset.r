@@ -139,10 +139,10 @@ setMethod(
       stop("New id's must be unique")
     }
 
-    object@object.ids       <- value
+    object@object.ids <- value
     names(object@image.ids) <- value
 
-    rownames(object@meta)    <- value
+    rownames(object@meta) <- value
 
     for (assay in names(object@assays)) {
       objectIds(object@assays[[assay]]) <- value
@@ -319,5 +319,185 @@ setMethod(
     }
 
     return(output[, j, drop = drop])
+  }
+)
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "isValid", signature("TglowDataset"),
+  function(object, object.names) {
+    #-------------------------------------
+    # Check object IDs
+    #-------------------------------------
+    if (is.null(object@object.ids) || !is.character(object@object.ids)) {
+      warning("@object.ids on TglowDataset may not be NULL and must be character")
+      return(FALSE)
+    }
+
+    if (is.null(object@image.ids) || !is.character(object@image.ids)) {
+      warning("@image.ids on TglowDataset may not be NULL and must be character")
+      return(FALSE)
+    }
+
+    # If object id's not provided, use the slot
+    if (is.null(object.names)) {
+      object.names <- object@object.ids
+    }
+
+    #-------------------------------------
+    # Check object and image ids
+    #-------------------------------------
+    if (length(object.names) != length(object@object.ids)) {
+      warning("object.names and @object.ids on TglowDataset are not the same length")
+      return(FALSE)
+    }
+
+    if (length(object.names) != length(object@image.ids)) {
+      warning("object.names and @image.ids on TglowDataset are not the same length")
+      return(FALSE)
+    }
+
+    if (sum(object@object.ids == object.names) != length(object.names)) {
+      warning("@object.ids on TglowDataset are in a different order then provided object.names")
+      return(FALSE)
+    }
+
+    #-------------------------------------
+    # Check metadata
+    #-------------------------------------
+    if (is.null(object@meta)) {
+      warning("@meta on TglowDataset cannot be NULL")
+      return(FALSE)
+    }
+
+    if (!is(object@meta, "data.frame")) {
+      warning("@meta on TglowDataset must be data.frame")
+      return(FALSE)
+    }
+
+    if (is.null(rownames(object@meta))) {
+      warning("@meta on TglowDataset must have rownames")
+      return(FALSE)
+    }
+
+    if (sum(rownames(object@meta) == object.names) != length(object.names)) {
+      warning("Rows of @meta on TglowDataset are in a different order then provided object.names")
+      return(FALSE)
+    }
+
+    #-------------------------------------
+    # Check image meta data
+    #-------------------------------------
+    if (is.null(object@image.meta)) {
+      warning("@image.meta on TglowDataset on TglowDataset cannot be NULL")
+      return(FALSE)
+    }
+
+    if (!is(object@image.meta, "data.frame")) {
+      warning("@image.meta on TglowDataset must be data.frame")
+      return(FALSE)
+    }
+
+    if (is.null(rownames(object@image.meta))) {
+      warning("@image.meta on TglowDataset must have rownames")
+      return(FALSE)
+    }
+
+    if (sum(rownames(object@image.meta) %in% object@image.ids) != nrow(object@image.meta)) {
+      warning("Not all rows in @image.meta of TglowDataset found in @image.ids")
+      return(FALSE)
+    }
+
+    if (sum(unique(object@image.ids) %in% rownames(object@image.meta)) != nrow(object@image.meta)) {
+      warning("Not all unqiue values of @image.ids of TglowDataset found in rownames of @image.meta")
+      return(FALSE)
+    }
+
+    #-------------------------------------
+    # Check image data
+    #-------------------------------------
+    if (is.null(object@image.data)) {
+      warning("@image.data on TglowDataset must not be NULL")
+      return(FALSE)
+    }
+
+    if (!isValid(object@image.data, rownames(object@image.meta))) {
+      warning("@image.data on TglowDataset is invalid")
+      return(FALSE)
+    }
+
+    if (!is.null(object@image.data.norm)) {
+      if (!isValid(object@image.data.norm, rownames(object@image.meta))) {
+        warning("@image.data.norm on TglowDataset is invalid")
+        return(FALSE)
+      }
+    }
+
+    if (!is.null(object@image.data.trans)) {
+      if (!isValid(object@image.data.trans, rownames(object@image.meta))) {
+        warning("@image.data.trans on TglowDataset is invalid")
+        return(FALSE)
+      }
+    }
+
+    #-------------------------------------
+    # Check assays
+    #-------------------------------------
+    if (!is(object@assays, "list")) {
+      warning("@assays on TglowDataset must be list")
+      return(FALSE)
+    }
+
+    if (is.null(names(object@assays))) {
+      warning("@assays on TglowDataset must have names set. Use names(object@assays) <- c('names', 'go', 'here') to fix")
+      return(FALSE)
+    }
+
+    if (length(object@assays) < 1) {
+      warning("@assays on TglowDataset must have at least one assay")
+      return(FALSE)
+    }
+
+    for (assay in names(object@assays)) {
+      if (!is(object@assays[[assay]], "TglowAssay")) {
+        warning(paste0("@assays$", assay, " on TglowDataset is not a TglowAssay"))
+        return(FALSE)
+      }
+
+      if (!isValid(object@assays[[assay]], object@object.ids)) {
+        warning(paste0("@assays$", assay, " on TglowDataset is invalid"))
+        return(FALSE)
+      }
+    }
+
+    #-------------------------------------
+    # Check reductions
+    #-------------------------------------
+    if (!is(object@reduction, "list")) {
+      warning("@reduction on TglowDataset must be list")
+      return(FALSE)
+    }
+
+    if (length(object@reduction) >= 1) {
+      if (is.null(names(object@reduction))) {
+        warning("@reduction on TglowDataset must have names set. Use names(object@reduction) <- c('names', 'go', 'here') to fix")
+        return(FALSE)
+      }
+
+      for (reduction in names(object@reduction)) {
+        if (!is(object@reduction[[reduction]], "TglowReduction")) {
+          warning(paste0("@reduction$", reduction, " on TglowDataset is not a TglowReduction"))
+          return(FALSE)
+        }
+
+        if (!isValid(object@reduction[[reduction]], object@object.ids)) {
+          warning(paste0("@reduction$", reduction, " on TglowDataset is invalid"))
+          return(FALSE)
+        }
+      }
+    }
+
+
+    return(TRUE)
   }
 )

@@ -159,3 +159,60 @@ setMethod(
     object
   }
 )
+
+#-------------------------------------------------------------------------------
+setMethod(
+  "isValid", signature("TglowAssay"),
+  function(object, object.names) {
+    if (is.null(object.names)) {
+      stop("object.names should be supplied to properly validate the TglowAssay")
+    }
+    # Check data slot
+    if (!isValid(object@data, object.names)) {
+      warning("@data slot is not valid")
+      return(FALSE)
+    }
+
+    # Check scale.data slot
+    if (!is.null(object@scale.data)) {
+      if (!isValid(object@scale.data, object.names)) {
+        warning("@scale.data slot is not valid")
+        return(FALSE)
+      }
+    }
+
+    # Check features slot
+    if (is.null(object@features)) {
+      warning("Features slot is NULL")
+      return(FALSE)
+    } else {
+      if (is.null(rownames(object@features))) {
+        warning("Rownames on @features are not set")
+        return(FALSE)
+      }
+
+      if (sum(rownames(object@features) %in% colnames(object@data)) != nrow(object@features)) {
+        warning("Not all features in @features found in colnames of @data")
+        return(FALSE)
+      }
+
+      if (sum(colnames(object@data) %in% rownames(object@features)) != ncol(object@data)) {
+        warning("Not all features in columns in @data found in rownames of @features")
+        return(FALSE)
+      }
+
+      if (!is.null(object@scale.data)) {
+        if (sum(rownames(object@features) %in% colnames(object@scale.data)) != nrow(object@features)) {
+          warning("Not all features in @features found in colnames of @scale.data")
+          return(FALSE)
+        }
+        if (sum(colnames(object@scale.data) %in% rownames(object@features)) != ncol(object@scale.data)) {
+          warning("Not all features in columns in @scale.data found in rownames of @features")
+          return(FALSE)
+        }
+      }
+    }
+
+    return(TRUE)
+  }
+)
