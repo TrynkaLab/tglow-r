@@ -6,7 +6,9 @@ NULL
 #-------------------------------------------------------------------------------
 #' Read a cellprofiler fileset directory tree
 #'
-#' Matches images based on <plate>, <well>, <field>
+#' @description
+#' Read a cellprofiler fileset directory tree organized into a <plate>/<well>/<field>.fileset
+#' structure
 #'
 #' @param path path to tglow output dir
 #' @param pattern The pattern that uniquely identfies a well. Use '.zip' for type 'B' and the '_experiment.tsv' for type 'A'
@@ -15,16 +17,24 @@ NULL
 #' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
 #' @param skip.orl Skip reading of object relationships, as this can get quite large with many children and is not used
 #' @param verbose Should I be chatty?
-#' @param col.object The collumn name in the features which contains the per object object identifier
-#' @param col.meta.img.id The collumn name in the image level data which contains the image id
+#' @param col.object The collumn name in the features which contains the per object object identifier. See details
+#' @param col.meta.img.id The collumn name in the image level data which contains the image id. See details
 #' @param ... Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #'
 #' @details
+#' 
+#' `type`
 #' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
-#' See r\code{\link{read_cellprofiler_fileset_a}} for detaills
+#' See \code{\link{read_cellprofiler_fileset_a}} for detaills
 #'
 #' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
-#' See r\code{\link{read_cellprofiler_fileset_b}} for detaills
+#' See \code{\link{read_cellprofiler_fileset_b}} for detaills
+#' 
+#' 
+#' `col.object` and `col.meta.img.id`
+#' 
+#' See \code{\link{add_global_ids}} for details on how globally unique Id's are assigned in the case you need to set
+#' `col.object` or `col.meta.img.id``.
 #' @importFrom progress progress_bar
 #' @export
 read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
@@ -52,9 +62,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   for (pre in prefixes) {
     pb$tick()
     if (type == "A") {
-      cur <- read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
+      cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
     } else if (type == "B") {
-      cur <- read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, ...)
+      cur <- tglowr::read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
@@ -75,7 +85,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   }
 
   cat("\n[INFO] Merging filesets\n")
-  output <- merge_filesets(filesets, skip.orl = skip.orl)
+  output <- tglowr::merge_filesets(filesets, skip.orl = skip.orl)
 
   cat("[INFO] names: ", names(output), "\n")
 
@@ -83,7 +93,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
     cat("[DEBUG] colnames:\n", colnames(output$cells))
   }
 
-  features <- get_feature_meta_from_names(colnames(output$cells))
+  features <- tglowr::get_feature_meta_from_names(colnames(output$cells))
   classes <- sapply(output$cells, class)
   features$type <- classes[features$id]
 
@@ -103,10 +113,19 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 
 #-------------------------------------------------------------------------------
 #' Add a global id to a matrix of image files
+#' 
+#' @description Take a matrix and extract patterns 'ImageNumber', 'ObjectNumber' and
+#' 'Object_Number' and add a globably unique prefix. Will store these globally unique
+#' id's in columns <original>_Global.
+#' 
+#' @param matrix An input matrix or data.frame
+#' 
+#' @details
 #' Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
 #' which will be duplicated and have a globally unique variable added
 #' Output of this is stored in the same column name but with suffix _Global
 #'
+#' @returns A data.frame with extra columns suffixed by _Global with globally unique ids
 #' @export
 add_global_ids <- function(matrix) {
   # Fetch global fileset id
@@ -138,9 +157,18 @@ add_global_ids <- function(matrix) {
 #-------------------------------------------------------------------------------
 #' Read a cell level fileset type A
 #'
+#' @description
 #' Reads a CellProfiler fileset into a list
 #' Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
 #' and all features are matched
+#' 
+#' @param prefix Path prefix to fileset
+#' @param return.feature.meta Should the dataframe with feature metadata be added
+#' @param add.global.id Should extra id columns be added that are globally unique
+#' @param pat.img The suffix pattern to identify the image level data
+#' @param pat.cells The suffix pattern to identify the cell level data
+#' @param pat.orl The suffix pattern to identify object relationships
+#' @param skip.orl Should object relationships be read (not used, can be quite large)
 #'
 #' @returns list with data frames:
 #'
@@ -180,7 +208,7 @@ read_cellprofiler_fileset_a <- function(prefix,
   cn <- paste0(colnames(cells), "_", as.character(cells[1, ]))
 
   if (return.feature.meta) {
-    feature.meta <- get_feature_meta_from_names(cn)
+    feature.meta <- tglowr::get_feature_meta_from_names(cn)
   }
 
   # Read content of _cells.tsv
@@ -234,9 +262,23 @@ read_cellprofiler_fileset_a <- function(prefix,
 #-------------------------------------------------------------------------------
 #' Read a cell level fileset type B
 #'
-#' Reads a zip file with cellprofiler features, each file other then
+#'
+#' @description Reads a .zip file with cellprofiler features, each file other then
 #' _Image, _Experiment and _Object Relationships are assumed to be an object
 #' Will match objects on order with an appropriate matching strategy
+#'
+#' @param prefix Path prefix to fileset
+#' @param return.feature.meta Should the dataframe with feature metadata be added
+#' @param add.global.id Should extra id columns be added that are globally unique
+#' @param merging.strategy How to consolidate 1:many relationships between cell: children. Accepted values: 'mean', 'none'
+#' @param pat.exp The suffix pattern to identify the exeperiment file
+#' @param pat.img The suffix pattern to identify the image level data
+#' @param pat.cells The suffix pattern to identify the cell level data
+#' @param pat.orl The suffix pattern to identify object relationships
+#' @param pat.others The pattern to use to extract the child object names from the filename. First regex group is used as object name
+#' @param na.rm Should NA's be removed when applying merging.strategy
+#' @param skip.orl Should object relationships be read (not used, can be quite large)
+#' @param verbose Should I be chatty?
 #'
 #' @returns list with data frames:
 #' - cells (cell level features)
@@ -296,7 +338,7 @@ read_cellprofiler_fileset_b <- function(prefix,
     grep(pat.exp, index$FileName)
   )
 
-  index <- index[!1:nrow(index) %in% exclude, ]
+  index <- index[!seq_len(nrow(index)) %in% exclude, ]
 
   colnames(cells) <- paste0("cell_", colnames(cells))
   rownames(cells) <- paste0(cells$cell_ImageNumber, "_", cells$cell_ObjectNumber)
@@ -320,6 +362,7 @@ read_cellprofiler_fileset_b <- function(prefix,
         colnames(cur) <- paste0(obj, "_", colnames(cur))
         cells[, c(colnames(cur), paste0(obj, "_QC_Object_Count"))] <- NA
         warning(paste0(obj, " assay for ", index[i, "Name"], " is empty. Returning NA for these cols."))
+        
       } else if (merging.strategy == "mean") {
         if (verbose) cat("[DEBUG] ", as.character(index[i, ]), "\n")
 
@@ -329,7 +372,6 @@ read_cellprofiler_fileset_b <- function(prefix,
         counts <- table(selector)
         cur$Group.1 <- selector
 
-        # exclude.cols      <- c("Group.1", grep("ObjectNumber", colnames(cur), value=T), grep("Number_Object_Number", colnames(cur), value=T))
         if (verbose) cat("[DEBUG] NA's in selector", sum(is.na(selector)), "\n")
         if (verbose) cat("[DEBUG] Slice: ", head(cur$Group.1), "\n")
 
@@ -337,15 +379,13 @@ read_cellprofiler_fileset_b <- function(prefix,
         tmp <- as.data.frame(cur[, lapply(.SD, mean, na.rm = na.rm), by = Group.1, .SDcols = colnames(cur)[!colnames(cur) %in% exclude.cols]])
         rownames(tmp) <- tmp$Group.1
 
-        # The above is the data.table equivalent of aggregate, which is MUCH faster
-        # tmp               <- aggregate(cur, by=list(selector), FUN=mean, na.rm=T)
-
         # Add the object count as a sanity check
         tmp[, paste0(obj, "_QC_Object_Count")] <- counts[tmp$Group.1]
         tmp <- tmp[, !colnames(tmp) %in% exclude.cols]
 
         # Assign the columns to the output matrix
         cells[selector, colnames(tmp)] <- tmp[selector, ]
+        
       } else if (merging.strategy == "none") {
         if (add.global.id) {
           cur <- as.data.frame(cur)
@@ -387,7 +427,7 @@ read_cellprofiler_fileset_b <- function(prefix,
   }
 
   if (return.feature.meta) {
-    feature.meta <- get_feature_meta_from_names(colnames(cells))
+    feature.meta <- tglowr::get_feature_meta_from_names(colnames(cells))
   }
 
   out.list <- list(cells = cells, meta = img, orl = orl)

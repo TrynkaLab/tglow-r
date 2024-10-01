@@ -2,15 +2,22 @@
 % Please edit documentation in R/io_cellprofiler.r
 \name{add_global_ids}
 \alias{add_global_ids}
-\title{Add a global id to a matrix of image files
-Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
-which will be duplicated and have a globally unique variable added
-Output of this is stored in the same column name but with suffix _Global}
+\title{Add a global id to a matrix of image files}
 \usage{
 add_global_ids(matrix)
 }
+\arguments{
+\item{matrix}{An input matrix or data.frame}
+}
+\value{
+A data.frame with extra columns suffixed by _Global with globally unique ids
+}
 \description{
-Add a global id to a matrix of image files
+Take a matrix and extract patterns 'ImageNumber', 'ObjectNumber' and
+'Object_Number' and add a globably unique prefix. Will store these globally unique
+id's in columns \if{html}{\out{<original>}}_Global.
+}
+\details{
 Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
 which will be duplicated and have a globally unique variable added
 Output of this is stored in the same column name but with suffix _Global

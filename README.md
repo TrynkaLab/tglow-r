@@ -70,6 +70,8 @@ Currently built arround the output of the tglow-pipeline, will write some more g
 Have a look at the help text for `read_cellprofiler_dir`, `tglow_dataset_from_list`, `read_cellprofiler_fileset_a` and `read_cellprofiler_fileset_b` 
 as there might be some options & patterns to set depending how you export the data from cellprofiler.
 
+>NOTE: Currently I'd reccomend type 'B' as it is the best tested, and the least work to setup in the cellprofiler pipeline and keeps relationships with children
+
 ```
 path    <- "../../pipeline_disulfram/results/cellprofiler_v1"
 

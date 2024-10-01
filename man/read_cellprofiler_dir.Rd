@@ -30,19 +30,26 @@ for type A}
 
 \item{verbose}{Should I be chatty?}
 
-\item{col.object}{The collumn name in the features which contains the per object object identifier}
+\item{col.object}{The collumn name in the features which contains the per object object identifier. See details}
 
-\item{col.meta.img.id}{The collumn name in the image level data which contains the image id}
+\item{col.meta.img.id}{The collumn name in the image level data which contains the image id. See details}
 
 \item{...}{Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}}
 }
 \description{
-Matches images based on \if{html}{\out{<plate>}}, \if{html}{\out{<well>}}, \if{html}{\out{<field>}}
+Read a cellprofiler fileset directory tree organized into a \if{html}{\out{<plate>}}/\if{html}{\out{<well>}}/\if{html}{\out{<field>}}.fileset
+structure
 }
 \details{
+\code{type}
 Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
-See r\code{\link{read_cellprofiler_fileset_a}} for detaills
+See \code{\link{read_cellprofiler_fileset_a}} for detaills
 
 Type B: \if{html}{\out{<plate>}}_\if{html}{\out{<well>}}.zip with individual files for each child object. Main object is assumed to be _cells
-See r\code{\link{read_cellprofiler_fileset_b}} for detaills
+See \code{\link{read_cellprofiler_fileset_b}} for detaills
+
+\code{col.object} and \code{col.meta.img.id}
+
+See \code{\link{add_global_ids}} for details on how globally unique Id's are assigned in the case you need to set
+\code{col.object} or `col.meta.img.id``.
 }

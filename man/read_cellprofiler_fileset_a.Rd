@@ -14,6 +14,21 @@ read_cellprofiler_fileset_a(
   skip.orl = FALSE
 )
 }
+\arguments{
+\item{prefix}{Path prefix to fileset}
+
+\item{return.feature.meta}{Should the dataframe with feature metadata be added}
+
+\item{add.global.id}{Should extra id columns be added that are globally unique}
+
+\item{pat.img}{The suffix pattern to identify the image level data}
+
+\item{pat.cells}{The suffix pattern to identify the cell level data}
+
+\item{pat.orl}{The suffix pattern to identify object relationships}
+
+\item{skip.orl}{Should object relationships be read (not used, can be quite large)}
+}
 \value{
 list with data frames:
 \itemize{

@@ -20,6 +20,31 @@ read_cellprofiler_fileset_b(
   verbose = F
 )
 }
+\arguments{
+\item{prefix}{Path prefix to fileset}
+
+\item{return.feature.meta}{Should the dataframe with feature metadata be added}
+
+\item{add.global.id}{Should extra id columns be added that are globally unique}
+
+\item{merging.strategy}{How to consolidate 1:many relationships between cell: children. Accepted values: 'mean', 'none'}
+
+\item{pat.exp}{The suffix pattern to identify the exeperiment file}
+
+\item{pat.img}{The suffix pattern to identify the image level data}
+
+\item{pat.cells}{The suffix pattern to identify the cell level data}
+
+\item{pat.orl}{The suffix pattern to identify object relationships}
+
+\item{pat.others}{The pattern to use to extract the child object names from the filename. First regex group is used as object name}
+
+\item{na.rm}{Should NA's be removed when applying merging.strategy}
+
+\item{skip.orl}{Should object relationships be read (not used, can be quite large)}
+
+\item{verbose}{Should I be chatty?}
+}
 \value{
 list with data frames:
 \itemize{
@@ -31,7 +56,7 @@ Output is NULL if no cells are detected
 }
 }
 \description{
-Reads a zip file with cellprofiler features, each file other then
+Reads a .zip file with cellprofiler features, each file other then
 _Image, _Experiment and _Object Relationships are assumed to be an object
 Will match objects on order with an appropriate matching strategy
 }
