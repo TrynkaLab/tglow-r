@@ -84,6 +84,7 @@ tglow_dataset_from_list <- function(
   dataset@assays[["raw"]] <- main.assay
   dataset@active.assay <- "raw"
   dataset@object.ids <- output[[assay]][, col.object]
+  names(dataset@object.ids) <- dataset@object.ids
 
   # Filter meta
   dataset@meta <- output[[assay]][, meta.cols]
@@ -100,6 +101,6 @@ tglow_dataset_from_list <- function(
   rownames(dataset@image.meta) <- output$meta[, col.meta.img.id]
 
   dataset@image.ids <- dataset@meta[, col.img.id]
-  names(dataset@image.ids) <- dataset@meta[, col.object]
+  names(dataset@image.ids) <- dataset@object.ids
   return(dataset)
 }
