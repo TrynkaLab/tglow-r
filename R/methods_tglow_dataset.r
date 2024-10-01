@@ -140,8 +140,9 @@ setMethod(
     }
 
     object@object.ids <- value
+    names(object@object.ids) <- object@object.ids
+    
     names(object@image.ids) <- value
-
     rownames(object@meta) <- value
 
     for (assay in names(object@assays)) {
@@ -359,6 +360,16 @@ setMethod(
 
     if (sum(object@object.ids == object.names) != length(object.names)) {
       warning("@object.ids on TglowDataset are in a different order then provided object.names")
+      return(FALSE)
+    }
+    
+    if (is.null(names(object@image.ids))) {
+      warning("names of @image.ids on TglowDataset are NULL. Affects slicing with strings. Run objectIds(object) <- object@object.ids to fix")
+      return(FALSE)
+    }
+    
+    if (is.null(names(object@object.ids))) {
+      warning("names of @object.ids on TglowDataset are NULL. Affects slicing with strings. Run objectIds(object) <- object@object.ids to fix")
       return(FALSE)
     }
 

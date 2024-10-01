@@ -178,7 +178,7 @@ add_global_ids <- function(matrix) {
 #'
 #' - objectRelations
 #'
-#' - features [optional]
+#' - features (optional)
 #'
 #'
 #' Output is NULL if no cells are detected
@@ -284,7 +284,7 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' - cells (cell level features)
 #' - meta (image level features)
 #' - objectRelations
-#' - features [optional]
+#' - features (optional)
 #' Output is NULL if no cells are detected
 #'
 #' @export
