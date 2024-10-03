@@ -97,6 +97,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
+#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
 #'
 #' @details
 #'
@@ -117,7 +118,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
+correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -143,7 +144,15 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 
     for (group in unique(grouping)) {
         selector <- grouping == group
-        residuals[selector, ] <- lm_matrix(response[selector, ], design[selector, ], covariates.dont.use = covariates.dont.use, residuals.only = TRUE)
+
+        if (rescale.group) {
+            cat("[INFO] Rescaling within ", group, ". Set rescale.group=F if this is not what you want\n")
+            response.cur <- fast_colscale(response[selector, ])
+        } else {
+            response.cur <- response[selector, ]
+        }
+
+        residuals[selector, ] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, residuals.only = TRUE)
     }
 
     if (is.null(assay.out)) {
@@ -174,6 +183,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
+#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
 #'
 #' @details
 #'
@@ -194,7 +204,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL) {
+correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (!is.list(covariates.group)) {
@@ -236,6 +246,13 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
     for (group in unique(grouping)) {
         selector <- grouping == group
 
+        if (rescale.group) {
+            cat("[INFO] Rescaling within ", group, ". Set rescale.group=F if this is not what you want\n")
+            response.cur <- fast_colscale(response[selector, ])
+        } else {
+            response.cur <- response[selector, ]
+        }
+
         for (fgroup in names(covariates.group)) {
             data <- getDataByObject(object, covariates.group[[fgroup]], assay, assay.image, slot.covar, drop = F)
 
@@ -244,7 +261,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
             group.features <- feature.colnames[[fgroup]]
             cat("[INFO] Running object group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
 
-            res <- lm_matrix(response[selector, group.features],
+            res <- lm_matrix(response.cur[, group.features],
                 design,
                 covariates.dont.use = covariates.dont.use.cur,
                 residuals.only = TRUE
@@ -284,6 +301,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
+#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
 #'
 #' @details
 #' `grouping`
@@ -303,7 +321,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL) {
+calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = TRUE) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -345,7 +363,15 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
         for (group in unique(grouping)) {
             cat("[INFO] Starting regressions for group: ", group, "\n")
             selector <- grouping == group
-            results[[group]] <- lm_matrix(response[selector, ], design[selector, ], covariates.dont.use = covariates.dont.use)
+
+            if (rescale.group) {
+                cat("[INFO] Rescaling within ", group, ". Set rescale.group=F if this is not what you want\n")
+                response.cur <- fast_colscale(response[selector, ])
+            } else {
+                response.cur <- response[selector, ]
+            }
+
+            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use)
         }
         return(results)
     }
@@ -390,6 +416,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
+#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
 #' @param ... Remaining arguments passed to [tglowr::lmm_matrix()] and then to [lmerTest::lmer()]. See detaills
 #' @details
 #'
@@ -407,7 +434,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, ...) {
+calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, rescale.group = TRUE, ...) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -441,7 +468,16 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
         for (group in unique(grouping)) {
             cat("[INFO] Starting regressions for group: ", group, "\n")
             selector <- grouping == group
-            results[[group]] <- lmm_matrix(response[selector, ], data[selector, ], formula = formula, ...)
+
+            if (rescale.group) {
+                cat("[INFO] Rescaling within ", group, ". Set rescale.group=F if this is not what you want\n")
+                response.cur <- fast_colscale(response[selector, ])
+            } else {
+                response.cur <- response[selector, ]
+            }
+
+
+            results[[group]] <- lmm_matrix(response.cur, data[selector, ], formula = formula, ...)
         }
         return(results)
     }
@@ -457,6 +493,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
+#' @param keep.zerocol Keep columns in design matrix that sum to zero
 #'
 #' @details
 #' This is more efficient as the b component of the design matrix can be re-used between regressions
@@ -471,7 +508,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE) {
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE) {
     if (residuals.only && !return.residuals) {
         return.residuals <- TRUE
     }
@@ -479,6 +516,18 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     if (!is.null(covariates.dont.use)) {
         if (sum(covariates.dont.use %in% colnames(design)) != length(design)) {
             warning("Not all covariates specified in covariates.dont.use found. Check the output carefully if all is expected. This can happen if covariates.dont.use contains factors")
+        }
+    }
+
+    if (!keep.zerocol) {
+        design.colsums <- colSums(design)
+        if (any(design.colsums == 0)) {
+            msg <- "Found columns which sum to zero, dropped these as usually they indicate an empty factor level\n"
+            msg <- paste0(msg, "If you do want to keep them, set keep.zerocol = TRUE\n")
+            msg <- paste0(msg, "Offending collumns: ", colnames(design)[design.colsums == 0])
+            warning(msg)
+
+            design <- design[, design.colsums != 0]
         }
     }
 

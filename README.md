@@ -58,12 +58,12 @@ You can then load the library using `library("tglowr", lib=paste0(tempdir(), "/r
    2. Based on PCA outliers within a QC group which reflects a biological condition.
 5. Normalization and scaling. (BoxCox transform, z-score / modified z)
 6. Optional scaling to control samples
-7. Optional aggregation (mean, median, sum)
-8. Covariate / batch regression (currently only linear models)
+7. Optional aggregation to a grouping variable (mean, median, sum)
+8. Covariate / batch regression (currently only linear or linear mixed models)
 9. PCA and UMAP
 10. Clustering (Louvain / Leiden based on ANNOY knn grapph)
 11. Finding cluster markers using t-test
-12. Finding associations using linear models
+12. Finding associations using linear or linear mixed models
 
 # Loading data into a TglowDataset
 Currently built arround the output of the tglow-pipeline, will write some more general constructors soon.
@@ -86,7 +86,6 @@ tglow <- tglow_dataset_from_list(output, assay="cells")
 
 # Check if the dataset is valid
 isValid(tglow)
-
 ```
 
 The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)`
