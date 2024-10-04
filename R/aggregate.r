@@ -183,6 +183,9 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
     new.meta <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
     new.image.meta <- aggregate_metadata(object@image.meta, grouping.image, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
 
+    image.ids <- group.order
+    names(image.ids) <- group.order
+
     # Put everything on a new TglowObject
     new.object <- new("TglowDataset",
         assays = new.assays,
@@ -190,7 +193,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         image.meta = new.image.meta,
         meta = new.meta,
         object.ids = group.order,
-        image.ids = group.order
+        image.ids = image.ids
     )
 
     return(new.object)
