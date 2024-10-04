@@ -542,6 +542,12 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
         rownames(model.stats) <- colnames(response)
         colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df")
+        mse.vec <- rep(NA, ncol(response))
+        names(mse.vec) <- colnames(response)
+        
+        if (!is.null(covariates.dont.use)) {
+            warning("Specified covariates.dont.use while returning model stats, this is not reccomended unless you understand the implications.")
+        }
     }
 
     # Matrix to save residuals
@@ -551,8 +557,6 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         colnames(residuals) <- colnames(response)
     }
 
-
-
     # Calculate the beta's. Use chol2inv on the cholesky decomposition
     # to invert rather then solve as this is faster. This only works on
     # positive-definite matrices, but I think this should always be true in this case
@@ -560,7 +564,6 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 
     # Pre-calculate b component on design matrix
     b <- chol2inv(chol(crossprod(design)))
-    # b.tmp <- b[!colnames(design) %in% covariates.dont.use, !colnames(design) %in% covariates.dont.use]
     cat("[INFO] Starting regressions\n")
 
     pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
@@ -589,6 +592,8 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         # Optionally save model statistics
         if (!residuals.only) {
             if (!is.null(covariates.dont.use)) {
+                # Make sure residuals are centered when calculating stats
+                # This is not the case if dropping covariates
                 rs <- rs - mean(rs)
             }
 
@@ -599,6 +604,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
             # RSS / df
             df <- (length(rs) - ncol(design))
             mse <- as.numeric(rss / df)
+            mse.vec[col] <- mse
             se[col, ] <- as.numeric(sqrt(diag(mse * b)))[!colnames(design) %in% covariates.dont.use]
             coef[col, ] <- as.numeric(beta.tmp)
 
@@ -620,7 +626,8 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     }
 
     # Return output list
-    out.list <- list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1, residuals = NULL)
+    out.list <- list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1, residuals = NULL, mse = mse.vec, cov.unscaled = b)
+    class(out.list) <- "tglowlm"
     if (return.residuals) {
         out.list$residuals <- residuals
     }
@@ -679,9 +686,9 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
         coef <- matrix(NA, nrow = ncol(response), ncol = n.coefs)
         rownames(coef) <- colnames(response)
         colnames(coef) <- colnames(tmp$X)
-        se <- coef[, ]
-        pval <- coef[, ]
-        df <- coef[, ]
+        se <- coef
+        pval <- coef
+        df <- coef
         model.stats <- matrix(NA, nrow = ncol(response), 5)
         rownames(model.stats) <- colnames(response)
         colnames(model.stats) <- c("r2_cond", "r2_marg", "chisqr", "p-value", "df")
