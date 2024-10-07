@@ -21,7 +21,7 @@ tglow_dimplot(
 )
 }
 \arguments{
-\item{reduction}{A name of a reduction on dataset}
+\item{reduction}{A name of a reduction on dataset.}
 
 \item{ident}{The item to use for coloring points, passed to \code{\link{getDataByObject}}}
 

@@ -138,6 +138,10 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 
     for (i in seq_along(filters)) {
         cur.filter <- filters[[i]]
+        if (!filter@active) {
+            cat("[INFO] Skipping, ", filter@name, ": ", filter@func, " as its not active\n")
+            next()
+        }
 
         cat("[INFO] ", cur.filter@name, ": ", cur.filter@func, "\n")
 
@@ -149,6 +153,20 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
         }
 
         cat("[INFO] Applying pattern: ", cur.filter@column_pattern, " and selected: ", length(cur.features), " features \n")
+        
+        if (length(cur.features) == 0) {
+            msg <- "No features selected, skipping filter"
+            warning(msg)
+            cat("[WARN] ", msg, "\n")
+            next()
+        }
+        
+        if (sum(cur.features %in% colnames(data)) != length(cur.features)) {
+            msg <- "Not all features selected found in colnames, skipping filter"
+            warning(msg)
+            cat("[WARN] ", msg, "\n")
+            next()
+        }
 
         cur.data <- data[, cur.features, drop = F]
         if (cur.filter@transpose) {

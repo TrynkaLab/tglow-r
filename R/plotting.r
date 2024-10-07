@@ -88,7 +88,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #' @description Plot a reduction on a \linkS4class{TglowDataset}
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param reduction A name of a reduction on dataset
+#' @param reduction A name of a reduction on dataset.
 #' @param ident The item to use for coloring points, passed to \code{\link{getDataByObject}}
 #' @param assay The assay to use for coloring, passed to \code{\link{getDataByObject}}
 #' @param slot The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"
@@ -107,8 +107,10 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
         stop("Reduction not found on object")
     }
 
-    if (!is.numeric(downsample) && !is.integer(downsample) && !is.logical(downsample)) {
-        stop("Downsample must be a number indicating samples to select, or a numeric or logical selection vector")
+    if (!is.null(downsample)) {
+        if (!is.numeric(downsample) && !is.integer(downsample) && !is.logical(downsample)) {
+            stop("Downsample must be a number indicating samples to select, or a numeric or logical selection vector")
+        }
     }
 
     dim <- object@reduction[[reduction]]@x[, c(axis.x, axis.y)]

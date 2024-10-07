@@ -14,7 +14,8 @@ correct_lm(
   formula = NULL,
   assay.out = NULL,
   grouping = NULL,
-  covariates.dont.use = NULL
+  covariates.dont.use = NULL,
+  rescale.group = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ correct_lm(
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
 \item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
+
+\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 }
 \value{
 The \linkS4class{TglowDataset} with a corrected assay
@@ -53,7 +56,7 @@ If this is provided, scaling for populating scale.data slot is done over ALL res
 
 If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by \code{\link[stats:formula]{stats::formula()}}
 
-\code{covariates.dont.correct}
+\code{covariates.dont.use}
 
 The beta's for these variables are removed when calculating the residuals. When specifying more complex models in formula,
 use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't

@@ -214,7 +214,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' @export
 apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, rfast.zerotol = 1e-10, ...) {
     # Checks for input
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr::check_dataset_assay_slot(dataset, assay, slot)
 
     if (assay == "image.data") {
         mat <- slot(dataset@image.data, slot)@.Data
@@ -235,7 +235,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     lambdas <- c()
     mat <- apply(mat, 2, function(x) {
         pb$tick()
-        res <- boxcox_transform(x, add.lambda = T, ...)
+        res <- tglowr::boxcox_transform(x, add.lambda = T, ...)
 
         lambdas <<- c(lambdas, res$lambda)
         return(res$x)
@@ -254,8 +254,8 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     }
 
     res <- new("TglowAssay",
-        data = TglowMatrix(mat),
-        scale.data = TglowMatrix(fast_colscale(mat, na.rm = T)),
+        data = tglowr::TglowMatrix(mat),
+        scale.data = tglowr::TglowMatrix(tglowr::fast_colscale(mat, na.rm = T)),
         features = features
     )
 
@@ -275,7 +275,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' @description Scale the data slot in a tglow assay and override the scale.data slot
 #' Defaults to z-score, but can also return modified z-score when providing scale.method
 #'
-#' @param assay TglowAssay
+#' @param assay \linkS4class{TglowAssay}
 #' @param grouping Vector with a grouping variable of length nrow(assay)
 #' @param reference.group Scale not to the vector mean/median, sd/mad but to the objects indiciated here
 #' @param ... Arguments passed to \code{\link{fast_colscale}}
@@ -308,7 +308,7 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
     }
 
     if (is.null(grouping)) {
-        assay@scale.data <- TglowMatrix(fast_colscale(assay@data@.Data, reference.group = reference.group, ...))
+        assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data@.Data, reference.group = reference.group, ...))
     } else {
         if (length(grouping) != nrow(assay)) {
             stop("Length of grouping must equal nrow(assay)")
@@ -327,10 +327,43 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
 
         for (group in unique(grouping)) {
             selector <- grouping == group
-            mat.scale[selector, ] <- fast_colscale(mat[selector, ], reference.group = reference.group[selector], ...)
+            mat.scale[selector, ] <- tglowr::fast_colscale(mat[selector, ], reference.group = reference.group[selector], ...)
         }
 
-        assay@scale.data <- TglowMatrix(mat.scale)
+        assay@scale.data <- tglowr::TglowMatrix(mat.scale)
     }
     return(assay)
+}
+
+#-------------------------------------------------------------------------------
+#' Scale a tglow dataset
+#'
+#' @description  For TglowDataset, scales the provided assay, or all assays when assay is null
+#' @param dataset \linkS4class{TglowDataset}
+#' @param assay Character string indicating assay, if NULL all assays are scaled.
+#' @param grouping Colname on dataset or Vector with a grouping variable of length nrow(assay)
+#' @param ... Remaining options passed to [scale_assay()]
+#'
+#' @returns The \linkS4class{TglowDataset} with assay scale.data slots populated
+#' @export
+scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
+    if (is.character(grouping) && length(grouping) == 1) {
+        if (tglowr::isAvailable(dataset, grouping, assay = assay, slot = "data")) {
+            grouping <- tglowr::getDataByObject(dataset, assay = assay)[, 1]
+        } else {
+            stop(paste0(grouping, " is not available meta, image.meta, or assay item on dataset"))
+        }
+    }
+
+    if (!is.null(assay)) {
+        tglowr::check_dataset_assay_slot(dataset, assay = assay, slot = "data")
+        dataset@assays[[assay]] <- tglowr::scale_assay(dataset@assays[[assay]], grouping = grouping, ...)
+    } else {
+        for (assay in names(dataset@assays)) {
+            cat("[INFO] Scaling assay: ", assay, "\n")
+            dataset@assays[[assay]] <- tglowr::scale_assay(dataset@assays[[assay]], grouping = grouping, ...)
+        }
+    }
+
+    return(dataset)
 }

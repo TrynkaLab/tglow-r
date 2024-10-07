@@ -14,6 +14,7 @@ calculate_lmm(
   assay.covar = NULL,
   slot.covar = NULL,
   assay.image = NULL,
+  rescale.group = TRUE,
   ...
 )
 }
@@ -35,6 +36,8 @@ calculate_lmm(
 \item{slot.covar}{The slot to grab covariates from. Can be "data" or "scale.data"}
 
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
+
+\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 
 \item{...}{Remaining arguments passed to \code{\link[=lmm_matrix]{lmm_matrix()}} and then to \code{\link[lmerTest:lmer]{lmerTest::lmer()}}. See detaills}
 }

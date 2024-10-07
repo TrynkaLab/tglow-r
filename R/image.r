@@ -1,3 +1,6 @@
+#' @import EBImage
+NULL
+
 #-------------------------------------------------------------------------------
 #' Convert a hex code to RGB
 #' @param hex String with hex code

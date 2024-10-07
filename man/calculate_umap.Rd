@@ -6,7 +6,7 @@
 \usage{
 calculate_umap(
   dataset,
-  reduction,
+  reduction = NULL,
   assay = NULL,
   slot = "scale.data",
   pc.n = 30,
@@ -19,9 +19,9 @@ calculate_umap(
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{reduction}{The reduction to use for calculating UMAPs. If NULL re-calculated}
+\item{reduction}{The reduction to use for calculating UMAPs. If NULL and 'PCA.\if{html}{\out{<assay>}}' is not available it is re-calculated}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay to use to calculate PCA with, or to grab from reduction 'PCA.\if{html}{\out{<assay>}}'}
 
 \item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
 

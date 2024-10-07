@@ -48,6 +48,22 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             ident.is.ref <- (cur.ident != class) & (cur.ident %in% ref.classes)
         }
 
+        if (sum(ident.is.ref) == 0) {
+            warning(paste0("No reference items found. Consider setting ref.classes. skipping class ", class))
+            res[i:ncol(cur.assay), "class"] <- class
+            res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
+            i <- i + ncol(cur.assay)
+            next()
+        }
+
+        if (sum(ident.is.class) == 0) {
+            warning(paste0("No class items found, skipping class ", class))
+            res[i:ncol(cur.assay), "class"] <- class
+            res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
+            i <- i + ncol(cur.assay)
+            next()
+        }
+
         for (col in colnames(cur.assay)) {
             pb$tick()
 
@@ -109,7 +125,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #'
 #'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by [stats::formula()]
 #'
-#' `covariates.dont.correct`
+#' `covariates.dont.use`
 #'
 #' The beta's for these variables are removed when calculating the residuals. When specifying more complex models in formula,
 #' use the term names, with for instance, interaction terms for example, if it has a form of '~ a + b + c + b:c' and you don't
@@ -387,8 +403,10 @@ check_unused_covar <- function(data, covariates.dont.use) {
                 tmp <- c(tmp, covar)
                 next()
             }
-
-            if (is.factor(data[, covar])) {
+            
+            if (is.character(data[,covar])) {
+                tmp <- c(tmp, paste0(covar, unique(data[, covar])))
+            } else if (is.factor(data[, covar])) {
                 tmp <- c(tmp, paste0(covar, levels(data[, covar])))
             } else {
                 tmp <- c(tmp, covar)
@@ -544,7 +562,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df")
         mse.vec <- rep(NA, ncol(response))
         names(mse.vec) <- colnames(response)
-        
+
         if (!is.null(covariates.dont.use)) {
             warning("Specified covariates.dont.use while returning model stats, this is not reccomended unless you understand the implications.")
         }

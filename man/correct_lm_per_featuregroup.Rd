@@ -13,7 +13,8 @@ correct_lm_per_featuregroup(
   assay.image = NULL,
   assay.out = NULL,
   grouping = NULL,
-  covariates.dont.use = NULL
+  covariates.dont.use = NULL,
+  rescale.group = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ correct_lm_per_featuregroup(
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
 \item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
+
+\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 }
 \value{
 The \linkS4class{TglowDataset} with a corrected assay

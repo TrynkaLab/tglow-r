@@ -9,7 +9,8 @@ lm_matrix(
   design,
   covariates.dont.use = NULL,
   residuals.only = FALSE,
-  return.residuals = FALSE
+  return.residuals = FALSE,
+  keep.zerocol = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ lm_matrix(
 \item{residuals.only}{Only return the residual matrix}
 
 \item{return.residuals}{Return residual matrix in the output list. Defaults to T if residual.only = TRUE}
+
+\item{keep.zerocol}{Keep columns in design matrix that sum to zero}
 }
 \value{
 A list with regression results

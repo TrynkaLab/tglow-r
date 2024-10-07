@@ -14,7 +14,8 @@ calculate_lm(
   assay.covar = NULL,
   slot.covar = NULL,
   assay.image = NULL,
-  covariates.dont.use = NULL
+  covariates.dont.use = NULL,
+  rescale.group = TRUE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ calculate_lm(
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
 \item{covariates.dont.use}{Only use if you understand the implications. See detaills}
+
+\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 }
 \value{
 A list of regression results. If grouping != NULL, there is one list per group

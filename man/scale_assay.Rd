@@ -7,7 +7,7 @@
 scale_assay(assay, grouping = NULL, reference.group = NULL, ...)
 }
 \arguments{
-\item{assay}{TglowAssay}
+\item{assay}{\linkS4class{TglowAssay}}
 
 \item{grouping}{Vector with a grouping variable of length nrow(assay)}
 

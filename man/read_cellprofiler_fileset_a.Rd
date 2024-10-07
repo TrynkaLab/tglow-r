@@ -35,7 +35,7 @@ list with data frames:
 \item cells (cell level features)
 \item meta (image level features)
 \item objectRelations
-\item features \link{optional}
+\item features (optional)
 }
 
 Output is NULL if no cells are detected

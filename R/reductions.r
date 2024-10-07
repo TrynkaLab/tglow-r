@@ -49,7 +49,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
         # Calculate PCAs
         pcs <- irlba::prcomp_irlba(cur.data, n = pc.n, center = F, scale = F)
         rownames(pcs$x) <- dataset@object.ids
-        
+
         res <- new("TglowReduction", x = pcs$x, var = pcs$sdev^2, var_total = pcs$totalvar)
     } else {
         pcs <- prcomp(cur.data, center = F, scale = F)
@@ -83,8 +83,8 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' omitted set to NA to ensure downstream ordering is maintained
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param reduction The reduction to use for calculating UMAPs. If NULL re-calculated
-#' @param assay The assay to use
+#' @param reduction The reduction to use for calculating UMAPs. If NULL and 'PCA.<assay>' is not available it is re-calculated
+#' @param assay The assay to use to calculate PCA with, or to grab from reduction 'PCA.<assay>'
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param pc.n How many PC's to calculate
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
@@ -94,9 +94,15 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #'
 #' @returns \linkS4class{TglowDataset} with populated reduction slot
 #' @export
-calculate_umap <- function(dataset, reduction, assay = NULL, slot = "scale.data", pc.n = 30, reduction.name = NULL, downsample = NULL, use_irlba = TRUE, ...) {
+calculate_umap <- function(dataset, reduction = NULL, assay = NULL, slot = "scale.data", pc.n = 30, reduction.name = NULL, downsample = NULL, use_irlba = TRUE, ...) {
     # Check input
     check_dataset_assay_slot(dataset, assay, slot)
+
+    if (!is.null(assay)) {
+        if (paste0("PCA.", assay) %in% names(dataset@reduction)) {
+            reduction <- paste0("PCA.", assay)
+        }
+    }
 
     if (is.null(reduction)) {
         if (is.null(assay)) {
