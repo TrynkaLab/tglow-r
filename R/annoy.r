@@ -1,13 +1,13 @@
 #-------------------------------------------------------------------------------
 #' Annoy: approximate nearest neighbours oh yeah
-#' 
+#'
 #' This code is directly lifted from seurat's annoy implementation here:
 #' https://github.com/satijalab/seurat/blob/master/R/clustering.R
-#' 
+#'
 #' More detaills on knn implementations in this paper:
 #' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11014608/
-#' 
-#' The reason for using this over exact NN is the speed, 
+#'
+#' The reason for using this over exact NN is the speed,
 #' but other flavours of approximimate NN are available
 #' Run annoy
 #'
@@ -29,18 +29,24 @@ AnnoyNN <- function(data,
                     k,
                     search.k = -1,
                     include.distance = TRUE,
-                    index = NULL
-) {
-  idx <- index %||% AnnoyBuildIndex(
-    data = data,
-    metric = metric,
-    n.trees = n.trees)
+                    index = NULL) {
+  if (!is.null(index)) {
+    idx <- index
+  } else {
+    idx <- AnnoyBuildIndex(
+      data = data,
+      metric = metric,
+      n.trees = n.trees
+    )
+  }
+
   nn <- AnnoySearch(
     index = idx,
     query = query,
     k = k,
     search.k = search.k,
-    include.distance = include.distance)
+    include.distance = include.distance
+  )
   nn$idx <- idx
   nn$alg.info <- list(metric = metric, ndim = ncol(x = data))
   return(nn)
@@ -48,10 +54,10 @@ AnnoyNN <- function(data,
 
 #-------------------------------------------------------------------------------
 #' Build the annoy index
-#' 
+#'
 #' This code is directly lifted from seurat's annoy implementation here:
 #' https://github.com/satijalab/seurat/blob/master/R/clustering.R
-#' 
+#'
 #' @param data Data to build the index with
 #' @param metric Distance metric; can be one of "euclidean", "cosine", "manhattan",
 #' "hamming"
@@ -63,11 +69,11 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
   f <- ncol(x = data)
   a <- switch(
     EXPR = metric,
-    "euclidean" =  new(Class = RcppAnnoy::AnnoyEuclidean, f),
+    "euclidean" = new(Class = RcppAnnoy::AnnoyEuclidean, f),
     "cosine" = new(Class = RcppAnnoy::AnnoyAngular, f),
     "manhattan" = new(Class = RcppAnnoy::AnnoyManhattan, f),
     "hamming" = new(Class = RcppAnnoy::AnnoyHamming, f),
-    stop ("Invalid metric")
+    stop("Invalid metric")
   )
   for (ii in seq(nrow(x = data))) {
     a$addItem(ii - 1, data[ii, ])
@@ -81,7 +87,7 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
 #'
 #' This code is directly lifted from seurat's annoy implementation here:
 #' https://github.com/satijalab/seurat/blob/master/R/clustering.R
-#' 
+#'
 #' @param Annoy index, built with AnnoyBuildIndex
 #' @param query A set of data to be queried against the index
 #' @param k Number of neighbors
@@ -98,7 +104,7 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
 #'
 AnnoySearch <- function(index, query, k, search.k = -1, include.distance = TRUE) {
   n <- nrow(x = query)
-  idx <- matrix(nrow = n,  ncol = k)
+  idx <- matrix(nrow = n, ncol = k)
   dist <- matrix(nrow = n, ncol = k)
   convert <- methods::is(index, "Rcpp_AnnoyAngular")
   if (!inherits(x = plan(), what = "multicore")) {

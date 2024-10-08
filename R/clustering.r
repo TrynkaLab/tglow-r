@@ -6,7 +6,7 @@
 #'
 #'
 #' @param dataset A tglow dataset
-#' @param reduction The reduction to use for calculating UMAPs. If NULL re-calculated
+#' @param reduction The reduction to use for calculating clustering. If NULL re-calculated
 #' @param pc.n How many PC's to use
 #' @param k How many NN to calculate
 #' @param method Clustering method to use 'louvain' or 'leiden'
