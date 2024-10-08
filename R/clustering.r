@@ -10,9 +10,9 @@
 #' @param pc.n How many PC's to use
 #' @param k How many NN to calculate
 #' @param method Clustering method to use 'louvain' or 'leiden'
-#' @param resolution Resolution for method 'louvain' or 'leiden'
+#' @param resolution Resolution for method 'louvain' or 'leiden'. Can be a vector of resolutions
 #' @param exact.nn Instead of using Seurat ANNOY for kNN use \code{\link[=nn2]{RANN::nn2()}}
-#' @param col.out Column name to store the clustering under added to the meta slot on the output object
+#' @param col.out Prefix for column name to store the clustering under added to the meta slot on the output object
 #'
 #' @details
 #' Here I use the Seurat implementation of the kNN, which is NOT and exact
@@ -36,7 +36,7 @@
 #' @importFrom igraph graph_from_edgelist membership cluster_louvain cluster_leiden
 #' @importFrom RANN nn2
 #' @export
-calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method = "louvain", resolution = 0.1, exact.nn = FALSE, col.out="clusters") {
+calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method = "louvain", resolution = 0.1, exact.nn = FALSE, col.out = "clusters_") {
     if (!reduction %in% names(dataset@reduction)) {
         stop(paste0("Reduction ", reduction, " not found in dataset"))
     }
@@ -78,16 +78,22 @@ calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method
         dataset@graph <- list(graph = graph, k = k, reduction = reduction, exact.nn = exact.nn)
     }
 
-    if (method == "louvain") {
-        cl <- cluster_louvain(graph, resolution = resolution)
-    } else if (method == "leiden") {
-        cl <- cluster_leiden(graph, resolution = resolution)
-    } else {
-        stop("No valid cluster method")
+
+    for (res in resolution) {
+        cat("[INFO] Calculating clustering for resolution: ", res, "\n")
+        cur.out <- paste0(col.out, "res_", res)
+        if (method == "louvain") {
+            cl <- cluster_louvain(graph, resolution = res)
+        } else if (method == "leiden") {
+            cl <- cluster_leiden(graph, resolution = res)
+        } else {
+            stop("No valid cluster method")
+        }
+
+        # Make a vector of the cluster memberships for each cell
+        dataset@meta[, cur.out] <- as.character(membership(cl))
     }
 
-    # Make a vector of the cluster memberships for each cell
-    dataset@meta[,col.out] <- as.character(membership(cl))
 
     return(dataset)
 }

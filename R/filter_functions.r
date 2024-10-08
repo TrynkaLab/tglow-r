@@ -84,7 +84,7 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
         cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
 
         pb <- progress::progress_bar$new(format = paste0("[INFO] ", filter@name, " [:bar] :current/:total (:percent) eta :eta"), total = length(cur.features))
-        res[cur.features, filter@name] <- apply(data[, cur.features, drop=FALSE], 2, function(x) {
+        res[cur.features, filter@name] <- apply(data[, cur.features, drop = FALSE], 2, function(x) {
             pb$tick()
             if (is.na(filter@threshold) || is.null(filter@threshold)) {
                 return(do.call(filter@func, list(vec = x)))
@@ -119,7 +119,7 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 #'
 #' @returns A logical matrix of nrow(dataset) x length(filters) where T indicates filter pass and F indicates filter fail
 #' @export
-calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail=TRUE) {
+calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail = TRUE) {
     # Check inputs
     check_dataset_assay_slot(dataset, assay, slot)
     check_filter_list(filters)
@@ -138,8 +138,8 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 
     for (i in seq_along(filters)) {
         cur.filter <- filters[[i]]
-        if (!filter@active) {
-            cat("[INFO] Skipping, ", filter@name, ": ", filter@func, " as its not active\n")
+        if (!cur.filter@active) {
+            cat("[INFO] Skipping, ", cur.filter@name, ": ", cur.filter@func, " as its not active\n")
             next()
         }
 
@@ -153,14 +153,14 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
         }
 
         cat("[INFO] Applying pattern: ", cur.filter@column_pattern, " and selected: ", length(cur.features), " features \n")
-        
+
         if (length(cur.features) == 0) {
             msg <- "No features selected, skipping filter"
             warning(msg)
             cat("[WARN] ", msg, "\n")
             next()
         }
-        
+
         if (sum(cur.features %in% colnames(data)) != length(cur.features)) {
             msg <- "Not all features selected found in colnames, skipping filter"
             warning(msg)
