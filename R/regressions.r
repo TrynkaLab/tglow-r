@@ -512,6 +512,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param keep.zerocol Keep columns in design matrix that sum to zero
+#' @param eigen.tol Minimal eigenvalue to keep columns in the design matrix
 #'
 #' @details
 #' This is more efficient as the b component of the design matrix can be re-used between regressions
@@ -526,7 +527,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE) {
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol=1e-8) {
     if (residuals.only && !return.residuals) {
         return.residuals <- TRUE
     }
@@ -546,6 +547,20 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
             warning(msg)
 
             design <- design[, design.colsums != 0]
+        }
+    }
+    
+    # Check for near zero eigenvalues in the design matrix
+    a <- crossprod(design)
+    if (!is.null(eigen.tol)) {
+        ev <- eigen(a, only.values=T)$values
+        if (any(ev < eigen.tol)) {
+            msg <- paste0("Eigenvalues < ", eigen.tol, " detected, dropping these variables from the design matrix. Set eigen.tol=NULL to skip this check\n")
+            msg <- paste0(msg, "Offending collumns: ", colnames(design)[ev < eigen.tol])
+            warning(msg)
+            cat("[WARN] ", msg, "\n")
+            design <- design[,ev > eigen.tol]
+            a <- crossprod(design)
         }
     }
 
@@ -581,7 +596,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     # (dont quote me on this). If not it throws an error so you can use solve instead
 
     # Pre-calculate b component on design matrix
-    b <- chol2inv(chol(crossprod(design)))
+    b <- chol2inv(chol(a))
     cat("[INFO] Starting regressions\n")
 
     pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
