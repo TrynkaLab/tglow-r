@@ -2,24 +2,44 @@
 
 This repo contains an R package for analyzing (single cell) HCI imaging data. The package strucutre is heavily inspired by Seurat.
 
-# Installation & dependencies
-Note: Will update a list of dependencies later and automate the dependencies during install.  
+*Very important note:* We make no claims on the statistical validity of applying some of the approaches on any given dataset and this package is "use at your own risk". As the HCI feature space is so diverse and to maintain flexibility you can in principle run any data through the pacakge but this also means you can easily end up violating statistical assumptions. If in doubt, reach out to your local friendly statistician for advice if any given method is valid.
 
-Note: For now repo is private, make sure you are on VPN when calling this.
+# Installation & dependencies
+> NOTE: While dependencies should be installed automatically, but this is currently untested so your milage may vary.
+
+> NOTE: For now repo is private, make sure you are on VPN when calling this.
+
+This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
 ```
 library(remotes)
 
 remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git")
 ```
 
-## On Sanger farm22 - latest dev version
+## On Sanger farm22 - latest dev version - reccomended
+A version compatible with the tglow-r softpack module comes pre-installed in `/software/teamtrynka/installs/tglow-rlibs` and can be loaded as such. 
 
-If using R from the headnode or jammy64 you should be able to install directly through gitlab, using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core`.
-
-If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there into a local tmp library inside the container. Alternatively you can ofcourse install into your personal library as well prior to launching Rstuio Sever and provide that in RStudio start, but this is a bit annoying for development, as you would need to re-start when re-installing.
+> NOTE: The version here changes often at the moment, so might not be the most stable.
 
 ``` 
-module load HGI/softpack/groups/cell_activation_tc/tglow-r/5
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
+```
+
+Then launch R.
+```
+library(tglowr, lib="/software/teamtrynka/installs/tglow-rlibs")
+```
+
+Alternatively you can install if using R from the headnode or jammy64 directly through gitlab as above or using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core` in combination with `devtools::document()` and `devtools::build()`.
+
+
+##  On Sanger farm22 - Installing on Rstudio server - not reccomended (stop gap solution)
+If using Rstudio server, the install can be a bit funky, and the following workarround works by copying the repo to a local temp, and building from there into a local tmp library inside the container. Alternatively you can ofcourse install into your personal library as well prior to launching Rstudio Sever and provide that in RStudio start, but this is a bit annoying for development, as you would need to re-start when re-installing.
+
+> NOTE: Long term this is not reccomended as it produces overheads and can fill up /tmp in case of crashes. You can also consider installing into a /lustre folder as a very hacky solution that is more persistent
+
+``` 
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
 ```
 
 Then launch R.
