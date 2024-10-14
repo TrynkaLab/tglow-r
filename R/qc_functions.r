@@ -17,7 +17,7 @@
 #'
 #' By default, estimates the 0.25 * ncol(assay) PC's assuming this is enough PC's to get to 75%. If this is
 #' not enough a warning is raised, and you can provide pc.max to override this behaviour or set use_irlba
-#' to FALSE to compute all components using \code{\link[=prcomp]{base::prcomp()}}
+#' to FALSE to compute all components using \code{\link[=prcomp]{prcomp()}}
 #'
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
@@ -28,7 +28,7 @@
 #' @param pc.n The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore
 #' @param return.pcs Should the grouped PC's be returned?
-#' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
+#' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
 #'
 #' @importFrom irlba prcomp_irlba
@@ -213,7 +213,7 @@ find_outliers_pca <- function(dataset,
 #' @param pc.n The number of PC's to use
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore
 #' @param return.pcs Should the grouped PC's be returned?
-#' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA
+#' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
 #'
 #' @importFrom irlba prcomp_irlba

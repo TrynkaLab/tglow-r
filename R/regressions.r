@@ -67,7 +67,21 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
         for (col in colnames(cur.assay)) {
             pb$tick()
 
-            tmp <- t.test(cur.assay[ident.is.class, col], cur.assay[ident.is.ref, col], na.rm = na.rm)
+            x <- cur.assay[ident.is.class, col]
+            y <- cur.assay[ident.is.ref, col]
+
+            # Double check for NA values
+            if ((sum(is.na(x)) >= (length(x) - 3)) || (sum(is.na(y)) >= (length(y) - 3))) {
+                msg <- paste0("Need at least 3 non NA's in class or reference groups, skipping class:feature (", class, ":", col, ")")
+                warning(msg)
+                cat("[WARN] ", msg, "\n")
+                res[i, "class"] <- class
+                res[i, "feature"] <- col
+                i <- i + 1
+                next()
+            }
+
+            tmp <- t.test(x, y, na.rm = na.rm)
 
             res[i, "class"] <- class
             res[i, "feature"] <- col
@@ -403,8 +417,8 @@ check_unused_covar <- function(data, covariates.dont.use) {
                 tmp <- c(tmp, covar)
                 next()
             }
-            
-            if (is.character(data[,covar])) {
+
+            if (is.character(data[, covar])) {
                 tmp <- c(tmp, paste0(covar, unique(data[, covar])))
             } else if (is.factor(data[, covar])) {
                 tmp <- c(tmp, paste0(covar, levels(data[, covar])))
@@ -527,7 +541,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol=1e-8) {
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol = 1e-8) {
     if (residuals.only && !return.residuals) {
         return.residuals <- TRUE
     }
@@ -549,17 +563,17 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
             design <- design[, design.colsums != 0]
         }
     }
-    
+
     # Check for near zero eigenvalues in the design matrix
     a <- crossprod(design)
     if (!is.null(eigen.tol)) {
-        ev <- eigen(a, only.values=T)$values
+        ev <- eigen(a, only.values = T)$values
         if (any(ev < eigen.tol)) {
             msg <- paste0("Eigenvalues < ", eigen.tol, " detected, dropping these variables from the design matrix. Set eigen.tol=NULL to skip this check\n")
             msg <- paste0(msg, "Offending collumns: ", colnames(design)[ev < eigen.tol])
             warning(msg)
             cat("[WARN] ", msg, "\n")
-            design <- design[,ev > eigen.tol]
+            design <- design[, ev > eigen.tol]
             a <- crossprod(design)
         }
     }

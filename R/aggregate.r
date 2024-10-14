@@ -27,7 +27,7 @@ aggregate_tglow_matrix <- function(matrix, grouping, method = "mean", group.orde
         stop("input must be TglowMatrix")
     }
 
-    dt <- as.data.table(matrix@.Data)
+    dt <- data.table::as.data.table(matrix@.Data)
     dt[, group := grouping]
 
     if (method == "mean") {
@@ -39,7 +39,6 @@ aggregate_tglow_matrix <- function(matrix, grouping, method = "mean", group.orde
     } else {
         stop(paste0(method, " is not a valid method"))
     }
-
 
     result <- as.data.frame(result)
     rownames(result) <- result[, "group"]
@@ -93,7 +92,7 @@ aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm
         stop("input must be data.frame")
     }
 
-    result <- aggregate(data, by = list(grouping), FUN = function(x, method) {
+    result <- stats::aggregate(data, by = list(grouping), FUN = function(x, method) {
         if (is.numeric(x)) {
             if (method == "mean") {
                 return(mean(x, na.rm = na.rm))

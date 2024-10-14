@@ -141,7 +141,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 
     # Create data to estimate transformation parameters
     # Optionally downsample
-    if (!is.null(downsample)) {
+    if (! is.null(downsample)) {
         if (class(downsample) == "integer" || class(downsample) == "numeric") {
             if (length(downsample) > 1) {
                 y <- x[downsample]
