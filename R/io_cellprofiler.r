@@ -11,7 +11,8 @@ NULL
 #' structure
 #'
 #' @param path path to tglow output dir
-#' @param pattern The pattern that uniquely identfies a well. Use '.zip' for type 'B' and the '_experiment.tsv' for type 'A'
+#' @param pattern The pattern that uniquely identfies a fileset. Use '.zip' for type 'B'
+#' and the '_Image.txt' or '_Experiment.txt'(or however you exported the image data) for type 'A'
 #' for type A
 #' @param type Must be 'A' or 'B'. See details
 #' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
@@ -24,7 +25,7 @@ NULL
 #' @details
 #'
 #' `type`
-#' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
+#' Type A: _cell.txt, _Image.txt, _Experiment.txt and _Object relationships.txt
 #' See \code{\link{read_cellprofiler_fileset_a}} for detaills
 #'
 #' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
@@ -163,7 +164,7 @@ add_global_ids <- function(matrix, fileset.id) {
 #'
 #' @description
 #' Reads a CellProfiler fileset into a list
-#' Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
+#' Type A: Assumes all features are in a single _cell.txt (configurable with  pat.cells)
 #' and all features are matched
 #'
 #' @param prefix Path prefix to fileset
@@ -192,9 +193,9 @@ add_global_ids <- function(matrix, fileset.id) {
 read_cellprofiler_fileset_a <- function(prefix,
                                         return.feature.meta = F,
                                         add.global.id = T,
-                                        pat.img = "_image.tsv",
-                                        pat.cells = "_cells.tsv",
-                                        pat.orl = "_objectRelationships.tsv",
+                                        pat.img = "_Image.txt",
+                                        pat.cells = "_cell.txt",
+                                        pat.orl = "_Object relationships.txt",
                                         skip.orl = FALSE,
                                         fileset.id = NULL) {
   if (add.global.id) {

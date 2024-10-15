@@ -19,10 +19,10 @@
 #' @export
 find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL, na.rm = T) {
     # Check input
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr::check_dataset_assay_slot(dataset, assay, slot)
 
     cur.assay <- slot(dataset[[assay]], slot)@.Data
-    cur.ident <- as.character(getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
+    cur.ident <- as.character(tglowr::getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
 
     if (is.null(cur.ident)) {
         stop("Ident not valid")
@@ -53,6 +53,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             res[i:ncol(cur.assay), "class"] <- class
             res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
             i <- i + ncol(cur.assay)
+            pb$tick(ncol(cur.assay))
             next()
         }
 
@@ -61,6 +62,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             res[i:ncol(cur.assay), "class"] <- class
             res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
             i <- i + ncol(cur.assay)
+            pb$tick(ncol(cur.assay))
             next()
         }
 
@@ -74,7 +76,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             if ((sum(is.na(x)) >= (length(x) - 3)) || (sum(is.na(y)) >= (length(y) - 3)) || var(x, na.rm = TRUE) < 1e-16 || var(y, na.rm = TRUE) < 1e-16) {
                 msg <- paste0("Need at least 3 non NA's in class or reference groups and need variance > 1e-16, skipping class:feature (", class, ":", col, ")")
                 warning(msg)
-                cat("[WARN] ", msg, "\n")
+                cat("\n[WARN] ", msg, "\n")
                 res[i, "class"] <- class
                 res[i, "feature"] <- col
                 i <- i + 1

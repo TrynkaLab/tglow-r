@@ -86,29 +86,69 @@ You can then load the library using `library("tglowr", lib=paste0(tempdir(), "/r
 12. Finding associations using linear or linear mixed models
 
 # Loading data into a TglowDataset
-Currently built arround the output of the tglow-pipeline, will write some more general constructors soon.
-Have a look at the help text for `read_cellprofiler_dir`, `tglow_dataset_from_list`, `read_cellprofiler_fileset_a` and `read_cellprofiler_fileset_b` 
-as there might be some options & patterns to set depending how you export the data from cellprofiler.
 
->NOTE: Currently I'd reccomend type 'B' as it is the best tested, and the least work to setup in the cellprofiler pipeline and keeps relationships with children
+> NOTE: The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)` if you just want to play arround
+
+## Loading generic paired image + object data
+The package is designed around manipulating image level and single object level data at the same time. If you just have single cell level data, you could always add a dummy image assay, and the downstream functionaly should still work. For this example, I will asumme the folowing information is available. By default, checks on validtiy are done on all these objects, so at minimum a warning is raised if one of these does not meet assumptions.
+
+- `objects`: A numeric matrix (not data.frame) with object level data, rows are objects, columns are imaging features. Rownames have unique object ids, colnames have unique feature ids
+- `images`: A numeric matrix (not data.frame) with image level data, rows are images, columns are imaging features. Rownames have unique image ids, colnames have unique feature ids
+- `image.ids`: A character vector describing how rows in `images` connect to rows in `objects`
+- `object.meta` (optional): This is a optional data frame with any non-numeric/numeric metadata for each object. Must be in the same order as `objects` and assumes rownames are set to the same as `objects`, and columns are unique metadata items or imaging features, colnames must be set
+- `image.meta` (optional): as `object.meta` but then paired to the `images` matrix
+
+The minimal example would then look as follows:
 
 ```
-path    <- "../../pipeline_disulfram/results/cellprofiler_v1"
+tglow <- TglowDatasetFromMatrices(objects, images, image.ids)
+```
 
-# Read the data in the new format, merging strategy takes applies the function
-# to the child objects, na.rm controls if NA's should be removed when calculating
-# this.
-output  <- read_cellprofiler_dir(path, pattern=".zip", type="B", 
-                                 merging.strategy="mean", na.rm=T)
+## Loading from the tglow nextflow pipeline / cellprofiler results
+To load cellprofiler features produced by the tglow-pipeline or any other cellprofiler pipeline, you can follow the steps below.
+First have a look at the help text for `read_cellprofiler_dir`, `TglowDatasetFromList`, , `read_cellprofiler_fileset_a` and `read_cellprofiler_fileset_b` as there might be some options & patterns to set depending how you export the data from cellprofiler.
+
+The function `read_cellprofiler_dir` scans the directory tree for a given pattern to find "filesets" which are individual exports from a cellprofiler instance. When using the tglow-pipeline there will be one of these filesets per imaging well. But this depends on the way your cellprofiler pipeline is setup. How exactly this is setup really doesn't matter for downstream analysis. 
+
+By default, these readers matche certain patterns in feature names to decide what to put as metadata, and what to use as features. Any non-numeric variables are put as metadata, as a `TglowAssay` can only store numeric data.
+
+>NOTE: Currently I'd reccomend type 'B' in combination with tglow-pipeline results, and the least work to setup in the cellprofiler pipeline and keeps relationships with children.
+
+### Type A
+This assumes that all the object level information is in one text file (controlled by `pat.cells`), and does not read and match child files that might be exported. It also assumes the image data is in a seperate file (controlled by `pat.img`), and uses the cellprofiler '_Image.txt' file to identify unique filesets.
+
+```
+# Read the dataset into a list
+output  <- read_cellprofiler_dir("/path/to/results",
+                                 pattern="_Image.txt",
+                                 type="A", 
+                                 pat.img = "_Image.txt", 
+                                 pat.cells = "_cell.txt")
+
+# Convert to tglow object
+tglow <- TglowDatasetFromList(output, assay="cells")
+
+# Check if the dataset is valid
+isValid(tglow)
+```
+ 
+### Type B
+Read the data in the type 'B' format, which is one .zip archive per fileset with a .tsv file for each object measured. One file is assumed to be the parent object (e.g. cells) and each child object (e.g. nuclei, cytoplasm etc) is in a seperate file and has a ID column linking back to the parent object. The merging strategy takes applies the function to the child objects in cases where one parent has multiple children. If the merging strategy is set, one matrix is returned with where each row is a parent object, and the child object values represent the mean. The parameter na.rm controls if NA's should be removed when calculating the child mean values.
+
+```
+output  <- read_cellprofiler_dir("/path/to/results",
+                                 pattern=".zip",
+                                 type="B", 
+                                 merging.strategy="mean",
+                                 na.rm=T)
                                  
 # Convert to tglow object
-tglow <- tglow_dataset_from_list(output, assay="cells")
+tglow <- TglowDatasetFromList(output, assay="cells")
 
 # Check if the dataset is valid
 isValid(tglow)
 ```
 
-The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)`
 
 ## Checking validity of a TglowDataset
 There are a couple of assumptions made downstream to enable functionality, that might not be met if the TglowDataset is improperly constructed.
