@@ -36,6 +36,7 @@ TglowMatrix <- function(matrix) {
 #' Just to note, the assumption is made that the scale.data slot is actually scaled to mean=0 variance=1 when
 #' running PCA's etc, so overriding with non-scaled data may change your results.
 #'
+#' @returns A populated TglowDataset
 #' @export
 TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = NULL, image.meta = NULL, assay.out = "raw") {
   stop("Not yet implemented")
@@ -83,7 +84,8 @@ TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = N
 #' @param objects The object level matrix
 #' @param objects The scaled object level matrix (optional)
 #' @param features The data frame with features
-
+#' 
+#' @returns A TglowAssay
 #' @export
 TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL) {
   if (!check_dimnames(objects)) {
@@ -107,7 +109,7 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
     features = features
   )
 
-  if (!isValid(assay)) {
+  if (!tglowr::isValid(assay)) {
     warning("Assay did not pass validity check")
   }
 
@@ -124,7 +126,7 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
 #' @param col.object Which collumn to use as the identifier. Must be in meta.cols
 #'
 #' @export
-tglow_assay_from_list <- function(output, assay, meta.cols, col.object) {
+TglowAssayFromList <- function(output, assay, meta.cols, col.object) {
   if (!col.object %in% meta.cols) {
     stop(paste0("Object ID column col.object must be in meta.cols but ", col.object, " is not"))
   }
@@ -149,8 +151,8 @@ tglow_assay_from_list <- function(output, assay, meta.cols, col.object) {
 #-------------------------------------------------------------------------------
 #' Tglow dataset from list
 #'
-#' @param output Tglow list object obtained from tglow.read.dir
-#' @param assay Which assay to convert
+#' @param output Tglow list object obtained from [read_cellprofiler_dir()]
+#' @param assay Which assay to convert (name of the list item)
 #' @param meta.patterns Grep patterns in collumn names asspciated with object level metadata items
 #' @param img.feature.patterns Grep patterns in image column names assocated with image level features to analyze
 #' @param col.object The collumn name in the features which contains the per object object identifier
@@ -160,7 +162,7 @@ tglow_assay_from_list <- function(output, assay, meta.cols, col.object) {
 #' @returns A populated TglowDataset
 #'
 #' @export
-tglow_dataset_from_list <- function(
+TglowDatasetFromList <- function(
     output,
     assay,
     meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent"),
@@ -185,7 +187,7 @@ tglow_dataset_from_list <- function(
   meta.cols <- unlist(sapply(meta.patterns, grep, colnames(output[[assay]]), value = T))
 
   # Set main assay
-  main.assay <- tglow_assay_from_list(output, assay = assay, meta.cols = meta.cols, col.object = col.object)
+  main.assay <- TglowAssayFromList(output, assay = assay, meta.cols = meta.cols, col.object = col.object)
   dataset <- new("TglowDataset")
   dataset@assays[["raw"]] <- main.assay
   dataset@active.assay <- "raw"
@@ -200,7 +202,7 @@ tglow_dataset_from_list <- function(
   image.cols <- unlist(sapply(img.feature.patterns, grep, colnames(output$meta), value = T))
   dataset@image.data <- new("TglowAssay",
     data = TglowMatrix(as.matrix(output$meta[, image.cols])),
-    features = get_feature_meta_from_names(image.cols)
+    features = tglowr::get_feature_meta_from_names(image.cols)
   )
   rownames(dataset@image.data@data) <- output$meta[, col.meta.img.id]
   dataset@image.meta <- output$meta[, !colnames(output$meta) %in% image.cols]
