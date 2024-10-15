@@ -22,17 +22,17 @@ NULL
 #' @param ... Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #'
 #' @details
-#' 
+#'
 #' `type`
 #' Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
 #' See \code{\link{read_cellprofiler_fileset_a}} for detaills
 #'
 #' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
 #' See \code{\link{read_cellprofiler_fileset_b}} for detaills
-#' 
-#' 
+#'
+#'
 #' `col.object` and `col.meta.img.id`
-#' 
+#'
 #' See \code{\link{add_global_ids}} for details on how globally unique Id's are assigned in the case you need to set
 #' `col.object` or `col.meta.img.id``.
 #' @importFrom progress progress_bar
@@ -52,9 +52,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 
   # TODO: Replace this global with a function argument
   # Reset global fileset index
-  #assign("FILESET_ID", 0, envir = .GlobalEnv)
+  # assign("FILESET_ID", 0, envir = .GlobalEnv)
   fileset.id <- 1
-  
+
   # Read filesets
   filesets <- list()
   null.filesets <- 0
@@ -63,13 +63,13 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   for (pre in prefixes) {
     pb$tick()
     if (type == "A") {
-      cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, fileset.id=fileset.id, ...)
+      cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, fileset.id = fileset.id, ...)
     } else if (type == "B") {
-      cur <- tglowr::read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, fileset.id=fileset.id, ...)
+      cur <- tglowr::read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, fileset.id = fileset.id, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
-  
+
     fileset.id <- fileset.id + 1
 
     if (!is.null(cur)) {
@@ -116,14 +116,14 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 
 #-------------------------------------------------------------------------------
 #' Add a global id to a matrix of image files
-#' 
+#'
 #' @description Take a matrix and extract patterns 'ImageNumber', 'ObjectNumber' and
 #' 'Object_Number' and add a globably unique prefix. Will store these globally unique
 #' id's in columns <original>_Global.
-#' 
+#'
 #' @param matrix An input matrix or data.frame
 #' @param fileset.id The global fileset id to add
-#' 
+#'
 #' @details
 #' Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
 #' which will be duplicated and have a globally unique variable added
@@ -165,7 +165,7 @@ add_global_ids <- function(matrix, fileset.id) {
 #' Reads a CellProfiler fileset into a list
 #' Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
 #' and all features are matched
-#' 
+#'
 #' @param prefix Path prefix to fileset
 #' @param return.feature.meta Should the dataframe with feature metadata be added
 #' @param add.global.id Should extra id columns be added that are globally unique
@@ -195,13 +195,13 @@ read_cellprofiler_fileset_a <- function(prefix,
                                         pat.img = "_image.tsv",
                                         pat.cells = "_cells.tsv",
                                         pat.orl = "_objectRelationships.tsv",
-                                        skip.orl = FALSE, 
+                                        skip.orl = FALSE,
                                         fileset.id = NULL) {
   if (add.global.id) {
     if (is.null(fileset.id)) {
       stop("fileset.id cannot be NULL if add.global.id=T")
     }
-   #assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
+    # assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
     global.prefix <- paste0("FS", fileset.id)
   }
 
@@ -289,7 +289,7 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' @param skip.orl Should object relationships be read (not used, can be quite large)
 #' @param verbose Should I be chatty?
 #' @param fileset.id The global fileset id to add if add.global.id = TRUE
-#' 
+#'
 #' @returns list with data frames:
 #' - cells (cell level features)
 #' - meta (image level features)
@@ -311,12 +311,12 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         na.rm = F,
                                         skip.orl = F,
                                         verbose = F,
-                                        fileset.id=NULL) {
+                                        fileset.id = NULL) {
   if (add.global.id) {
     if (is.null(fileset.id)) {
       stop("fileset.id cannot be NULL if add.global.id=T")
     }
-    #assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
+    # assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
     global.prefix <- paste0("FS", fileset.id)
   }
 
@@ -376,7 +376,6 @@ read_cellprofiler_fileset_b <- function(prefix,
         colnames(cur) <- paste0(obj, "_", colnames(cur))
         cells[, c(colnames(cur), paste0(obj, "_QC_Object_Count"))] <- NA
         warning(paste0(obj, " assay for ", index[i, "Name"], " is empty. Returning NA for these cols."))
-        
       } else if (merging.strategy == "mean") {
         if (verbose) cat("[DEBUG] ", as.character(index[i, ]), "\n")
 
@@ -399,7 +398,6 @@ read_cellprofiler_fileset_b <- function(prefix,
 
         # Assign the columns to the output matrix
         cells[selector, colnames(tmp)] <- tmp[selector, ]
-        
       } else if (merging.strategy == "none") {
         if (add.global.id) {
           cur <- as.data.frame(cur)
