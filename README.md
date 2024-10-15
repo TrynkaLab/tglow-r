@@ -72,29 +72,43 @@ You can then load the library using `library("tglowr", lib=paste0(tempdir(), "/r
 
 1. Loading data into a TglowDataset, making sure the metadata and features are properly assigned.
 2. QC at the image level to identify outlier images
-3. QC features, to remove lowly varying ones and those with a lot of NA's
-4. QC at the cell level, to identify outlier cells 
-   1. Based on marker features and expection of what cells should look like (size, shape, intensity)
+3. QC features using a dynamic, configurable filter system, to remove lowly varying ones and those with a lot of NA's
+4. QC at the cell level using a dynamic, configurable filter system, to identify outlier cells 
+   1. Based on customizable marker features and expection of what cells should look like (size, shape, intensity)
    2. Based on PCA outliers within a QC group which reflects a biological condition.
-5. Normalization and scaling. (BoxCox transform, z-score / modified z)
-6. Optional scaling to control samples
-7. Optional aggregation to a grouping variable (mean, median, sum)
-8. Covariate / batch regression (currently only linear or linear mixed models)
-9. PCA and UMAP
-10. Clustering (Louvain / Leiden based on ANNOY knn grapph)
-11. Finding cluster markers using t-test
-12. Finding associations using linear or linear mixed models
+5. Feature transformation (BoxCox transform)
+6. Normalization and scaling (z-score / modified z)
+7. Optional scaling to control samples
+8. Optional aggregation to a grouping variable (mean, median, sum)
+9. Covariate / batch regression (currently only linear or linear mixed models)
+   1.  In linear and linear mixed modes, regressions can be run on subgroups of objects
+   2.  In linear mode, can correct groups of features for specific features (e.g. correct all nucleus features for nucleus_intensity and all mito feature for mito_intensity)
+10. PCA and UMAP reductions
+11. Clustering (Louvain / Leiden based on rcpp ANNOY knn or exact knn grapph)
+12. Finding cluster markers using t-test
+13. Finding associations using linear or linear mixed models
+
+### On the whishlist
+1. Integrate support for Milo
+2. Add additional automated outlier filtering approaches beyond PCA
+3. Improve and standardize plotting "ecosystem"
+4. Add plate overview plots
+5. Create configuration object for fetching standard columns like object x/y/z position, plate/well/row/col/field (currently configured on a per function basis)
 
 # Loading data into a TglowDataset
 
 > NOTE: The package comes with a bundled tglow object for testing which can be loaded with `data(tglow_example)` if you just want to play arround
 
+The package is designed around manipulating image level and single object level data at the same time. This has as an advantage that storage heavy string based metadata don't get replicated unnecessarily in the matrix which starts to matter when processing hundreds of thousands to millions of objects in a typical HCI analysis. It also makes it easier to perform certain steps on the image level (such as QC etc) out of the box without aggregating. If you just have single cell level data, you could always add a dummy image assay, and the downstream functionaly should still work.
+
+Data can easily be retrieved at both the image (data and metadata) and at the object (data and metadata) level using `getDataByObject()` which returns a data.frame with one row per object. More detaills on that below.
+
 ## Loading generic paired image + object data
-The package is designed around manipulating image level and single object level data at the same time. If you just have single cell level data, you could always add a dummy image assay, and the downstream functionaly should still work. For this example, I will asumme the folowing information is available. By default, checks on validtiy are done on all these objects, so at minimum a warning is raised if one of these does not meet assumptions.
+For this example, I will asumme the folowing information is available. By default, checks on validtiy are done on all these objects, so at minimum a warning is raised if one of these does not meet assumptions.
 
 - `objects`: A numeric matrix (not data.frame) with object level data, rows are objects, columns are imaging features. Rownames have unique object ids, colnames have unique feature ids
 - `images`: A numeric matrix (not data.frame) with image level data, rows are images, columns are imaging features. Rownames have unique image ids, colnames have unique feature ids
-- `image.ids`: A character vector describing how rows in `images` connect to rows in `objects`
+- `image.ids`: A character vector of length `nrow(objects)` describing how rows in `images` connect to rows in `objects`. The values in this vector must match the rownames of the images.
 - `object.meta` (optional): This is a optional data frame with any non-numeric/numeric metadata for each object. Must be in the same order as `objects` and assumes rownames are set to the same as `objects`, and columns are unique metadata items or imaging features, colnames must be set
 - `image.meta` (optional): as `object.meta` but then paired to the `images` matrix
 
@@ -167,7 +181,33 @@ functions should yield a valid Tglow class object. If you find this is not the c
 For more detaills also see the function definitions
 
 ## Data structure
-Data is organized into a TglowDataset object, which stores image / well level metadata alongside the features. Features are stored in a slot called assays, which have the class TglowAssay. These are very similar to Seurat Assays. TglowAssay objects store the cell-feature level data and make a distinction between numeric data used for analysis which is stored as a matrix, and cell level metadata such as object IDs stored in a dataframe.
+Data is organized into a TglowDataset object, which stores image level metadata seperate from the features. Features are stored in a slot called assays, which have the class TglowAssay. These are structurally similar to Seurat Assays. TglowAssay objects store the numeric cell-feature level data. Any other cell level metadata not relevant for describing biology, such as object IDs or absolute locations of a cell bounding box, should be stored on the @meta slot. 
+
+A single TglowDataset will always have the same objects across its assays, but assays can differ in features, making it easy to subset qc and manipulate featuresets on the same object. To subset on the image or object level, TglowDatasets can be sliced and subsetted in various ways. More details on that below.
+
+The object structure is as follows
+
+*TglowDataset*
+- @assays: list of TglowAssay's
+  - TglowAssay: stores feature level information, rows are objects, columns are features
+    - @data: Matrix with object level features
+    - @scale.data: Scaled version of @data (usually mean 0 variance 1, but other options are available)
+    - @features: data frame storing feature metadata
+- @meta: data.frame storing cell level metadata (id's, clusterings etc.)
+- @image.meta: data.frame storing image level metadata (conditions, drugs, donors, well ids etc.)
+- @image.data: TglowAssay for storing raw image features
+- @image.data.trans: TglowAssay for storing BoxCox transformed image features
+- @image.data.norm: TglowAssay for storing normalized image features
+- @object.ids: Character vector with the id's of the objects
+- @image.ids: Charachter vector with the images each object comes from
+- @reduction: List to store reductions
+  - TglowReduction: Stores PCA/UMAP in a semi standardized format
+    - @x: Matrix with reduction coordinates, rows are objects, columns are dimensions
+    - @sdev: SD of the components
+    - @sdev_total: Total standard deviations
+    - @object: Flexible slot for storing PCA/UMAP output objects should that be needed
+- @graph: Slot for storing the kNN graph, currently not formalized
+- @active.assay: Name of an active assay, currently not in use
 
 ## Operations on TglowDataset
 

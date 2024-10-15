@@ -39,8 +39,6 @@ TglowMatrix <- function(matrix) {
 #' @returns A populated TglowDataset
 #' @export
 TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = NULL, image.meta = NULL, assay.out = "raw") {
-  stop("Not yet implemented")
-
   if (!check_dimnames(objects)) {
     stop("row and colnames on objects cannot be NULL")
   }
@@ -61,18 +59,18 @@ TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = N
   names(dataset@image.ids) <- dataset@object.ids
 
   if (is.null(object.meta)) {
-    dataset@meta <- data.frame(id = rownames(objects), row.names = rownames(objects))
+    dataset@meta <- data.frame(id = rownames(objects), image_id = image.ids, row.names = rownames(objects))
   } else {
-    datset@meta <- object.meta
+    dataset@meta <- object.meta
   }
 
   if (is.null(image.meta)) {
     dataset@image.meta <- data.frame(id = rownames(images), row.names = rownames(images))
   } else {
-    datset@image.meta <- image.meta
+    dataset@image.meta <- image.meta
   }
 
-  if (!tglor::isValid(dataset)) {
+  if (!tglowr::isValid(dataset)) {
     warning("Dataset did not pass checks in isValid, returning anyway")
   }
 
@@ -93,7 +91,7 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
   }
 
   if (is.null(features)) {
-    features <- data.frame(id = colnames(objects))
+    features <- data.frame(id = colnames(objects), row.names = colnames(objects))
   }
 
   if (!is.null(scaled.objects)) {
@@ -109,10 +107,6 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
     features = features
   )
 
-  if (!tglowr::isValid(assay)) {
-    warning("Assay did not pass validity check")
-  }
-
   return(assay)
 }
 
@@ -120,7 +114,7 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
 #-------------------------------------------------------------------------------
 #' Convert a tglow list to a tglow assay
 #'
-#' @param output Tglow list object obtained from tglow.read.dir
+#' @param output Tglow list object obtained from [tglowr::read_cellprofiler_dir()]
 #' @param assay Which assay to convert
 #' @param meta.cols Which object level collumns in the features to consider as metadata
 #' @param col.object Which collumn to use as the identifier. Must be in meta.cols
@@ -165,7 +159,7 @@ TglowAssayFromList <- function(output, assay, meta.cols, col.object) {
 TglowDatasetFromList <- function(
     output,
     assay,
-    meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent"),
+    meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent", "_Location_", "BoundingBox"),
     img.feature.patterns = c("^AreaOccupied", "^ImageQuality", "^Granularity"),
     col.object = "cell_ObjectNumber_Global",
     col.img.id = "cell_ImageNumber_Global",
