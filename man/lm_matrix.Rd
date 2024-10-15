@@ -10,7 +10,8 @@ lm_matrix(
   covariates.dont.use = NULL,
   residuals.only = FALSE,
   return.residuals = FALSE,
-  keep.zerocol = FALSE
+  keep.zerocol = FALSE,
+  eigen.tol = 1e-08
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ lm_matrix(
 \item{return.residuals}{Return residual matrix in the output list. Defaults to T if residual.only = TRUE}
 
 \item{keep.zerocol}{Keep columns in design matrix that sum to zero}
+
+\item{eigen.tol}{Minimal eigenvalue to keep columns in the design matrix}
 }
 \value{
 A list with regression results

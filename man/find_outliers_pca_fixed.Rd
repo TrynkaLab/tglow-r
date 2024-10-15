@@ -31,7 +31,7 @@ find_outliers_pca_fixed(
 
 \item{return.pcs}{Should the grouped PC's be returned?}
 
-\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
 }
 \value{
 Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE

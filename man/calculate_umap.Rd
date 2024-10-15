@@ -31,7 +31,7 @@ calculate_umap(
 
 \item{downsample}{Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids}
 
-\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
 
 \item{...}{Arguments passed to \code{\link{uwot::umap()}}}
 }

@@ -12,13 +12,13 @@ calculate_clustering(
   method = "louvain",
   resolution = 0.1,
   exact.nn = FALSE,
-  col.out = "clusters"
+  col.out = "clusters_"
 )
 }
 \arguments{
 \item{dataset}{A tglow dataset}
 
-\item{reduction}{The reduction to use for calculating UMAPs. If NULL re-calculated}
+\item{reduction}{The reduction to use for calculating clustering. If NULL re-calculated}
 
 \item{pc.n}{How many PC's to use}
 
@@ -26,11 +26,11 @@ calculate_clustering(
 
 \item{method}{Clustering method to use 'louvain' or 'leiden'}
 
-\item{resolution}{Resolution for method 'louvain' or 'leiden'}
+\item{resolution}{Resolution for method 'louvain' or 'leiden'. Can be a vector of resolutions}
 
 \item{exact.nn}{Instead of using Seurat ANNOY for kNN use \code{\link[=nn2]{RANN::nn2()}}}
 
-\item{col.out}{Column name to store the clustering under added to the meta slot on the output object}
+\item{col.out}{Prefix for column name to store the clustering under added to the meta slot on the output object}
 }
 \value{
 The \linkS4class{TglowDataset} with clusters added to meta slot and the graph

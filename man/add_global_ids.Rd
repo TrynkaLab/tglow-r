@@ -4,10 +4,12 @@
 \alias{add_global_ids}
 \title{Add a global id to a matrix of image files}
 \usage{
-add_global_ids(matrix)
+add_global_ids(matrix, fileset.id)
 }
 \arguments{
 \item{matrix}{An input matrix or data.frame}
+
+\item{fileset.id}{The global fileset id to add}
 }
 \value{
 A data.frame with extra columns suffixed by _Global with globally unique ids

@@ -37,7 +37,7 @@ find_outliers_pca(
 
 \item{return.pcs}{Should the grouped PC's be returned?}
 
-\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
 }
 \value{
 Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
@@ -57,5 +57,5 @@ to handle them differenlty, could make a new assay where the NA's are handled ma
 
 By default, estimates the 0.25 * ncol(assay) PC's assuming this is enough PC's to get to 75\%. If this is
 not enough a warning is raised, and you can provide pc.max to override this behaviour or set use_irlba
-to FALSE to compute all components using \code{\link[=prcomp]{base::prcomp()}}
+to FALSE to compute all components using \code{\link[=prcomp]{prcomp()}}
 }

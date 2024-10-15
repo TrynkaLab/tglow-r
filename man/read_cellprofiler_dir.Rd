@@ -19,7 +19,8 @@ read_cellprofiler_dir(
 \arguments{
 \item{path}{path to tglow output dir}
 
-\item{pattern}{The pattern that uniquely identfies a well. Use '.zip' for type 'B' and the '_experiment.tsv' for type 'A'
+\item{pattern}{The pattern that uniquely identfies a fileset. Use '.zip' for type 'B'
+and the '_Image.txt' or '_Experiment.txt'(or however you exported the image data) for type 'A'
 for type A}
 
 \item{type}{Must be 'A' or 'B'. See details}
@@ -42,7 +43,7 @@ structure
 }
 \details{
 \code{type}
-Type A: _cells.tsv, _image.tsv, _experiment.tsv and _objectRelations.tsv
+Type A: _cell.txt, _Image.txt, _Experiment.txt and _Object relationships.txt
 See \code{\link{read_cellprofiler_fileset_a}} for detaills
 
 Type B: \if{html}{\out{<plate>}}_\if{html}{\out{<well>}}.zip with individual files for each child object. Main object is assumed to be _cells

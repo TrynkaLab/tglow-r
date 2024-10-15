@@ -8,10 +8,11 @@ read_cellprofiler_fileset_a(
   prefix,
   return.feature.meta = F,
   add.global.id = T,
-  pat.img = "_image.tsv",
-  pat.cells = "_cells.tsv",
-  pat.orl = "_objectRelationships.tsv",
-  skip.orl = FALSE
+  pat.img = "_Image.txt",
+  pat.cells = "_cell.txt",
+  pat.orl = "_Object relationships.txt",
+  skip.orl = FALSE,
+  fileset.id = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ read_cellprofiler_fileset_a(
 \item{pat.orl}{The suffix pattern to identify object relationships}
 
 \item{skip.orl}{Should object relationships be read (not used, can be quite large)}
+
+\item{fileset.id}{The global fileset id to add if add.global.id = TRUE}
 }
 \value{
 list with data frames:
@@ -42,6 +45,6 @@ Output is NULL if no cells are detected
 }
 \description{
 Reads a CellProfiler fileset into a list
-Type A: Assumes all features are in a single _cells.tsv / _cells.tsv
+Type A: Assumes all features are in a single _cell.txt (configurable with  pat.cells)
 and all features are matched
 }

@@ -17,7 +17,8 @@ read_cellprofiler_fileset_b(
   pat.others = "^.*_([a-zA-Z]+\\\\d*).txt$",
   na.rm = F,
   skip.orl = F,
-  verbose = F
+  verbose = F,
+  fileset.id = NULL
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ read_cellprofiler_fileset_b(
 \item{skip.orl}{Should object relationships be read (not used, can be quite large)}
 
 \item{verbose}{Should I be chatty?}
+
+\item{fileset.id}{The global fileset id to add if add.global.id = TRUE}
 }
 \value{
 list with data frames:

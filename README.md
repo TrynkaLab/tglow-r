@@ -400,7 +400,14 @@ The functions without a spcific prefix should be more generically applicable.
 - getDataByObject
 - getImageData
 - getImageDataByObject
-  
+
+### Constructors
+- TglowMatrix
+- TglowAssayFromList
+- TglowAssayFromMatrix
+- TglowDatasetFromList
+- TglowDatasetFromMatrices
+
 #### Data Import and Export
 
 - read_cellprofiler_dir

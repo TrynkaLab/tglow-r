@@ -22,13 +22,13 @@ calculate_pca(
 
 \item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
 
-\item{pc.n}{How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{base::prcomp()}}}
+\item{pc.n}{How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{prcomp()}}}
 
 \item{reduction.name}{The name to save the PCA results under. Defualts to PCA-\if{html}{\out{<assay>}}}
 
 \item{ret.prcomp}{Instead of returning just the PCs and variances, return the whole prcomp object}
 
-\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{base::prcomp()}} should be used for PCA}
+\item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
 
 \item{rescale}{Logical if matrix will be rescaled. This is advisable if using modified z-score}
 }

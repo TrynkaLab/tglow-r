@@ -50,8 +50,8 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 
         if (sum(ident.is.ref) == 0) {
             warning(paste0("No reference items found. Consider setting ref.classes. skipping class ", class))
-            res[i:ncol(cur.assay), "class"] <- class
-            res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
+            res[i:(i + ncol(cur.assay)), "class"] <- class
+            res[i:(i + ncol(cur.assay)), "feature"] <- colnames(cur.assay)
             i <- i + ncol(cur.assay)
             pb$tick(ncol(cur.assay))
             next()
@@ -59,8 +59,8 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 
         if (sum(ident.is.class) == 0) {
             warning(paste0("No class items found, skipping class ", class))
-            res[i:ncol(cur.assay), "class"] <- class
-            res[i:ncol(cur.assay), "feature"] <- colnames(cur.assay)
+            res[i:(i + ncol(cur.assay)), "class"] <- class
+            res[i:(i + ncol(cur.assay)), "feature"] <- colnames(cur.assay)
             i <- i + ncol(cur.assay)
             pb$tick(ncol(cur.assay))
             next()
