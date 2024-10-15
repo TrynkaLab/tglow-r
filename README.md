@@ -233,7 +233,7 @@ TglowDatasets and assays can be sliced by row
 tglow[50,]
 ```
 
-They can also be sliced by row, but this is not reccomended unless using column names, as assays can have different number of columns. A warning is raised when you try to slice columns with a non-character.
+They can also be sliced by column, but this is not reccomended unless using column names, as assays can have different number of columns. A warning is raised when you try to slice columns with a non-character.
 ```
 > tglow[50,34]
 TglowData with:  1  objects (cells),  1  images and  1  assays 
@@ -248,8 +248,7 @@ In .local(x, i, j, ..., drop) :
   Assuming all assays have the same column order
 ```
 
-
-TglowAssays can also be slices.
+Individual TglowAssays can also be sliced, in this case it is safe to use integers to select features.
 ```
 # Select the 50th cell
 tglow$raw[50,1]
@@ -262,6 +261,25 @@ You can acess TglowAssays from the `@assays` slot by using `$` or by `[[]]`
 tglow@assays[["raw"]]
 tglow$raw
 tglow[["raw"]]
+```
+
+#### Setting and maniuplating assays
+
+You can set TglowAssays using the `@assays` slot. The assays slot is just a list, so you can put anything in it but if you want it to work properly
+`new.assay` must be a TglowAssay. Note at the moment you can only add assays using `tglow@assays[["new.assay"]] <- new.assay` and not the other operators.
+```
+# Create a new assay from raw, with just the first 10 features
+new.assay <- new("TglowAssay",
+      data=tglow$raw@data[,1:10],
+      scale.data=NULL,
+      features=tglow$raw@features[1:10,]
+)
+tglow@assays[["new.assay"]] <- new.assay
+```
+
+You can manipulate specific slots in existing assays as well. For example, replacing the data slot with the scale.data slot.
+```
+tglow@assays[["new.assay"]]@data <- tglow$new.assay@scale.data
 ```
 
 #### Accessing feature data
@@ -280,19 +298,7 @@ tglow$raw$cell_AreaShape_Area
 # Returns a numeric with the value
 tglow$raw@data$cell_AreaShape_Area
 ```
-#### Setting assays
 
-You can set TglowAssays using the `@assays` slot. The assays slot is just a list, so you can put anything in it but if you want it to work properly
-`new.assay` must be a TglowAssay
-```
-# Create a new assay from raw, with just the first 10 features
-new.assay <- new("TglowAssay",
-      data=tglow$raw@data[,1:10],
-      scale.data=NULL,
-      features=tglow$raw@features[1:10,]
-)
-tglow@assays[["new.assay"]] <- new.assay
-```
 
 #### Accessing metadata
 Metadata is stored in two main places. @meta for cell level metadata, and @image.meta with image level metadata (not unique per object).
