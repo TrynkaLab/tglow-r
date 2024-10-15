@@ -52,8 +52,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 
   # TODO: Replace this global with a function argument
   # Reset global fileset index
-  assign("FILESET_ID", 0, envir = .GlobalEnv)
-
+  #assign("FILESET_ID", 0, envir = .GlobalEnv)
+  fileset.id <- 1
+  
   # Read filesets
   filesets <- list()
   null.filesets <- 0
@@ -62,12 +63,14 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   for (pre in prefixes) {
     pb$tick()
     if (type == "A") {
-      cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, ...)
+      cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, fileset.id=fileset.id, ...)
     } else if (type == "B") {
-      cur <- tglowr::read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, ...)
+      cur <- tglowr::read_cellprofiler_fileset_b(pre, return.feature.meta = F, skip.orl = skip.orl, verbose = verbose, fileset.id=fileset.id, ...)
     } else {
       stop(paste0("Invalid type: ", type))
     }
+  
+    fileset.id <- fileset.id + 1
 
     if (!is.null(cur)) {
       filesets[[pre]] <- cur
@@ -119,6 +122,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 #' id's in columns <original>_Global.
 #' 
 #' @param matrix An input matrix or data.frame
+#' @param fileset.id The global fileset id to add
 #' 
 #' @details
 #' Matrix with column pattern 'ImageNumber', 'ObjectNumber' and 'Object_Number'
@@ -127,9 +131,9 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
 #'
 #' @returns A data.frame with extra columns suffixed by _Global with globally unique ids
 #' @export
-add_global_ids <- function(matrix) {
+add_global_ids <- function(matrix, fileset.id) {
   # Fetch global fileset id
-  global.prefix <- paste0("FS", FILESET_ID)
+  global.prefix <- paste0("FS", fileset.id)
 
   # Image numbers
   cols.i <- grep("ImageNumber", colnames(matrix), value = T)
@@ -169,6 +173,7 @@ add_global_ids <- function(matrix) {
 #' @param pat.cells The suffix pattern to identify the cell level data
 #' @param pat.orl The suffix pattern to identify object relationships
 #' @param skip.orl Should object relationships be read (not used, can be quite large)
+#' @param fileset.id The global fileset id to add if add.global.id = TRUE
 #'
 #' @returns list with data frames:
 #'
@@ -190,10 +195,14 @@ read_cellprofiler_fileset_a <- function(prefix,
                                         pat.img = "_image.tsv",
                                         pat.cells = "_cells.tsv",
                                         pat.orl = "_objectRelationships.tsv",
-                                        skip.orl = FALSE) {
+                                        skip.orl = FALSE, 
+                                        fileset.id = NULL) {
   if (add.global.id) {
-    assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
-    global.prefix <- paste0("FS", FILESET_ID)
+    if (is.null(fileset.id)) {
+      stop("fileset.id cannot be NULL if add.global.id=T")
+    }
+   #assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
+    global.prefix <- paste0("FS", fileset.id)
   }
 
   # Read header of _cells.tsv
@@ -232,7 +241,7 @@ read_cellprofiler_fileset_a <- function(prefix,
   if (add.global.id) {
     # Cell level information
     #-----------
-    cells <- add_global_ids(cells)
+    cells <- add_global_ids(cells, fileset.id)
 
     # IMG image level information
     #-----------
@@ -279,7 +288,8 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' @param na.rm Should NA's be removed when applying merging.strategy
 #' @param skip.orl Should object relationships be read (not used, can be quite large)
 #' @param verbose Should I be chatty?
-#'
+#' @param fileset.id The global fileset id to add if add.global.id = TRUE
+#' 
 #' @returns list with data frames:
 #' - cells (cell level features)
 #' - meta (image level features)
@@ -300,10 +310,14 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         pat.others = "^.*_([a-zA-Z]+\\d*).txt$",
                                         na.rm = F,
                                         skip.orl = F,
-                                        verbose = F) {
+                                        verbose = F,
+                                        fileset.id=NULL) {
   if (add.global.id) {
-    assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
-    global.prefix <- paste0("FS", FILESET_ID)
+    if (is.null(fileset.id)) {
+      stop("fileset.id cannot be NULL if add.global.id=T")
+    }
+    #assign("FILESET_ID", FILESET_ID + 1, envir = .GlobalEnv)
+    global.prefix <- paste0("FS", fileset.id)
   }
 
   index <- unzip(prefix, list = T)
@@ -408,7 +422,7 @@ read_cellprofiler_fileset_b <- function(prefix,
   if (add.global.id) {
     # Cell level information
     #-----------
-    cells <- add_global_ids(cells)
+    cells <- add_global_ids(cells, fileset.id)
 
     # IMG image level information
     #-----------
