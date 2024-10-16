@@ -382,7 +382,7 @@ Then there are the filter modifiers
 - filter_vec_x_sum: Applies the filter to multiple columns, returning a logical of nrow(input), where T only if all columns for that row are T, otherwise F
 - filter_agg_x_mutlticol: Applies a filter to data with multiple columns and returns a logical vector of ncol(input). If you want to apply these at the object level (i.e. 'filter objects with >x% of NA features'), make sure to set `transpose=T` in the filter definition, if you want to filter features (i.e. 'filter features with >x% of NA objects') leave `transpose=F`.
 
-#### Example
+##### Example
 
 I want to filter objects where _mito features have more then 50% NA's and overall features objects have no more then 10% NA's. Another example can be found in /vingettes/example.r
 ```
@@ -407,8 +407,27 @@ filters[["general.na"]] <- new("TglowFilter",
 
 res <- calculate_object_filters(tglow, filters, "raw")
 ```
+#### Defining custom filters
+You can also define custom filters at runtime by loading a new function into the global environment. Just make sure it has the following signature `function(vec, thresh, grouping)`
+
+```
+# Create a new filter function
+my_filter <- function(vec, thresh, grouping=NULL) {
+  return(vec == thresh)
+}
+
+# Add it as a filter object
+filters[["my.filter"]] <- new("TglowFilter",
+                               name="my.filter",
+                               column_pattern="all",
+                               func="my_filter",
+                               threshold=10,
+                               transpose=F)
+
+```
 
 
+#### Available filters
 | Keyword         | Description                                                                                                                                                                    |
 |-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | name            | Filter name                                                                                                                                                                     |
@@ -420,7 +439,6 @@ res <- calculate_object_filters(tglow, filters, "raw")
 | note            | Place to store extra info                                                                                                                                                       |
 | active          | Should the filter be applied at runtime                                                                                                                                         |
 
-#### Available filters
 
 | filter types | description | respects grouping | note |
 |--------------|-------------|-------------------|------|
