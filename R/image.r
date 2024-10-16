@@ -33,6 +33,7 @@ hex_to_rgb <- function(hex) {
 #' @returns The scaled image
 #' @export
 img_apply_color <- function(image, rgb) {
+    tglowr::check_package("EBImage")
     image[, , 1] <- image[, , 1] * rgb[1]
     image[, , 2] <- image[, , 2] * rgb[2]
     image[, , 3] <- image[, , 3] * rgb[3]
@@ -55,6 +56,7 @@ img_apply_color <- function(image, rgb) {
 #' @importFrom gplots col2hex
 #' @export
 img_composite <- function(images, colors) {
+    tglowr::check_package("EBImage")
     if (length(images) != length(colors)) {
         stop("Images and suplied colors don't match")
     }
@@ -100,6 +102,7 @@ img_composite <- function(images, colors) {
 #' @importFrom EBImage imageData
 #' @export
 img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
+    tglowr::check_package("EBImage")
     channel.dim <- 3
     max <- c(rep(0, dim(images[[1]])[channel.dim]))
 
@@ -136,6 +139,7 @@ img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
 #' @importFrom EBImage imageData
 #' @export
 img_norm <- function(images, norm.factors = NULL, q = 1) {
+    tglowr::check_package("EBImage")
     if (is.null(norm.factors)) {
         cat("[INFO] Calculating norm factors\n")
         norm.factors <- img_max_per_channel(images, q = q)
@@ -173,5 +177,10 @@ img_norm <- function(images, norm.factors = NULL, q = 1) {
 #' @param img EBImage
 #' @export
 img_max_project <- function(img) {
+    tglowr::check_package("EBImage")
     apply(img, c(1, 2, 3), max)
 }
+
+
+
+    

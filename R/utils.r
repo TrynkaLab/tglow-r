@@ -176,6 +176,18 @@ check_filter_list <- function(filters) {
 }
 
 #-------------------------------------------------------------------------------
+#' Check if EBImage is available
+#' 
+check_package <- function(package) {
+    if (!requireNamespace(package, quietly = TRUE)) {
+        stop(paste0("Package '",package,"' is needed for this function to work. Please install it, also check bioconductor if not in CRAN"),
+        call. = FALSE)
+    }
+}
+
+
+
+#-------------------------------------------------------------------------------
 #' Find nearest index
 #'
 #' @description

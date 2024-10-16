@@ -109,8 +109,10 @@ tglow_read_imgs <- function(dataset,
                             channels = NULL,
                             planes = NULL,
                             max.project = T) {
-    check_dataset_assay_slot(dataset, assay, slot)
-
+    tglowr::check_dataset_assay_slot(dataset, assay, slot)
+    tglowr::check_package("EBImage")
+    tglowr::check_package("RBioFormats")
+    
     cur.cells <- slot(dataset@assays[[assay]], slot)
 
     if ((class(cell.subset) != "character") && (class(cell.subset) != "integer")) {
@@ -222,3 +224,4 @@ tglow_read_imgs <- function(dataset,
 
     return(out)
 }
+

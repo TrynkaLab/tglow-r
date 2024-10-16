@@ -9,7 +9,6 @@ Encoding: UTF-8
 Imports: 
     cowplot,
     data.table,
-    EBImage,
     future,
     future.apply,
     ggplot2,
@@ -24,9 +23,11 @@ Imports:
     performance,
     pheatmap,
     RANN,
-    RBioFormats,
     RcppAnnoy,
     stats
+Suggests:
+    EBImage,
+    RBioFormats
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Collate: 
