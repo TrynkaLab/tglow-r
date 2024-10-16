@@ -19,7 +19,7 @@
 #' @export
 find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL, na.rm = T) {
     # Check input
-    tglowr::check_dataset_assay_slot(dataset, assay, slot)
+    check_dataset_assay_slot(dataset, assay, slot)
 
     cur.assay <- slot(dataset[[assay]], slot)@.Data
     cur.ident <- as.character(tglowr::getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))

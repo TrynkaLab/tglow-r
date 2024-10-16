@@ -26,7 +26,7 @@ install.packages("getPass")
 
 # For now it is in a private git, so will need to provide credentials
 remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git",
- credentials=git2r::cred_user_pass("user", getPass::getPass()))
+ credentials=git2r::cred_user_pass(readline(prompt="Username: "), getPass::getPass()))
 ```
 This unlocks the core functionality
 
