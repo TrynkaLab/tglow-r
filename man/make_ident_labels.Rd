@@ -23,3 +23,4 @@ Create a matrix with labels on ident positions
 This function is used to get the center position of an ident in XY space
 This is used to plot the cluster numbers on the UMAP plot
 }
+\keyword{internal}

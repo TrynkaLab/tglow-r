@@ -9,3 +9,4 @@ check_dimnames(object)
 \description{
 Check if dimnames are set
 }
+\keyword{internal}

@@ -9,3 +9,4 @@ check_filter_list(filters)
 \description{
 Check a list of TglowFilters for validitiy
 }
+\keyword{internal}

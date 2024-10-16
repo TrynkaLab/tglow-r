@@ -108,7 +108,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #'
 #' @importFrom ggrepel geom_text_repel
 #' @export
-tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol="white", labs.bgcol="black", ...) {
+tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", ...) {
     if (!reduction %in% names(object@reduction)) {
         stop("Reduction not found on object")
     }
@@ -451,15 +451,14 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
 #' @export
 plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", size = 1, col = "black", fixed = F, alpha = 0.75, shape = 16, lm.col = "blue", do.lm = T, method = "lm", lm.group = NULL, raster = F, dpi = 300, facet = NULL, facet.ncol = NULL) {
     if (raster) {
-        warning("Raster provided, but package ggrastr not installed. Please install to use rasterization")
         tglowr::check_package("ggrastr")
     }
-    
+
     df.plot <- data.frame(
         x = x,
         y = y
     )
-    
+
 
     # Fix axis limits between x and y
     if (fixed) {
@@ -744,6 +743,8 @@ plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12,
 #' @param vector of ident memberships
 #'
 #' @returns A matrix with xy positions and a label
+#' 
+#' @keywords internal
 make_ident_labels <- function(x, y, memberships) {
     if (!(length(x) == length(y) && length(x) == length(memberships))) {
         stop("All input vectors must be of equal length")

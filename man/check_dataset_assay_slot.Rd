@@ -9,3 +9,4 @@ check_dataset_assay_slot(dataset, assay, slot, assay.image = NULL)
 \description{
 Check a dataset, assay slot for validity or throw an error
 }
+\keyword{internal}

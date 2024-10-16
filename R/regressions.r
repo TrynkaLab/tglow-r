@@ -411,6 +411,8 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
 
 #-------------------------------------------------------------------------------
 #' Check covariates.dont.use and expand factor levels
+#' 
+#' @keywords internal
 check_unused_covar <- function(data, covariates.dont.use) {
     if (!is.null(covariates.dont.use)) {
         tmp <- c()

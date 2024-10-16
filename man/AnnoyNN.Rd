@@ -46,3 +46,4 @@ The reason for using this over exact NN is the speed,
 but other flavours of approximimate NN are available
 Run annoy
 }
+\keyword{internal}

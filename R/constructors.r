@@ -209,6 +209,8 @@ TglowDatasetFromList <- function(
 
 #-------------------------------------------------------------------------------
 #' Check if dimnames are set
+#' 
+#' @keywords internal
 check_dimnames <- function(object) {
   if (is.null(colnames(object))) {
     warning("colnames of object cannot be NULL")

@@ -18,3 +18,4 @@ AnnoyBuildIndex(data, metric = "euclidean", n.trees = 50)
 This code is directly lifted from seurat's annoy implementation here:
 https://github.com/satijalab/seurat/blob/master/R/clustering.R
 }
+\keyword{internal}

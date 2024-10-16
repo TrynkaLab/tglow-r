@@ -27,3 +27,4 @@ k elements)
 This code is directly lifted from seurat's annoy implementation here:
 https://github.com/satijalab/seurat/blob/master/R/clustering.R
 }
+\keyword{internal}

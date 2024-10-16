@@ -5,13 +5,11 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 *Very important note:* We make no claims on the statistical validity of applying some of the approaches on any given dataset and this package is "use at your own risk". As the HCI feature space is so diverse and to maintain flexibility you can in principle run any data through the pacakge but this also means you can easily end up violating statistical assumptions. If in doubt, reach out to your local friendly statistician for advice if any given method is valid.
 
 # Installation & dependencies
-> NOTE: While dependencies should be installed automatically, but this is currently untested so your milage may vary.
-
 > NOTE: For now repo is private, make sure you are on VPN when calling this.
 
 This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
 
-If you need to build some dependencies from source, make sure there is a BLAS/LAPACK, nlopt (nlopt), libxml2 (igraph) lib available if it isn't already, otherwise dependencies (nlopt) will not install. This will depend heaviliy on your setup, but if working through conda:
+If you need to build some dependencies from source, make sure there is a BLAS/LAPACK, nlopt (nlopt), libxml2 (igraph) lib available if it isn't already, otherwise dependencies likely will not install. However this will depend heaviliy on your setup. Below is a minimal example using conda.
 
 ```
 conda install -c conda-forge blas lapack nlopt 
@@ -20,17 +18,16 @@ conda install R
 
 Then launch R
 ```
-library(remotes)
+install.packages("remotes")
 
 remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git")
 ```
-
-This unlocks the core functionality, appart from plotting example images, and rasterizing plots. 
+This unlocks the core functionality
 
 #### Installing suggested packages
 To enable the suggested packages, manually install ggrastr, EBImage and RBioFormats
 ```
-# Optional if installing ggrastr to rasterize plots with many points
+# Optional if installing ggrastr to enable rasterization of plots with many points
 conda install -c conda-forge r-ragg
 ```
 
@@ -590,7 +587,6 @@ The functions without a spcific prefix should be more generically applicable.
 - calculate_clustering
 - find_markers
 - find_outliers_pca
-- find_outliers_pca_fixed
 - lm_matrix
 - lmm_matrix
 

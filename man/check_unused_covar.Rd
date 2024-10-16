@@ -9,3 +9,4 @@ check_unused_covar(data, covariates.dont.use)
 \description{
 Check covariates.dont.use and expand factor levels
 }
+\keyword{internal}

@@ -127,6 +127,7 @@ merge_filesets <- function(data, skip.orl = FALSE) {
 #'
 #' @description Check a dataset, assay slot for validity or throw an error
 #'
+#' @keywords internal
 check_dataset_assay_slot <- function(dataset, assay, slot, assay.image = NULL) {
   # Checks for input
   if (!is.null(dataset)) {
@@ -167,6 +168,7 @@ check_dataset_assay_slot <- function(dataset, assay, slot, assay.image = NULL) {
 #'
 #' @description Check a list of TglowFilters for validitiy
 #'
+#' @keywords internal
 check_filter_list <- function(filters) {
   for (filter in filters) {
     if (!is(filter, "TglowFilter")) {
@@ -176,13 +178,15 @@ check_filter_list <- function(filters) {
 }
 
 #-------------------------------------------------------------------------------
-#' Check if EBImage is available
-#' 
+#' Check if a package is available
+#'
+#' @keywords internal
 check_package <- function(package) {
-    if (!requireNamespace(package, quietly = TRUE)) {
-        stop(paste0("Package '",package,"' is needed for this function to work. Please install it, also check bioconductor if not in CRAN"),
-        call. = FALSE)
-    }
+  if (!requireNamespace(package, quietly = TRUE)) {
+    stop(paste0("Package '", package, "' is needed for this function to work. Please install it, also check bioconductor if not in CRAN"),
+      call. = FALSE
+    )
+  }
 }
 
 
@@ -483,7 +487,7 @@ effective_dimensionality <- function(data, method = "LiJi", var.thresh = 0.95) {
   } else if (method == "pc_var") {
     eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)[0]
   } else if (method == "Cheverud") {
-    eff.tests <- m +(m - 1) * (1-(var(eigenval) / m))
+    eff.tests <- m + (m - 1) * (1 - (var(eigenval) / m))
   } else if (method == "Galwey") {
     eff.tests <- sum(eigenval)^2 / sum(eigenval^2)
   } else {

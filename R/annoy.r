@@ -21,7 +21,7 @@
 #' gives you a run-time tradeoff between better accuracy and speed
 #' @param include.distance Include the corresponding distances
 #' @param index optional index object, will be recomputed if not provided
-#'
+#' @keywords internal
 AnnoyNN <- function(data,
                     query = data,
                     metric = "euclidean",
@@ -64,7 +64,7 @@ AnnoyNN <- function(data,
 #' @param n.trees More trees gives higher precision when querying
 #'
 #' @importFrom RcppAnnoy AnnoyEuclidean AnnoyAngular AnnoyManhattan AnnoyHamming
-#'
+#' @keywords internal
 AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
   f <- ncol(x = data)
   a <- switch(
@@ -101,7 +101,7 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
 #'
 #' @importFrom future plan
 #' @importFrom future.apply future_lapply
-#'
+#' @keywords internal
 AnnoySearch <- function(index, query, k, search.k = -1, include.distance = TRUE) {
   n <- nrow(x = query)
   idx <- matrix(nrow = n, ncol = k)
