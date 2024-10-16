@@ -110,17 +110,17 @@ filter_agg_na_multicol <- function(...) {
 
 #-------------------------------------------------------------------------------
 #' Caret near zero variance filter
-#' @rdname tglow_filters
-#' @importFrom caret nearZeroVar
-#' @export
-filter_agg_near_zero_var <- function(vec, thresh = NULL, grouping = NULL) {
-    return(length(caret::nearZeroVar(vec)) == 0)
-}
-#' @rdname tglow_filters
-#' @export
-filter_agg_near_zero_var_multicol <- function(...) {
-    filter_multicol(..., func = filter_agg_near_zero_var)
-}
+#' rdname tglow_filters
+#' importFrom caret nearZeroVar
+#' export
+#filter_agg_near_zero_var <- function(vec, thresh = NULL, grouping = NULL) {
+#    return(length(caret::nearZeroVar(vec)) == 0)
+#}
+#' rdname tglow_filters
+#' export
+#filter_agg_near_zero_var_multicol <- function(...) {
+#    filter_multicol(..., func = filter_agg_near_zero_var)
+#}
 
 #-------------------------------------------------------------------------------
 #' Zero variance filter

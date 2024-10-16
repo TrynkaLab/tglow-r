@@ -457,8 +457,6 @@ filters[["my.filter"]] <- new("TglowFilter",
 | filter_vec_mod_z_perc | Absolute modified z-score < thresh sum. Pecentage of columns must pass | TRUE | |
 | filter_agg_na | NA filter | FALSE | |
 | filter_agg_na_multicol | NA filter - multiple columns | FALSE | |
-| filter_agg_near_zero_var | Near zero variance from caret | FALSE | These are quite slow and intensitve to compute, reccomend filter_coef_var insted |
-| filter_agg_near_zero_var_multicol | Near zero variance from caret sum. - multiple columns | FALSE | These are quite slow and intensitve to compute, reccomend filter_coef_var insted |
 | filter_agg_unique_val | Minimal number of unique values | FALSE | |
 | filter_agg_unique_val_multicol | Minimal number of unique values sum. - multiple columns | FALSE | |
 | filter_agg_zero_var | Exactly 0 variance | FALSE | Should also be covered by filter_coef_var |
@@ -549,8 +547,6 @@ The functions without a spcific prefix should be more generically applicable.
 - filter_vec_mod_z_perc
 - filter_agg_na
 - filter_agg_na_multicol
-- filter_agg_near_zero_var
-- filter_agg_near_zero_var_multicol
 - filter_agg_unique_val
 - filter_agg_unique_val_multicol
 - filter_agg_zero_var

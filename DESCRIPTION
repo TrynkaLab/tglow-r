@@ -7,10 +7,8 @@ Description: Data structure and analysis functions for processing high content i
 License: 
 Encoding: UTF-8
 Imports: 
-    caret,
     cowplot,
     data.table,
-    dplyr,
     EBImage,
     future,
     future.apply,

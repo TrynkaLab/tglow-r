@@ -41,7 +41,6 @@ get_feature_meta_from_names <- function(feature.names) {
 #' @param data List output from \code{\link{tglow.read.fileset}}
 #' @param skip.orl Should object relationships be skipped
 #' @returns The mered output from \code{\link{tglow.read.fileset}}
-#' @importFrom dplyr bind_rows
 #' @export
 merge_filesets <- function(data, skip.orl = FALSE) {
   if (!is(data, "list")) {
@@ -81,15 +80,16 @@ merge_filesets <- function(data, skip.orl = FALSE) {
     warning(msg)
   }
 
-  out$cells <- dplyr::bind_rows(lapply(data[selector], function(x) {
+  # Chanded this from dplyr::bind_rows to do.call(rbind())
+  out$cells <- do.call(rbind, lapply(data[selector], function(x) {
     x[["cells"]]
   }), )
-  out$meta <- dplyr::bind_rows(lapply(data[selector], function(x) {
+  out$meta <- do.call(rbind, lapply(data[selector], function(x) {
     x[["meta"]]
   }), )
 
   if (!skip.orl) {
-    out$orl <- dplyr::bind_rows(lapply(data[selector], function(x) {
+    out$orl <- do.call(rbind, lapply(data[selector], function(x) {
       x[["orl"]]
     }), )
   } else {
@@ -98,13 +98,13 @@ merge_filesets <- function(data, skip.orl = FALSE) {
 
 
   if ("features" %in% names(data[[1]])) {
-    out$features <- dplyr::bind_rows(lapply(data[selector], function(x) {
+    out$features <- do.call(rbind, lapply(data[selector], function(x) {
       x[["features"]]
     }))
   }
 
   if ("cells_norm" %in% names(data[[1]])) {
-    out$cells_norm <- dplyr::bind_rows(lapply(data[selector], function(x) {
+    out$cells_norm <- do.call(rbind, lapply(data[selector], function(x) {
       x[["cells_norm"]]
     }))
   }
@@ -113,7 +113,7 @@ merge_filesets <- function(data, skip.orl = FALSE) {
   if ("children" %in% names(data[[1]])) {
     out$children <- list()
     for (obj in names(data[[1]]$children)) {
-      out$children[[obj]] <- dplyr::bind_rows(lapply(data[selector], function(x) {
+      out$children[[obj]] <- do.call(rbind, lapply(data[selector], function(x) {
         x[["children"]][[obj]]
       }))
     }

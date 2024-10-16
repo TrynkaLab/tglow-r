@@ -10,8 +10,6 @@
 \alias{filter_vec_mod_z_perc}
 \alias{filter_agg_na}
 \alias{filter_agg_na_multicol}
-\alias{filter_agg_near_zero_var}
-\alias{filter_agg_near_zero_var_multicol}
 \alias{filter_agg_zero_var}
 \alias{filter_agg_zero_var_multicol}
 \alias{filter_agg_coef_var}
@@ -44,10 +42,6 @@ filter_vec_mod_z_perc(vec, thresh, thresh2, grouping = NULL)
 filter_agg_na(vec, thresh, grouping = NULL)
 
 filter_agg_na_multicol(...)
-
-filter_agg_near_zero_var(vec, thresh = NULL, grouping = NULL)
-
-filter_agg_near_zero_var_multicol(...)
 
 filter_agg_zero_var(vec, thresh = 0)
 
