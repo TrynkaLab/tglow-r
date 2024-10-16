@@ -17,6 +17,7 @@ Imports:
     grDevices,
     igraph,
     irlba,
+    progress,
     lme4,
     lmerTest,
     matrixStats,
