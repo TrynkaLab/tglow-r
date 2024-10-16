@@ -6,6 +6,28 @@ Description: Data structure and analysis functions for processing high content i
  normalizing, dimension reduction and statistics.
 License: 
 Encoding: UTF-8
+Imports: 
+    cowplot,
+    data.table,
+    future,
+    future.apply,
+    ggplot2,
+    gplots,
+    grDevices,
+    igraph,
+    irlba,
+    lme4,
+    lmerTest,
+    matrixStats,
+    performance,
+    pheatmap,
+    RANN,
+    RcppAnnoy,
+    stats
+Suggests:
+    EBImage,
+    RBioFormats,
+    ggrastr
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Collate: 
