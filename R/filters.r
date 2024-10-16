@@ -183,6 +183,11 @@ filter_mod_z_perc <- function(vec, thresh, thresh2, grouping = NULL) {
 #' @rdname tglow_filters
 #' @export
 filter_sum <- function(vec, thresh, grouping, func) {
+    
+    if (is.null(ncol(vec))) {
+        stop("Data must be a matrix or data.frame with mutlipel columns")
+    }
+    
     res <- apply(vec, 2, func, thresh = thresh, grouping = grouping)
 
     res[is.na(res)] <- T

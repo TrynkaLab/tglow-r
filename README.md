@@ -372,8 +372,12 @@ tglow     <- tglow[ol,]
 
 
 ### Setting up filters
-Filters can be easily configured based on a filter table, making it easy to template sets of operations. Filters are NOT applied in order, but run independently. If you do want to run filters in order, you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table` to create the filter objects. The filter table should have the following columns, and one sheet for feature level filters, and one for object level filters. Exact layouts are customizable, see the help of `tglow_filters_from_table`
+Filters can be easily configured based on a filter table, making it easy to template sets of operations. Filters are NOT applied seqeuntially, but run independently. If you do want to run filters in seqeuntially, you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table` to create the filter objects. The filter table should have the following columns, and one sheet for feature level filters, and one for object level filters. Exact layouts are customizable, see the help of `tglow_filters_from_table`
 
+There are three flavors of filters:
+- filter_x: Applies to a single vector and returns a logical vector of the same length
+- filter_x_sum: Applies the filter to multiple columns, returning a logical of nrow(input), where T only if all columns for that row are T, otherwise F
+- filter_x_mutlticol: Applied a filter to multiple columns, with extra thresholding. This is used for "x% of cells must be >0" type filters. Returns a logical of nrow(input)
 
 | Keyword         | Description                                                                                                                                                                    |
 |-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
