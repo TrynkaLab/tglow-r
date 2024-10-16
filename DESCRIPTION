@@ -12,7 +12,6 @@ Imports:
     future,
     future.apply,
     ggplot2,
-    ggrastr,
     gplots,
     grDevices,
     igraph,
@@ -27,7 +26,8 @@ Imports:
     stats
 Suggests:
     EBImage,
-    RBioFormats
+    RBioFormats,
+    ggrastr
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Collate: 

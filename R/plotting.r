@@ -450,10 +450,16 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab annotation_raster geom_point coord_fixed geom_smooth geom_abline facet_wrap xlim ylim
 #' @export
 plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", size = 1, col = "black", fixed = F, alpha = 0.75, shape = 16, lm.col = "blue", do.lm = T, method = "lm", lm.group = NULL, raster = F, dpi = 300, facet = NULL, facet.ncol = NULL) {
+    if (raster) {
+        warning("Raster provided, but package ggrastr not installed. Please install to use rasterization")
+        tglowr::check_package("ggrastr")
+    }
+    
     df.plot <- data.frame(
         x = x,
         y = y
     )
+    
 
     # Fix axis limits between x and y
     if (fixed) {

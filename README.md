@@ -11,16 +11,34 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 
 This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
 
-Make sure there is a BLAS/LAPACK, nlopt lib available if it isn't already, otherwise dependencies (lme4) will not install
+If you need to build some dependencies from source, make sure there is a BLAS/LAPACK, nlopt (nlopt), libxml2 (igraph) lib available if it isn't already, otherwise dependencies (nlopt) will not install. This will depend heaviliy on your setup, but if working through conda:
+
 ```
-conda install -c conda-forge blas lapack nlopt
+conda install -c conda-forge blas lapack nlopt 
 conda install R
 ```
 
+Then launch R
 ```
 library(remotes)
 
 remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git")
+```
+
+This unlocks the core functionality, appart from plotting example images, and rasterizing plots. 
+
+#### Installing suggested packages
+To enable the suggested packages, manually install ggrastr, EBImage and RBioFormats
+```
+# Optional if installing ggrastr to rasterize plots with many points
+conda install -c conda-forge r-ragg
+```
+
+Then launch R
+```
+BiocManager::install("EBImage")
+BiocManager::install("RBioFormats")
+install.packages("ggrastr")
 ```
 
 ## On Sanger farm22 - latest dev version - reccomended
