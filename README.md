@@ -10,6 +10,13 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 > NOTE: For now repo is private, make sure you are on VPN when calling this.
 
 This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
+
+Make sure there is a BLAS/LAPACK lib available if it isn't already, otherwise dependencies (lme4) will not install
+```
+conda install -c conda-forge blas lapack
+conda install R
+```
+
 ```
 library(remotes)
 

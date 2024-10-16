@@ -1,9 +1,4 @@
 #-------------------------------------------------------------------------------
-# Imports
-#' @import data.table
-NULL
-
-#-------------------------------------------------------------------------------
 #' Read a cellprofiler fileset directory tree
 #'
 #' @description
@@ -189,6 +184,7 @@ add_global_ids <- function(matrix, fileset.id) {
 #'
 #' Output is NULL if no cells are detected
 #'
+#' @importFrom data.table fread
 #' @export
 read_cellprofiler_fileset_a <- function(prefix,
                                         return.feature.meta = F,

@@ -21,6 +21,7 @@
 #' @returns A logical where TRUE should be kept and FALSE values should be removed
 #'
 #' @rdname tglow_aggregate
+#' @importFrom data.table as.data.table := data.table
 #' @export
 aggregate_tglow_matrix <- function(matrix, grouping, method = "mean", group.order = NULL, na.rm = TRUE) {
     if (!is(matrix, "TglowMatrix")) {
@@ -149,10 +150,10 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 
     if (length(grouping) == 1) {
         if (is.null(group.order)) {
-            group.order <- unique(getImageData(object, grouping))
+            group.order <- unique(tglowr::getImageData(object, grouping))
         }
-        grouping.image <- getImageData(object, grouping)
-        grouping <- getImageDataByObject(object, grouping)
+        grouping.image <- tglowr::getImageData(object, grouping)
+        grouping <- tglowr::getImageDataByObject(object, grouping)
     } else {
         stop("Grouping must be a single character indicating a column in image.meta")
     }
