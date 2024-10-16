@@ -45,7 +45,7 @@ find_outliers_pca <- function(dataset,
                               return.pcs = FALSE,
                               use_irlba = TRUE) {
     # Check inputs
-    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+    check_dataset_assay_slot(dataset, assay, slot)
 
 
     if (is.null(qc.group)) {

@@ -229,7 +229,7 @@ tglow_plot_location_hex <- function(dataset,
                                     trim.outliers.z = F,
                                     trim.outliers.z.thresh = 3.5,
                                     bins.mincount = 0) {
-    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+    check_dataset_assay_slot(dataset, assay, slot)
 
 
     # Build the plot
@@ -451,7 +451,7 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
 #' @export
 plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", size = 1, col = "black", fixed = F, alpha = 0.75, shape = 16, lm.col = "blue", do.lm = T, method = "lm", lm.group = NULL, raster = F, dpi = 300, facet = NULL, facet.ncol = NULL) {
     if (raster) {
-        tglowr:::check_package("ggrastr")
+        check_package("ggrastr")
     }
 
     df.plot <- data.frame(

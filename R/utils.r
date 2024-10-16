@@ -227,7 +227,7 @@ nearest_index <- function(x, value) {
 #' @returns vector of indices in objects matrix
 #' @export
 fetch_representative_object <- function(dataset, assay, slot, feature, metric = "mean", na.rm = F, n = 0, subset = NULL, q = NULL) {
-  tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+  check_dataset_assay_slot(dataset, assay, slot)
 
   x <- getDataByObject(dataset, feature, assay = assay, slot = slot, drop = T)
   # x <- slot(dataset@assays[[assay]], slot)[,feature]
@@ -285,7 +285,7 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' @returns A list with row ids and labels for the objects
 #' @export
 fetch_representative_object_quantiles <- function(dataset, assay, slot, feature, name = NULL, n = 1) {
-  tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+  check_dataset_assay_slot(dataset, assay, slot)
 
   if (is.null(name)) {
     name <- feature

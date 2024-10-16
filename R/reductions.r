@@ -19,7 +19,7 @@
 #' @export
 calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, reduction.name = NULL, ret.prcomp = FALSE, use_irlba = FALSE, rescale = FALSE) {
     # Checks for input
-    # tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+    # check_dataset_assay_slot(dataset, assay, slot)
     if (is.null(slot(dataset[[assay]], slot))) {
         stop("Provided slot is NULL, have you set scale.data? (In future will implement that here)")
     }
@@ -96,7 +96,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' @export
 calculate_umap <- function(dataset, reduction = NULL, assay = NULL, slot = "scale.data", pc.n = 30, reduction.name = NULL, downsample = NULL, use_irlba = TRUE, ...) {
     # Check input
-    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (!is.null(assay)) {
         if (paste0("PCA.", assay) %in% names(dataset@reduction)) {
