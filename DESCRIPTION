@@ -7,7 +7,28 @@ Description: Data structure and analysis functions for processing high content i
 License: 
 Encoding: UTF-8
 Imports: 
-Suggests: 
+    caret,
+    cowplot,
+    data.table,
+    dplyr,
+    EBImage,
+    future,
+    future.apply,
+    ggplot2,
+    ggrastr,
+    gplots,
+    grDevices,
+    igraph,
+    irlba,
+    lme4,
+    lmerTest,
+    matrixStats,
+    performance,
+    pheatmap,
+    RANN,
+    RBioFormats,
+    RcppAnnoy,
+    stats
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Collate: 
