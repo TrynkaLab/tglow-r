@@ -162,7 +162,7 @@ setMethod(
   "isAvailable", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, return.names) {
     # Check the inputs
-    check_dataset_assay_slot(object, assay = assay, slot = slot, assay.image = assay.image)
+    tglowr:::check_dataset_assay_slot(object, assay = assay, slot = slot, assay.image = assay.image)
 
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")

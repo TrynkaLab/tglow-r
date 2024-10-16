@@ -214,7 +214,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' @export
 apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, rfast.zerotol = 1e-10, ...) {
     # Checks for input
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
 
     if (assay == "image.data") {
         mat <- slot(dataset@image.data, slot)@.Data
@@ -356,7 +356,7 @@ scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
     }
 
     if (!is.null(assay)) {
-        check_dataset_assay_slot(dataset, assay = assay, slot = "data")
+        tglowr:::check_dataset_assay_slot(dataset, assay = assay, slot = "data")
         dataset@assays[[assay]] <- tglowr::scale_assay(dataset@assays[[assay]], grouping = grouping, ...)
     } else {
         for (assay in names(dataset@assays)) {

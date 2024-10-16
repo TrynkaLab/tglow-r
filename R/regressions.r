@@ -19,7 +19,7 @@
 #' @export
 find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL, na.rm = T) {
     # Check input
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
 
     cur.assay <- slot(dataset[[assay]], slot)@.Data
     cur.ident <- as.character(tglowr::getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
@@ -151,7 +151,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @importFrom progress progress_bar
 #' @export
 correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
-    check_dataset_assay_slot(object, assay, slot)
+    tglowr:::check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
@@ -237,7 +237,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @importFrom progress progress_bar
 #' @export
 correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
-    check_dataset_assay_slot(object, assay, slot)
+    tglowr:::check_dataset_assay_slot(object, assay, slot)
 
     if (!is.list(covariates.group)) {
         stop("grouping.features must be a list")
@@ -354,7 +354,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
 calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = TRUE) {
-    check_dataset_assay_slot(object, assay, slot)
+    tglowr:::check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
@@ -471,7 +471,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
 calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, rescale.group = TRUE, ...) {
-    check_dataset_assay_slot(object, assay, slot)
+    tglowr:::check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot

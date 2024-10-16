@@ -50,7 +50,7 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 #' @export
 calculate_feature_filters <- function(dataset, filters, assay, slot, features = NULL, na.fail = TRUE) {
     # Check inputs
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
     check_filter_list(filters)
 
     if (is.null(features)) {
@@ -121,7 +121,7 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 #' @export
 calculate_object_filters <- function(dataset, filters, assay, slot = "data", grouping = NULL, features = NULL, na.fail = TRUE) {
     # Check inputs
-    check_dataset_assay_slot(dataset, assay, slot)
+    tglowr:::check_dataset_assay_slot(dataset, assay, slot)
     check_filter_list(filters)
 
     if (is.null(features)) {
@@ -213,7 +213,7 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 #' @export
 apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
     # Check inputs
-    check_dataset_assay_slot(dataset, NULL, NULL)
+    tglowr:::check_dataset_assay_slot(dataset, NULL, NULL)
 
     # Can be a single logical as well
     if (is(filter.res, "logical")) {
@@ -265,7 +265,7 @@ apply_feature_filters <- function(dataset, filter.res, assays = NULL) {
 #' @export
 apply_image_filters <- function(dataset, filter.res) {
     # Checks for input
-    check_dataset_assay_slot(dataset, NULL, NULL)
+    tglowr:::check_dataset_assay_slot(dataset, NULL, NULL)
 
     # Can be a single logical as well
     if (is(filter.res, "logical")) {
