@@ -7,7 +7,7 @@
 TglowAssayFromList(output, assay, meta.cols, col.object)
 }
 \arguments{
-\item{output}{Tglow list object obtained from tglow.read.dir}
+\item{output}{Tglow list object obtained from \code{\link[=read_cellprofiler_dir]{read_cellprofiler_dir()}}}
 
 \item{assay}{Which assay to convert}
 

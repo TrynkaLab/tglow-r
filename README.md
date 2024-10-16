@@ -374,10 +374,40 @@ tglow     <- tglow[ol,]
 ### Setting up filters
 Filters can be easily configured based on a filter table, making it easy to template sets of operations. Filters are NOT applied seqeuntially, but run independently. If you do want to run filters in seqeuntially, you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table` to create the filter objects. The filter table should have the following columns, and one sheet for feature level filters, and one for object level filters. Exact layouts are customizable, see the help of `tglow_filters_from_table`
 
-There are three flavors of filters:
-- filter_x: Applies to a single vector and returns a logical vector of the same length
-- filter_x_sum: Applies the filter to multiple columns, returning a logical of nrow(input), where T only if all columns for that row are T, otherwise F
-- filter_x_mutlticol: Applied a filter to multiple columns, with extra thresholding. This is used for "x% of cells must be >0" type filters. Returns a logical of nrow(input)
+There are two flavors of filters:
+- filter_vec_x: Accepts a vector and returns a logical vector of the same length (i.e. 'which objects for this feature are > 0')
+- filter_agg_x: Accepts a vector and aggregates on a statistic and returns a single logical (i.e 'is the variance of this feature > 0')
+
+Then there are the filter modifiers
+- filter_vec_x_sum: Applies the filter to multiple columns, returning a logical of nrow(input), where T only if all columns for that row are T, otherwise F
+- filter_agg_x_mutlticol: Applies a filter to data with multiple columns and returns a logical vector of ncol(input). If you want to apply these at the object level (i.e. 'filter objects with >x% of NA features'), make sure to set `transpose=T` in the filter definition, if you want to filter features (i.e. 'filter features with >x% of NA objects') leave `transpose=F`.
+
+#### Example
+
+I want to filter objects where _mito features have more then 50% NA's and overall features objects have no more then 10% NA's. Another example can be found in /vingettes/example.r
+```
+data("tglow_example")
+
+filters <- list()
+# Filter cells which have >50% NA in mitochondria features
+filters[["mito.na"]]    <- new("TglowFilter",
+                               name="mito.na",
+                               column_pattern="_mito",
+                               func="filter_agg_na_multicol",
+                               threshold=0.5,
+                               transpose=T)
+
+# Filter cells which have >10% in any features
+filters[["general.na"]] <- new("TglowFilter",
+                               name="general.na",
+                               column_pattern="all",
+                               func="filter_agg_na_multicol",
+                               threshold=0.1,
+                               transpose=T)
+
+res <- calculate_object_filters(tglow, filters, "raw")
+```
+
 
 | Keyword         | Description                                                                                                                                                                    |
 |-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -392,35 +422,30 @@ There are three flavors of filters:
 
 #### Available filters
 
-| Filter Types                  | Description                                                              | Respects Grouping | Note                                                                                       |
-|-------------------------------|--------------------------------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------|
-| filter_coef_var               | Coefficient of variation                                                | FALSE             |                                                                                            |
-| filter_coef_var_sum           | Coefficient of variation sum. All columns must pass                    | FALSE             |                                                                                            |
-| filter_inf                    | Infinite values                                                         | FALSE             |                                                                                            |
-| filter_inf_median             | Infinite median value                                                   | FALSE             |                                                                                            |
-| filter_inf_median_sum         | Infinite median value sum. All columns must pass                       | FALSE             |                                                                                            |
-| filter_inf_mutlicol           | Infinite values  - multiple columns                                      | FALSE             |                                                                                            |
-| filter_max                    | Maximum value                                                           | FALSE             |                                                                                            |
-| filter_max_sum                | Maximum value sum. All columns must pass                                | FALSE             |                                                                                            |
-| filter_min                    | Minimum value                                                           | FALSE             |                                                                                            |
-| filter_min_sum                | Minimum value sum. All columns must pass                                | FALSE             |                                                                                            |
-| filter_mod_z                  | Absolute modified z-score < thresh                                      | TRUE              |                                                                                            |
-| filter_mod_z_sum              | Absolute modified z-score < thresh sum. All columns must pass          | TRUE              |                                                                                            |
-| filter_mod_z_perc             | Absolute modified z-score < thresh sum. Percentage of columns must pass  | TRUE              |                                                                                            |
-| filter_na                     | NA filter                                                               | FALSE             |                                                                                            |
-| filter_na_multicol            | NA filter - multiple columns                                            | FALSE             |                                                                                            |
-| filter_near_zero_var          | Near zero variance from caret                                           | FALSE             | These are quite slow and intensive to compute, recommend filter_coef_var instead          |
-| filter_near_zero_var_sum      | Near zero variance from caret sum. All columns must pass               | FALSE             | These are quite slow and intensive to compute, recommend filter_coef_var instead          |
-| filter_unique_val             | Minimal number of unique values                                          | FALSE             |                                                                                            |
-| filter_unique_val_sum         | Minimal number of unique values sum. All columns must pass              | FALSE             |                                                                                            |
-| filter_zero_var               | Exactly 0 variance                                                      | FALSE             | Should also be covered by filter_coef_var                                                  |
-| filter_zero_var_sum           | Exactly 0 variance sum. All columns must pass                           | FALSE             | Should also be covered by filter_coef_var                                                  |
-| filter_blacklist              | Always FALSE                                                            | FALSE             |                                                                                            |
-
-
-
-
-
+| filter types | description | respects grouping | note |
+|--------------|-------------|-------------------|------|
+| filter_agg_coef_var | Coefficient of variation | FALSE | |
+| filter_agg_coef_var_multicol | Coefficient of variation - multiple columns | FALSE | |
+| filter_agg_inf | Infinite values | FALSE | |
+| filter_agg_inf_median | Infinite median value | FALSE | |
+| filter_agg_inf_median_sum | Infinite median value sum. All columns must pass | FALSE | |
+| filter_agg_inf_mutlicol | Infinite values  - multiple columns | FALSE | |
+| filter_vec_max | Maximum value | FALSE | |
+| filter_vev_max_sum | Maximum value sum. All columns must pass | FALSE | |
+| filter_vec_min | Minimum value | FALSE | |
+| filter_vec_min_sum | Minimum value sum. All columns must pass | FALSE | |
+| filter_vec_mod_z | Absolute modified z-score < thresh | TRUE | |
+| filter_vec_mod_z_sum | Absolute modified z-score < thresh sum. All columns must pass | TRUE | |
+| filter_vec_mod_z_perc | Absolute modified z-score < thresh sum. Pecentage of columns must pass | TRUE | |
+| filter_agg_na | NA filter | FALSE | |
+| filter_agg_na_multicol | NA filter - multiple columns | FALSE | |
+| filter_agg_near_zero_var | Near zero variance from caret | FALSE | These are quite slow and intensitve to compute, reccomend filter_coef_var insted |
+| filter_agg_near_zero_var_multicol | Near zero variance from caret sum. - multiple columns | FALSE | These are quite slow and intensitve to compute, reccomend filter_coef_var insted |
+| filter_agg_unique_val | Minimal number of unique values | FALSE | |
+| filter_agg_unique_val_multicol | Minimal number of unique values sum. - multiple columns | FALSE | |
+| filter_agg_zero_var | Exactly 0 variance | FALSE | Should also be covered by filter_coef_var |
+| filter_agg_zero_var_multicol | Exactly 0 variance sum.- multiple columns | FALSE | Should also be covered by filter_coef_var |
+| filter_agg_blacklist | Always FALSE | FALSE | |
 
 # List of functions
 
@@ -491,29 +516,28 @@ The functions without a spcific prefix should be more generically applicable.
 - apply_image_filters
 - calculate_feature_filters
 - calculate_object_filters
-- filter_blacklist
-- filter_coef_var
-- filter_coef_var_sum
-- filter_inf
-- filter_inf_median
-- filter_inf_median_sum
-- filter_inf_mutlicol
-- filter_max
-- filter_max_sum
-- filter_min
-- filter_min_sum
-- filter_mod_z
-- filter_mod_z_perc
-- filter_mod_z_sum
-- filter_na
-- filter_na_multicol
-- filter_near_zero_var
-- filter_near_zero_var_sum
-- filter_sum
-- filter_unique_val
-- filter_unique_val_sum
-- filter_zero_var
-- filter_zero_var_sum
+- filter_agg_coef_var
+- filter_agg_coef_var_multicol
+- filter_agg_inf
+- filter_agg_inf_median
+- filter_agg_inf_median_sum
+- filter_agg_inf_mutlicol
+- filter_vec_max
+- filter_vev_max_sum
+- filter_vec_min
+- filter_vec_min_sum
+- filter_vec_mod_z
+- filter_vec_mod_z_sum
+- filter_vec_mod_z_perc
+- filter_agg_na
+- filter_agg_na_multicol
+- filter_agg_near_zero_var
+- filter_agg_near_zero_var_multicol
+- filter_agg_unique_val
+- filter_agg_unique_val_multicol
+- filter_agg_zero_var
+- filter_agg_zero_var_multicol
+- filter_agg_blacklist
 
 #### Statistical Analysis
 

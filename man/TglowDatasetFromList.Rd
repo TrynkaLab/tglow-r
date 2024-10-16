@@ -7,7 +7,8 @@
 TglowDatasetFromList(
   output,
   assay,
-  meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent"),
+  meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
+    "_Location_", "BoundingBox"),
   img.feature.patterns = c("^AreaOccupied", "^ImageQuality", "^Granularity"),
   col.object = "cell_ObjectNumber_Global",
   col.img.id = "cell_ImageNumber_Global",

@@ -53,7 +53,7 @@ tglow
 filter.table <- data.frame(
     name = c("na_all", "inf_median", "min_uniuqe_val", "coef_var", "zero_var"),
     column_pattern = c("all", "all", "all", "all", "all"),
-    type = c("filter_na", "filter_inf_median", "filter_unique_val", "filter_coef_var", "filter_zero_var"),
+    type = c("filter_agg_na", "filter_agg_inf_median", "filter_agg_unique_val", "filter_agg_coef_var", "filter_agg_zero_var"),
     value = c(0.100, NA, 2.000, 0.001, NA),
     note = c("10% max NA cells in a featue", "Filters features with infinite median", "minimal number of unique values", "Filter for a coefficent of variation", "Filter for zero variance"),
     active = c(TRUE, TRUE, TRUE, TRUE, TRUE),
@@ -91,10 +91,10 @@ filter.table <- data.frame(
     ),
     metadata_group = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     type = c(
-        "filter_na_multicol", "filter_inf_mutlicol", "filter_min_sum",
-        "filter_max_sum", "filter_min_sum", "filter_max_sum",
-        "filter_max_sum", "filter_min_sum",
-        "filter_min_sum", "filter_max_sum"
+        "filter_agg_na_multicol", "filter_agg_inf_mutlicol", "filter_vec_min_sum",
+        "filter_vec_max_sum", "filter_vec_min_sum", "filter_vec_max_sum",
+        "filter_vec_max_sum", "filter_vec_min_sum",
+        "filter_vec_min_sum", "filter_vec_max_sum"
     ),
     value = c(0.1, 0.0, 10.0, 150.0, 10.0, 250.0, 4.0, 30.0, 1.0, 1.0),
     transpose = c(TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
