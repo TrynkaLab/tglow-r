@@ -4,21 +4,22 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 
 *Very important note:* We make no claims on the statistical validity of applying some of the approaches on any given dataset and this package is "use at your own risk". As the HCI feature space is so diverse and to maintain flexibility you can in principle run any data through the pacakge but this also means you can easily end up violating statistical assumptions. If in doubt, reach out to your local friendly statistician for advice if any given method is valid.
 
-# Installation & dependencies
+# Installation from source
 
 > NOTE: For Sanger farm22 install, see below
-> NOTE: For now repo is private, make sure you are on VPN when calling this.
 
 This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
 
 If you need to build some dependencies from source, make sure there is a BLAS/LAPACK, nlopt (nlopt), libxml2 (igraph) lib available if it isn't already, otherwise dependencies likely will not install. However this will depend heaviliy on your setup. Below is a minimal example using conda.
 
 ```
-conda install -c conda-forge blas lapack nlopt 
+conda install -c conda-forge blas lapack nlopt libxml2
 conda install R
 ```
 
 Then launch R
+
+> NOTE: For now repo is private, make sure you are on VPN when calling this.
 ```
 install.packages("remotes")
 install.packages("git2r")
@@ -28,7 +29,7 @@ install.packages("getPass")
 remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git",
  credentials=git2r::cred_user_pass(readline(prompt="Username: "), getPass::getPass()))
 ```
-This unlocks the core functionality
+This unlocks all of the core functionality
 
 #### Installing suggested packages
 
@@ -64,6 +65,8 @@ BiocManager::install("RBioFormats")
 ## On Sanger farm22 - latest dev version - reccomended
 A version compatible with the tglow-r softpack module comes pre-installed in `/software/teamtrynka/installs/tglow-rlibs` and can be loaded as such. 
 
+
+#### Using pre-installed version
 > NOTE: The version here changes often at the moment, so might not be the most stable.
 
 ``` 
@@ -75,7 +78,58 @@ Then launch R.
 library(tglowr, lib="/software/teamtrynka/installs/tglow-rlibs")
 ```
 
-Alternatively you can install if using R from the headnode or jammy64 directly through gitlab as above or using the cloned repo or using the latest code from `/software/teamtrynka/installs/tglow-r-core` in combination with `devtools::document()` and `devtools::build()`.
+#### Installing into your personal library from git
+Alternatively you can install if using R from the headnode or jammy64 directly through gitlab. This module should have all dependencies pre-installed.
+```
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
+```
+
+Then launch R.
+```
+install.packages("remotes")
+install.packages("git2r")
+install.packages("getPass")
+
+# For now it is in a private git, so will need to provide credentials
+remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git",
+ credentials=git2r::cred_user_pass(readline(prompt="Username: "), getPass::getPass()))
+```
+
+#### Installing from the sources directly
+Alternatively you can also use the latest code from `/software/teamtrynka/installs/tglow-r-core` in combination with `devtools::document()` and `devtools::build()`.
+This ensures you have the aboslute latest version of the code (which is both good and bad), the pre-installed version or the git version might lag behind a bit depending on the commit / build frequency.
+
+```
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
+```
+
+Then launch R.
+```
+# Install the latest tglow R package in a library of your choiche
+tmpdir <- "/path/to/install/dir"
+path <- paste0(tmpdir, "/build-dir")
+libdir <- paste0(tmpdir)
+
+dir.create(path)
+dir.create(libdir)
+
+# Copy the package to a wirtable tempdir
+file.copy(
+    from = list.files("/software/teamtrynka/installs/tglow-r-core", full.names = TRUE),
+    to = path, recursive = TRUE
+)
+
+# Build and document
+devtools::document(pkg = path)
+res <- devtools::build(pkg = path, path = path)
+
+# Remove the old version, install the new version, restart R
+remove.packages("tglowr", lib = libdir)
+install.packages(res, lib = libdir)
+
+system(paste0("chmod -R 770 ", libdir))
+
+```
 
 
 ##  On Sanger farm22 - Installing on Rstudio server - not reccomended (stop gap solution)
