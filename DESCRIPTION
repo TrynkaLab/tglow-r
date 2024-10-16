@@ -12,6 +12,7 @@ Imports:
     future,
     future.apply,
     ggplot2,
+    ggrepel,
     gplots,
     grDevices,
     igraph,

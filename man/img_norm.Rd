@@ -13,7 +13,9 @@ is assumed to be channel.}
 \item{norm.factors}{Value to divide the images by
 Defaults to NULL in which case tglow.max.per.channel is called}
 
-\item{q}{Quantile to normalize for, passed to \code{\link{img_max_per_channel}}}
+\item{q}{Quantile to normalize for, passed to \code{\link{img_max_per_channel}}
+
+importFrom EBImage imageData}
 }
 \description{
 Normalize a list of EBImages to a common norm factor

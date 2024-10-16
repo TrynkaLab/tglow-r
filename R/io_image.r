@@ -92,8 +92,8 @@ tglow_read_binmat <- function(path) {
 #' @param planes The planes to read. A list of Vector of indices per cycle. (default NULL = all planes)
 #' @param max.project Should the stack be max projected per channel? (default TRUE)
 #'
-#' @importFrom EBImage colorMode affine combine Grayscale colorMode<-
-#' @importFrom RBioFormats read.image
+#' importFrom EBImage colorMode affine combine Grayscale colorMode<-
+#' importFrom RBioFormats read.image
 #' @returns A list of EBImage objects by object id
 #' @export
 tglow_read_imgs <- function(dataset,

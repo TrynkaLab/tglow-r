@@ -5,6 +5,8 @@ This repo contains an R package for analyzing (single cell) HCI imaging data. Th
 *Very important note:* We make no claims on the statistical validity of applying some of the approaches on any given dataset and this package is "use at your own risk". As the HCI feature space is so diverse and to maintain flexibility you can in principle run any data through the pacakge but this also means you can easily end up violating statistical assumptions. If in doubt, reach out to your local friendly statistician for advice if any given method is valid.
 
 # Installation & dependencies
+
+> NOTE: For Sanger farm22 install, see below
 > NOTE: For now repo is private, make sure you are on VPN when calling this.
 
 This will install the latest development version, we don't yet have a release, but for stability you can checkout a specific commit using the `ref` argument in `remotes::install_git()`
@@ -19,23 +21,44 @@ conda install R
 Then launch R
 ```
 install.packages("remotes")
+install.packages("git2r")
+install.packages("getPass")
 
-remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git")
+# For now it is in a private git, so will need to provide credentials
+remotes::install_git("https://gitlab.internal.sanger.ac.uk/TrynkaLab/tglow-r-core.git",
+ credentials=git2r::cred_user_pass("user", getPass::getPass()))
 ```
 This unlocks the core functionality
 
 #### Installing suggested packages
-To enable the suggested packages, manually install ggrastr, EBImage and RBioFormats
+
+##### ggrastr
+To enable rasterization of plots with many points (this is fully optional, and plotting will work without it)
 ```
 # Optional if installing ggrastr to enable rasterization of plots with many points
-conda install -c conda-forge r-ragg
+conda install -c conda-forge r-ragg 
 ```
 
 Then launch R
 ```
+install.packages("ggrastr")
+```
+
+##### EBImage and RBioFormats
+These packages are required if you want to be able to retrieve example images of objects from .ome.tiff files
+organized by /plate/row/col/field.ome.tiff (this is fully optional and the rest of the package will work without it)
+
+```
+# Optional if installing EBImage and RBioFormats to fetch example images
+conda install -c conda-forge r-rcurl r-rjava fftw  
+```
+
+Then launch R
+```
+install.packages("BiocManager")
+
 BiocManager::install("EBImage")
 BiocManager::install("RBioFormats")
-install.packages("ggrastr")
 ```
 
 ## On Sanger farm22 - latest dev version - reccomended

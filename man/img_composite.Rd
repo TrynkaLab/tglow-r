@@ -13,6 +13,8 @@ img_composite(images, colors)
 }
 \value{
 A single RGB images representing the average color values
+
+importFrom EBImage channel
 }
 \description{
 Apply a color shift and average their RGB values at each pixel to create a composite image

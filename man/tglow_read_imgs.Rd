@@ -46,7 +46,10 @@ Must have an additional collumn named 'plate2' to indicate the registraiton plat
 
 \item{planes}{The planes to read. A list of Vector of indices per cycle. (default NULL = all planes)}
 
-\item{max.project}{Should the stack be max projected per channel? (default TRUE)}
+\item{max.project}{Should the stack be max projected per channel? (default TRUE)
+
+importFrom EBImage colorMode affine combine Grayscale colorMode<-
+importFrom RBioFormats read.image}
 }
 \value{
 A list of EBImage objects by object id

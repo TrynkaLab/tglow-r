@@ -17,6 +17,8 @@ is assumed to be channel}
 }
 \value{
 A vector with the max values in each channel
+
+importFrom EBImage imageData
 }
 \description{
 Find the maximum value in each channel in a collection of images
