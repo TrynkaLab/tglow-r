@@ -48,19 +48,23 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             ident.is.ref <- (cur.ident != class) & (cur.ident %in% ref.classes)
         }
 
-        if (sum(ident.is.ref) == 0) {
+        skip <- FALSE
+        if (class %in% ref.classes) {
+            msg <- paste0("Skipping class ", class, " as it is in ref.classes, will return NA for this class")
+            cat("[WARN] ", msg, "\n")
+            warning(msg)
+            skip <- TRUE
+        } else if (sum(ident.is.ref) == 0) {
             warning(paste0("No reference items found. Consider setting ref.classes. skipping class ", class))
-            res[i:(i + ncol(cur.assay)), "class"] <- class
-            res[i:(i + ncol(cur.assay)), "feature"] <- colnames(cur.assay)
-            i <- i + ncol(cur.assay)
-            pb$tick(ncol(cur.assay))
-            next()
+            skip <- TRUE
+        } else if (sum(ident.is.class) == 0) {
+            warning(paste0("No class items found, skipping class ", class))
+            skip <- TRUE
         }
 
-        if (sum(ident.is.class) == 0) {
-            warning(paste0("No class items found, skipping class ", class))
-            res[i:(i + ncol(cur.assay)), "class"] <- class
-            res[i:(i + ncol(cur.assay)), "feature"] <- colnames(cur.assay)
+        if (skip) {
+            res[i:(i + (ncol(cur.assay) - 1)), "class"] <- class
+            res[i:(i + (ncol(cur.assay) - 1)), "feature"] <- colnames(cur.assay)
             i <- i + ncol(cur.assay)
             pb$tick(ncol(cur.assay))
             next()
@@ -411,7 +415,7 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
 
 #-------------------------------------------------------------------------------
 #' Check covariates.dont.use and expand factor levels
-#' 
+#'
 #' @keywords internal
 check_unused_covar <- function(data, covariates.dont.use) {
     if (!is.null(covariates.dont.use)) {
