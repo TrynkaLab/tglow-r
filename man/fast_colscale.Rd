@@ -11,7 +11,8 @@ fast_colscale(
   add_attr = TRUE,
   na.rm = F,
   scale.method = "mean",
-  reference.group = NULL
+  reference.group = NULL,
+  na.zero = F
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ fast_colscale(
 \item{scale.method}{Scaling method, either \code{mean} for z-score or \code{median} modified z-score}
 
 \item{reference.group}{Calculate means/medians, sds/mads only on these samples but apply it to all}
+
+\item{na.zero}{Set values that are exactly 0 to NA when calculating means and variances. See details}
 }
 \value{
 The scaled matrix
@@ -44,6 +47,11 @@ Standard centering/scaling: (x-mean(x)) / sd(x)
 \code{scale.method - median}
 
 Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
+
+\code{na.zero}
+This removes values which are exactly zero from mean and variance calculations. Some features
+might have a lot of zeroes, which can skew the mean and variance estimates and give issues when
+scaling to reference samples. This sets them to NA when calculating the scaling factors.
 }
 \examples{
 # Generate a matrix

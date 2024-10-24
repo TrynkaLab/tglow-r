@@ -12,6 +12,7 @@
 #' @param na.rm Should NA's be removed during mean and variance calculations
 #' @param scale.method Scaling method, either `mean` for z-score or `median` modified z-score
 #' @param reference.group Calculate means/medians, sds/mads only on these samples but apply it to all
+#' @param na.zero Set values that are exactly 0 to NA when calculating means and variances. See details
 #'
 #' @returns The scaled matrix
 #'
@@ -24,7 +25,11 @@
 #' `scale.method - median`
 #'
 #' Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
-#'
+#' 
+#' `na.zero`
+#' This removes values which are exactly zero from mean and variance calculations. Some features
+#' might have a lot of zeroes, which can skew the mean and variance estimates and give issues when
+#' scaling to reference samples. This sets them to NA when calculating the scaling factors.
 #'
 #' @examples
 #' # Generate a matrix
@@ -51,7 +56,8 @@ fast_colscale <- function(x,
                           add_attr = TRUE,
                           na.rm = F,
                           scale.method = "mean",
-                          reference.group = NULL) {
+                          reference.group = NULL,
+                          na.zero = F) {
     if (is(x, "TglowMatrix")) {
         x <- x@.Data
     }
@@ -60,6 +66,10 @@ fast_colscale <- function(x,
         x.ref <- x
     } else {
         x.ref <- x[reference.group, ]
+    }
+
+    if (na.zero) {
+        x.ref[x.ref == 0] <- NA
     }
 
     if (scale.method == "mean") {
@@ -278,7 +288,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' @param assay \linkS4class{TglowAssay}
 #' @param grouping Vector with a grouping variable of length nrow(assay)
 #' @param reference.group Scale not to the vector mean/median, sd/mad but to the objects indiciated here
-#' @param ... Arguments passed to \code{\link{fast_colscale}}
+#' @param ... Arguments passed to \code{\link{fast_colscale}}. Strongly reccomend looking at these!
 #' @returns The asssay with the scale.data slot populated
 #'
 #' @details

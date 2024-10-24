@@ -13,7 +13,7 @@ scale_assay(assay, grouping = NULL, reference.group = NULL, ...)
 
 \item{reference.group}{Scale not to the vector mean/median, sd/mad but to the objects indiciated here}
 
-\item{...}{Arguments passed to \code{\link{fast_colscale}}}
+\item{...}{Arguments passed to \code{\link{fast_colscale}}. Strongly reccomend looking at these!}
 }
 \value{
 The asssay with the scale.data slot populated
