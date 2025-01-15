@@ -184,7 +184,7 @@ tglow_read_imgs <- function(dataset,
 
 
                 # Read the registration matrix
-                reg <- tglowr::read_binmat(cur.reg.index[p2, "path"])
+                reg <- tglowr::tglow_read_binmat(cur.reg.index[p2, "path"])
 
                 tmp.img <- RBioFormats::read.image(new.img$path, subset = subset, normalize = F)
                 EBImage::colorMode(tmp.img) <- EBImage::Grayscale
