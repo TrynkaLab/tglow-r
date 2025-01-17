@@ -22,11 +22,11 @@
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
 #' @param qc.group A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once
-#' @param thresh Threshold in absolute PC to consider an outlier
+#' @param thresh Threshold in absolute PC to consider an outlier. "auto" defaults to 3.5 for zscore/mad modes, and to bonferoni for mahalanobis 
 #' @param pc.thresh The percentage of variance of PC's to select for outlier detection
 #' @param pc.max The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}
 #' @param pc.n The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max
-#' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore
+#' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance (not impl).
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
@@ -36,7 +36,7 @@
 find_outliers_pca <- function(dataset,
                               assay,
                               qc.group = NULL,
-                              thresh = 3.5,
+                              thresh = "auto",
                               pc.thresh = 0.75,
                               pc.max = NULL,
                               pc.n = NULL,
@@ -164,15 +164,22 @@ find_outliers_pca <- function(dataset,
 
         # Now we perform z-scoring on the PCs
         if (method == "mod.z") {
+            if (thresh == "auto") {thresh <- 3.5}
             pcs.norm <- apply(pca$x[, 1:pc.n.final, drop = F], 2, mod_zscore)
+            outliers <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
         } else if (method == "z") {
+            if (thresh == "auto") {thresh <- 3.5}
             pcs.norm <- fast_colscale(pca$x[, 1:pc.n.final, drop = F])
+            outliers <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
             # pcs.norm <- apply(pca$x, 2, scale, center = T, scale = T)[, 1:pc.n, drop = F]
+        } else if (methods == "mahalanobis") {
+            # Implement it here, you just want to set the vector "outliers" as a TRUE/FALSE logical
+            # PCSs are in 'pca$x', data is in 'cur.data'
+            if (thresh == "auto") {thresh <- 0.05 / nrow(cur.data)}
+            stop("Method mahalanobis is not yet implemented")
         } else {
             stop(paste0("Method ", method, " is not available. Must be 'z' or 'mod.z'"))
         }
-
-        outliers <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
 
         if (return.pcs) {
             final.pca[[group]] <- list(pcs = pcs.norm, outliers = outliers)

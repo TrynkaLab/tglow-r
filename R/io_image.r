@@ -182,24 +182,35 @@ tglow_read_imgs <- function(dataset,
                     subset[["Z"]] <- planes[[p2 + 1]]
                 }
 
-
                 # Read the registration matrix
+                #cat("[DEBUG] reading cycle x: ", cur.reg.index[p2, "path"], "\n")
                 reg <- tglowr::tglow_read_binmat(cur.reg.index[p2, "path"])
+                #cat("[DEBUG] read registration: \n", reg, "\n")
 
+                #cat("[DEBUG] reading image: ", new.img$path, "\n")
+                #cat("[DEBUG] susbet image: \n")
+                #print(subset)
                 tmp.img <- RBioFormats::read.image(new.img$path, subset = subset, normalize = F)
                 EBImage::colorMode(tmp.img) <- EBImage::Grayscale
+                #cat("[DEBUG] read image: ", dim(tmp.img), "\n")
 
                 # Recode the matrix so it works with EBImage
                 m <- t(reg)[, 1:2]
                 m[3, ] <- -1 * m[3, ]
+                #cat("[DEBUG] prepared registration mat \n", m, "\n")
 
                 # Apply affine transform
                 tmp.img <- EBImage::affine(tmp.img, m, filter = "none", antialias = F)
+                #cat("[DEBUG] Applied affine to cycle x\n")
 
                 # Combine with the image
-                img <- EBImage::combine(img, tmp.img)
+                img <-c(img, tmp.img)
+                #img <- EBImage::abind(img, tmp.img, along = 4)
             }
         }
+
+        #cat("[DEBUG] Done reading aditional cycles\n")
+        #cat("[DEBUG] ", dim(img), "\n")
 
         crop <- img
 
