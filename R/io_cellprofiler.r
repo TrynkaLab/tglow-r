@@ -100,7 +100,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
   selector <- !is.na(output$cells[, col.object])
 
   if (sum(!selector) != 0) {
-    warning(paste0("Detected ", sum(selector), " objects with NA in ", col.object, " removing these"))
+    warning(paste0("Detected ", sum(!selector), " objects with NA in ", col.object, " removing these"))
   }
 
   output$cells <- output$cells[selector, ]
