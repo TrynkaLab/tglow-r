@@ -284,6 +284,7 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' @param pat.others The pattern to use to extract the child object names from the filename. First regex group is used as object name
 #' @param na.rm Should NA's be removed when applying merging.strategy
 #' @param skip.orl Should object relationships be read (not used, can be quite large)
+#' @param skip.children List of child object names to skip during reading.
 #' @param verbose Should I be chatty?
 #' @param fileset.id The global fileset id to add if add.global.id = TRUE
 #'
@@ -307,6 +308,7 @@ read_cellprofiler_fileset_b <- function(prefix,
                                         pat.others = "^.*_([a-zA-Z]+\\d*).txt$",
                                         na.rm = F,
                                         skip.orl = F,
+                                        skip.children = NULL,
                                         verbose = F,
                                         fileset.id = NULL) {
   if (add.global.id) {
@@ -360,6 +362,12 @@ read_cellprofiler_fileset_b <- function(prefix,
 
     for (i in seq_len(nrow(index))) {
       obj <- index[i, "object"]
+      
+      # Optionally skip adding this child object
+      if (obj %in% skip.children) {
+        next()
+      }
+      
       cur <- data.table::fread(paste0(tmpdir, "/", index[i, "Name"]), data.table = T, showProgress = FALSE)
 
       # Remove these columns from the merging strategy
@@ -373,8 +381,13 @@ read_cellprofiler_fileset_b <- function(prefix,
         colnames(cur) <- paste0(obj, "_", colnames(cur))
         cells[, c(colnames(cur), paste0(obj, "_QC_Object_Count"))] <- NA
         warning(paste0(obj, " assay for ", index[i, "Name"], " is empty. Returning NA for these cols."))
+        
       } else if (merging.strategy == "mean") {
         if (verbose) cat("[DEBUG] ", as.character(index[i, ]), "\n")
+
+        if (!parent.col %in% colnames(cur)) {
+          stop(paste0("Parent col: '", parent.col, "' not found for child object '", obj, "'. Either update the files, or skip reading the child object with skip.children"))
+        }
 
         cur <- cur[as.logical(cur[[parent.col]] != 0), ]
         colnames(cur) <- paste0(obj, "_", colnames(cur))
