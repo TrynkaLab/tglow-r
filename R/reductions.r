@@ -60,6 +60,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 
     if (ret.prcomp) {
         res@object <- pcs
+        rownames(res@object$rotation) <- colnames(cur.data)
     }
 
     if (is.null(reduction.name)) {
