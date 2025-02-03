@@ -25,7 +25,7 @@
 #' `scale.method - median`
 #'
 #' Median adjusted deviation centering/scaling: (x-median(x)) / mad(x)
-#' 
+#'
 #' `na.zero`
 #' This removes values which are exactly zero from mean and variance calculations. Some features
 #' might have a lot of zeroes, which can skew the mean and variance estimates and give issues when
@@ -151,7 +151,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 
     # Create data to estimate transformation parameters
     # Optionally downsample
-    if (! is.null(downsample)) {
+    if (!is.null(downsample)) {
         if (class(downsample) == "integer" || class(downsample) == "numeric") {
             if (length(downsample) > 1) {
                 y <- x[downsample]
@@ -376,4 +376,55 @@ scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
     }
 
     return(dataset)
+}
+
+
+
+#-------------------------------------------------------------------------------
+#' Scale a TglowAssay between a min and max value for each feature
+#'
+#' @description Scale the data slot between min and max and return a new assay
+#'
+#' @param assay \linkS4class{TglowAssay}
+#' @param slot The slot on assay to draw from. Should be 'data' in most cases.
+#' @param min The minimal value for each feature
+#' @param max The maximum value for each feature
+#' @param scale.by.var Multiply the result by the orignal variance
+#' @param scaling.factors Vector of scaling factors per feature
+#'
+#' @returns A \linkS4class{TglowAssay} with the data slot populated with the rescaled data.
+#' @export
+scale_assay_min_max <- function(assay, slot = "data", min = 0, max = 1, scale.by.var = FALSE, scaling.factors = NULL) {
+    if (!is(assay, "TglowAssay")) {
+        stop("Assay must be TglowAssay")
+    }
+
+    m <- slot(assay, slot)@.Data
+
+    # return (maxAllowed - minAllowed) * (unscaledNum - min) / (max - min) + minAllowed;
+
+    m <- apply(m, 2, function(x) {
+        xx <- (((max - min) * (x - min(x))) / (max(x) - min(x))) + min
+        return(xx)
+    })
+
+    features <- assay@features
+
+    # Scale each column by scaling factors or the orignal variance
+    if (!is.null(scaling.factors)) {
+        if (length(scaling.factors) != ncol(m)) {
+            stop("scaling.factors must equal ncol(assay) in length")
+        }
+        m <- m %*% diag(scaling.factors)
+        features[,"scaling_factors"] <- scaling.factors
+    } else if (scale.by.var) {
+        scaling.factors <- matrixStats::colVars(slot(assay, slot)@.Data)
+        m <- m %*% diag(scaling.factors)
+        features[,"scaling_factors"] <- scaling.factors
+    }
+
+    return(new("TglowAssay",
+        data = tglowr::TglowMatrix(m),
+        features = features
+    ))
 }

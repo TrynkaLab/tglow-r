@@ -368,7 +368,7 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
         assay.covar <- assay
     }
 
-    data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
+    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
     if (ncol(data) <= 0) {
         stop("data (covariates) cannot be empty. Are your collumn names correct?")
