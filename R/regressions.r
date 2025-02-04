@@ -128,6 +128,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
 #' @param covariates Character vector of covariates to correct for
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
+#' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param formula The formula to use for regression. Defaults to additive model. See details
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
@@ -154,14 +155,18 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
+correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
     }
+    
+    if (is.null(assay.covar)) {
+        assay.covar <- assay
+    }
 
-    data <- getDataByObject(object, covariates, assay, assay.image, slot.covar, drop = F)
+    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
     covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
 
@@ -215,6 +220,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
 #' @param covariates.group List with specific covariates for groups of features. See detaills
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
+#' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
@@ -240,7 +246,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
+correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (!is.list(covariates.group)) {
@@ -270,6 +276,11 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
         slot.covar <- slot
     }
 
+    if (is.null(assay.covar)) {
+        assay.covar <- assay
+    }
+
+
     response <- slot(object@assays[[assay]], slot)@.Data
     residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
     rownames(residuals) <- rownames(response)
@@ -290,7 +301,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
         }
 
         for (fgroup in names(covariates.group)) {
-            data <- getDataByObject(object, covariates.group[[fgroup]], assay, assay.image, slot.covar, drop = F)
+            data <- getDataByObject(object, covariates.group[[fgroup]], assay.covar, assay.image, slot.covar, drop = F)
 
             covariates.dont.use.cur <- check_unused_covar(data, covariates.dont.use)
             design <- model.matrix(~., data = data[selector, , drop = FALSE])
