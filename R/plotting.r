@@ -153,7 +153,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
     }
 
     if (log.ident) {
-        col <- log2(log.ident)
+        col <- log2(col)
     }
 
 
@@ -166,6 +166,10 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
         ylab = ylab,
         ...
     ))
+
+    if (is.null(ident)) {
+        labs.add <- F
+    }
 
     if (labs.add) {
         if ((is.character(col) && length(unique(col)) <= 50) || is.factor(col) && length(unique(col)) <= 50) {
