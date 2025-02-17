@@ -172,7 +172,11 @@ tglow_read_imgs <- function(dataset,
                     cur.reg.index[p2, "field"]
                 ), ]
 
+                # Possible fix, use base::aperm() and a flexible order argument, to reorder the matrices after reading
+                # for now this is too much effort. 
+               # order <- c()
                 if (!is.null(channels)) {
+                    stop("Curretnly this functionality is broken, please subset manually after reading")
                     if (length(channels) != nrow(cur.reg.index) + 1) {
                         stop("Length of channel list does not match the number of cycles found in reg.index")
                     }
@@ -180,6 +184,7 @@ tglow_read_imgs <- function(dataset,
                 }
 
                 if (!is.null(planes)) {
+                    stop("Curretnly this functionality is broken, please subset manually after reading")
                     if (length(planes) != nrow(cur.reg.index) + 1) {
                         stop("Length of plane list does not match the number of cycles found in reg.index")
                     }
@@ -195,6 +200,7 @@ tglow_read_imgs <- function(dataset,
                 #cat("[DEBUG] susbet image: \n")
                 #print(subset)
                 tmp.img <- RBioFormats::read.image(new.img$path, subset = subset, normalize = F)
+                #tmp.img <- base::aperm(tmp.img, order)
                 EBImage::colorMode(tmp.img) <- EBImage::Grayscale
                 #cat("[DEBUG] read image: ", dim(tmp.img), "\n")
 
@@ -207,9 +213,14 @@ tglow_read_imgs <- function(dataset,
                 tmp.img <- EBImage::affine(tmp.img, m, filter = "none", antialias = F)
                 #cat("[DEBUG] Applied affine to cycle x\n")
 
+
+                cat("[DEBUG] ", dim(img), " - ", dim(tmp.img), "\n")
                 # Combine with the image
-                img <-c(img, tmp.img)
-                #img <- EBImage::abind(img, tmp.img, along = 4)
+                #img <-c(img, tmp.img)
+                # YXCZ
+                img <- EBImage::abind(img, tmp.img, along = 3)
+                cat("[DEBUG] ", dim(img), "\n")
+
             }
         }
 
