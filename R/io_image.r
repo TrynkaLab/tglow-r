@@ -176,7 +176,7 @@ tglow_read_imgs <- function(dataset,
                 # for now this is too much effort. 
                # order <- c()
                 if (!is.null(channels)) {
-                    stop("Currently this functionality is broken, please subset manually after reading and set channels=NULL when registering")
+                    stop("Currently subset + reg.index is broken, please subset manually after reading and set channels=NULL when registering")
                     if (length(channels) != nrow(cur.reg.index) + 1) {
                         stop("Length of channel list does not match the number of cycles found in reg.index")
                     }
@@ -184,7 +184,7 @@ tglow_read_imgs <- function(dataset,
                 }
 
                 if (!is.null(planes)) {
-                    stop("Currently this functionality is broken, please subset manually after reading and set planes=NULL when registering")
+                    stop("Currently subset + reg.index is broken, please subset manually after reading and set planes=NULL when registering")
                     if (length(planes) != nrow(cur.reg.index) + 1) {
                         stop("Length of plane list does not match the number of cycles found in reg.index")
                     }
