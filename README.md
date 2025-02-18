@@ -211,6 +211,7 @@ The functions without a spcific prefix should be more generically applicable.
 - read_cellprofiler_fileset_b
 - tglow_read_binmat
 - tglow_read_imgs
+- tglow_read_imgs_aics
 
 
 #### Data Aggregation and Merging
