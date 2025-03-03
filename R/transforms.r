@@ -128,6 +128,145 @@ mod_zscore <- function(x) {
     return((0.6745 * (x - median(x, na.rm = TRUE))) / mad(x, na.rm = TRUE))
 }
 
+
+#-------------------------------------------------------------------------------
+#'
+#' As trafo's implementation
+#' https://github.com/cran/trafo/blob/master/R/trafos.R
+#' 
+#' @rdname modul
+#' @export
+modul <- function(y, lambda = lambda) {
+  u <- abs(y) + 1L
+  lambda_absolute <- abs(lambda)
+  if (lambda_absolute <= 1e-12) {  #case lambda=0
+    yt <-  sign(y)*log(u)
+  } else {
+    yt <- sign(y)*(u^lambda - 1L)/lambda
+  }
+  return(y = yt)
+}
+
+#' Standardized transformation: Modulus
+#' @rdname modul
+#' @export
+modul_std <- function(y, lambda) {
+  u <- abs(y) + 1L
+  lambda_absolute <- abs(lambda)
+  if (lambda_absolute <= 1e-12) {  #case lambda=0
+    zt <-  sign(y) * log(u) * geometric.mean(u) 
+  } else {
+    zt <- sign(y)*(u^lambda - 1L)/lambda * (1/geometric.mean(u)^(lambda - 1))
+  }
+  y <- zt
+  
+  return(y)
+}
+
+#' @rdname modul
+#' @export
+geometric.mean <- function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Transform vector using modulus transform, finding optimal lambda
+#'
+#' Modelled after MASS:boxcox() and shares the same basic signature
+#' So see [MASS:boxcox()] for help
+#' 
+#' 
+#' @details 
+#' Implements modulus transformation described here:
+#' https://scales.r-lib.org/reference/boxcox_trans.html
+#' John, J. A., & Draper, N. R. (1980). An alternative family of transformations. Applied Statistics, 190-197. http://www.jstor.org/stable/2986305
+#' 
+#' 
+#' @export 
+modulus <- function(object, lambda = seq(-2, 2, 1/10), plotit =  TRUE,
+         interp = (plotit && (m < 100)), eps = 1/50,
+         xlab = expression(lambda), ylab = "log-Likelihood", ...) {
+            
+    m <- length(lambda)
+    object <- lm(object, y = TRUE, qr = TRUE, ...)
+    
+    if(is.null(object$y) || is.null(object$qr))
+        object <- update(object, y = TRUE, qr = TRUE, ...)
+
+    if(is.null(y <- object$y) || is.null(xqr <- object$qr))
+        stop(gettextf("%s does not have both 'qr' and 'y' components",
+                      sQuote(deparse(substitute(object)))), domain = NA)
+   
+
+    n <- length(y)
+    ## scale y[]  {for accuracy in  y^la - 1 }:
+    #y    <- y / exp(mean(log(y)))
+    #logy <- log(y) # now  ydot = exp(mean(log(y))) == 1
+    
+    xl   <- loglik <- as.vector(lambda)
+    m    <- length(xl)
+    
+    for(i in 1L:m) {
+        if(abs(la <- xl[i]) > eps) {
+            # This is the boxcox, replace it with modulus transform
+            #yt <- (y^la - 1)/la
+            # https://scales.r-lib.org/reference/boxcox_trans.html
+            
+            # Raw modulus transform
+            #yt <- sign(y) * ((abs(y) + 1)^la - 1) / la
+            # I don't 100% get why, but weighting by the genometric mean is important
+            # otherwise the likelihood just increases with higher lambda's and you cannot
+            # find the actual best value. I assume this ensures the actual value is close to the mean
+            yt <- modul_std(y, la)
+        } else {
+            #yt <- logy * (1 + (la * logy)/2 *
+            #                (1 + (la * logy)/3 * (1 + (la * logy)/4)))
+            #yt <- sign(y) * log(abs(y) + 1)
+            yt <- modul_std(y, 0)
+        }
+        loglik[i] <- - n/2 * log(sum(qr.resid(xqr, yt)^2))
+    }
+    if(interp) {
+        sp <- spline(xl, loglik, n = 100)
+        xl <- sp$x
+        loglik <- sp$y
+        m <- length(xl)
+    }
+    if(plotit) {
+        mx <- (1L:m)[loglik == max(loglik)][1L]
+        Lmax <- loglik[mx]
+        lim <- Lmax - qchisq(19/20, 1)/2
+        dev.hold(); on.exit(dev.flush())
+        plot(xl, loglik, xlab = xlab, ylab = ylab, type
+             = "l", ylim = range(loglik, lim))
+        plims <- par("usr")
+        abline(h = lim, lty = 3)
+        y0 <- plims[3L]
+        scal <- (1/10 * (plims[4L] - y0))/par("pin")[2L]
+        scx <- (1/10 * (plims[2L] - plims[1L]))/par("pin")[1L]
+        text(xl[1L] + scx, lim + scal, " 95%", xpd = TRUE)
+        la <- xl[mx]
+        if(mx > 1 && mx < m)
+            segments(la, y0, la, Lmax, lty = 3)
+        ind <- range((1L:m)[loglik > lim])
+        if(loglik[1L] < lim) {
+            i <- ind[1L]
+            x <- xl[i - 1] + ((lim - loglik[i - 1]) *
+                              (xl[i] - xl[i - 1]))/(loglik[i] - loglik[i - 1])
+            segments(x, y0, x, lim, lty = 3)
+        }
+        if(loglik[m] < lim) {
+            i <- ind[2L] + 1
+            x <- xl[i - 1] + ((lim - loglik[i - 1]) *
+                              (xl[i] - xl[i - 1]))/(loglik[i] - loglik[i - 1])
+            segments(x, y0, x, lim, lty = 3)
+        }
+    }
+    list(x = xl, y = loglik)
+}
+
+
 #-------------------------------------------------------------------------------
 #' Transform assay data using boxcox transform
 #'
@@ -136,17 +275,27 @@ mod_zscore <- function(x) {
 #'
 #' @param x A numeric vector with values to transform
 #' @param return.lambda return the lambda value instead
+#' @param mode Either 'boxcox' or 'modulus', see details
 #' @param limit The absolute value of lambda's to test
 #' @param fudge Fudgefactor to apply either log transform, or just leave it as is
 #' @param downsample Calculate labmda's on a random sample of the data. Either NULL (no downsampling), an integer (selects x values), or a selection vector
 #' @param add.lambda Return a list with two items instead, one transformed x, two, the lamda used
 #'
 #' @returns A numeric vector with the boxcox transformed data or the optimal lambda value
+#' 
+#' @details 
+#' In mode boxcox [MASS::boxcox()] is fit on the offset values if there are any values < 0. Values are made positive by adding the min absolute value
+#' In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See [modulus_transform()]
+#' 
 #' @export
-boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, downsample = NULL, add.lambda = FALSE) {
-    # If is not positive - then offset to make everything positive
-    if (any(x <= 0, na.rm = T) == T) {
-        x <- abs(min(x, na.rm = T)) + x + 1
+boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5, fudge = 0.2, downsample = NULL, add.lambda = FALSE, filter.iqr=TRUE) {
+    
+    
+    if (mode == "boxcox") {
+        # If is not positive - then offset to make everything positive
+        if (any(x <= 0, na.rm = T) == T) {
+            x <- abs(min(x, na.rm = T)) + x + 1
+        }
     }
 
     # Create data to estimate transformation parameters
@@ -165,8 +314,27 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
         y <- x
     }
 
+    # Filter 2x IQR outliers
+    if (filter.iqr) {
+        q1 <- quantile(y, 0.25, na.rm=T) 
+        q3 <- quantile(y, 0.75, na.rm=T)
+        iqr   <- q3 - q1
+        lower <- q1 - 2 * iqr
+        upper <- q3 + 2 * iqr
+        y <- y[y >= lower & y <= upper]   
+        #x[x >= lower & x <= upper] <- NA
+    }
+
     # Estimate transformation parameters
-    bc <- MASS::boxcox(y ~ 1, plotit = F, lambda = seq(-limit, limit, 1 / 10)) # don't plot lambda outcome
+    if (mode == "boxcox") {
+        bc <- MASS::boxcox(y ~ 1, plotit = F, lambda = seq(-limit, limit, 1 / 10), interp=F) # don't plot lambda outcome
+    } else if (mode == "modulus") {
+        # Use modulus transform instrad
+        bc <- modulus(y ~ 1, plotit = F, lambda = seq(-limit, limit, 1 / 10), interp=F) # don't plot lambda outcome
+    } else {
+        stop(paste0(mode, " is not a valid mode, bust be boxcox or modulus"))
+    }
+
     lambda <- bc$x[which.max(bc$y)]
 
     # If return lambda or transformed values
@@ -176,16 +344,19 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
         # Define fudge: uncertainty value so that anything within that range becomes the closest value
 
         # Transform data
-        if ((lambda < fudge) && (lambda > -fudge)) { # If the data is in between -0.1 & 0.1, then just do a log
-            t <- log(x)
+        if ((lambda <= fudge) && (lambda >= -fudge)) { # If the data is in between -0.1 & 0.1, then just do a log
+            
+            if (mode == "boxcox") {t <- log(x)}
+            if (mode == "modulus") {t <- modul(x, 0)}
             lambda <- 0
-        } else if ((lambda < (1 + fudge)) && (lambda > (1 - fudge))) { # If the data is in still between -1.2 & 1.2, then just leav it
+        } else if ((lambda <= (1 + fudge)) && (lambda >= (1 - fudge))) { # If the data is in still between -1.2 & 1.2, then just leav it
             t <- x
             lambda <- 1
         } else { # Otherwise use the calculated lambda
-            t <- (x^lambda - 1) / lambda
+            if (mode == "boxcox") {t <- (x^lambda - 1) / lambda}
+            if (mode == "modulus") {t <- modul(x, lambda)}
         }
-
+        
         if (add.lambda) {
             return(list(x = t, lambda = lambda))
         } else {
@@ -207,7 +378,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' @param trim Logical indicating to trim zero variance columns and NA's after applying boxcox transform
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param verbose Raise a warning if columns are trimmed
-#' @param rfast.zerotol threshold to consider variances zero in Rfast. See details
+#' @param filter.iqr Remove values outside +- 1.5x IQR to reduce impact of outliers
 #' @param ... Arguments passed to \code{\link{boxcox_transform}}
 #'
 #' @details
@@ -222,7 +393,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, limit = 5, fudge = 0.1, d
 #' @returns \linkS4class{TglowDataset} with new boxcox assay
 #' @importFrom progress progress_bar
 #' @export
-apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, rfast.zerotol = 1e-10, ...) {
+apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, filter.iqr=T, ...) {
     # Checks for input
     check_dataset_assay_slot(dataset, assay, slot)
 
@@ -243,13 +414,13 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     pb <- progress::progress_bar$new(format = paste0("[INFO] Transforming [:bar] :current/:total (:percent) eta :eta"), total = ncol(mat))
 
     lambdas <- c()
-    mat <- apply(mat, 2, function(x) {
+    mat <- apply(mat, 2, function(x, filter.iqr) {
         pb$tick()
-        res <- tglowr::boxcox_transform(x, add.lambda = T, ...)
-
+        
+        res <- tglowr::boxcox_transform(x, add.lambda = T, filter.iqr=filter.iqr, ...)
         lambdas <<- c(lambdas, res$lambda)
         return(res$x)
-    })
+    }, filter.iqr=filter.iqr)
 
     features$lambda <- lambdas
     if (trim) {

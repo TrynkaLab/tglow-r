@@ -496,3 +496,30 @@ effective_dimensionality <- function(data, method = "LiJi", var.thresh = 0.95) {
 
   return(eff.tests)
 }
+
+#-------------------------------------------------------------------
+#' Calculate the skewness, kurtosis
+#' 
+#' @param x Numeric vector
+#' @param na.rm Should NA's be removed
+#' @rdname moments
+#' @returns estimates for skewness, kurtosis respecitvely
+#' @export
+skewness <- function(x, na.rm=F) {
+  if (na.rm){
+    x <- x[!is.na(x)]
+  }
+  
+  sum((x-mean(x))^3)/((length(x)-1)*sd(x)^3)
+}
+
+#' @rdname moments
+#' @export
+kurtosis <- function(x, na.rm=F) {
+  if (na.rm){
+    x <- x[!is.na(x)]
+  }
+  sum((x-mean(x))^4)/((length(x)-1)*sd(x)^4)
+}
+
+

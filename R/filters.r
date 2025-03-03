@@ -152,6 +152,37 @@ filter_agg_coef_var <- function(vec, thresh) {
 filter_agg_coef_var_multicol <- function(...) {
     filter_multicol(..., func = filter_agg_coef_var)
 }
+#-------------------------------------------------------------------------------
+#' Absolute skewness filter
+#' @rdname tglow_filters
+#' @export
+filter_agg_skewness <- function(vec, thresh) {
+    # cur.var <- var(vec[!is.na(vec)])
+    # cur.var[cur.var < 1e-10] <- 0
+    return(abs(skewness(vec, na.rm=T)) > thresh)
+}
+
+#' @rdname tglow_filters
+#' @export
+filter_agg_skewness_multicol <- function(...) {
+    filter_multicol(..., func = filter_agg_skewness)
+}
+
+#-------------------------------------------------------------------------------
+#' Absolute kurotsis filter
+#' @rdname tglow_filters
+#' @export
+filter_agg_kurtosis <- function(vec, thresh) {
+    # cur.var <- var(vec[!is.na(vec)])
+    # cur.var[cur.var < 1e-10] <- 0
+    return(abs(kurtosis(vec, na.rm=T)) > thresh)
+}
+
+#' @rdname tglow_filters
+#' @export
+filter_agg_kurtosis_multicol <- function(...) {
+    filter_multicol(..., func = filter_agg_skewness)
+}
 
 #-------------------------------------------------------------------------------
 #' Minimum number of unique values
