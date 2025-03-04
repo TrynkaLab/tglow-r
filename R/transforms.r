@@ -332,7 +332,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5,
         # Use modulus transform instrad
         bc <- modulus(y ~ 1, plotit = F, lambda = seq(-limit, limit, 1 / 10), interp=F) # don't plot lambda outcome
     } else {
-        stop(paste0(mode, " is not a valid mode, bust be boxcox or modulus"))
+        stop(paste0(mode, " is not a valid mode, bust be boxcox or"))
     }
 
     lambda <- bc$x[which.max(bc$y)]
