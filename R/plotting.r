@@ -670,7 +670,7 @@ plot_boxline <- function(x, y, levels, xlab = "x", ylab = "y", main = "", line.c
 #' @importFrom grDevices colorRampPalette
 #' @rdname heatmaps 
 #' @export
-plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12, limits = NULL, cluster = T, range = "symmetric", palette = NULL, border = NA, ...) {
+plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12, limits = NULL, cluster = T, range = "symmetric", palette = NULL, border = NA, silent=T, ...) {
     if (cellsize > 0) {
         cellwidth <- cellsize
         cellheight <- cellsize
@@ -716,7 +716,7 @@ plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12,
     }
 
     if (!cluster) {
-        pheatmap::pheatmap(data,
+        res <- pheatmap::pheatmap(data,
             breaks = break.list,
             col = cols,
             cellwidth = cellwidth,
@@ -724,18 +724,22 @@ plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12,
             border = border,
             cluster_rows = F,
             cluster_cols = F,
+            silent = silent,
             ...
         )
     } else {
-        pheatmap::pheatmap(data,
+        res <- pheatmap::pheatmap(data,
             breaks = break.list,
             col = cols,
             cellwidth = cellwidth,
             cellheight = cellheight,
             border = border,
+            silent = silent,
             ...
         )
     }
+    
+    return(ggplotify::as.ggplot(res$gtable))
 }
 
 
@@ -775,6 +779,7 @@ make_ident_labels <- function(x, y, memberships) {
 #------------------------------------------------------------------------------
 #' Plate level heatmap
 #' @rdname heatmaps 
+#' @export
 plot_plate <- function(...) {
     return(plot_simple_hm(..., cluster=F))
 }
