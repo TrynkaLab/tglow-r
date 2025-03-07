@@ -21,7 +21,8 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
     # Check input
     check_dataset_assay_slot(dataset, assay, slot)
 
-    cur.assay <- slot(dataset[[assay]], slot)@.Data
+    #cur.assay <- slot(dataset[[assay]], slot)@.Data
+    cur.assay <- slot(dataset[[assay]], slot)
     cur.ident <- as.character(tglowr::getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
 
     if (is.null(cur.ident)) {
@@ -176,7 +177,8 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
         design <- model.matrix(formula, data = data)
     }
 
-    response <- slot(object@assays[[assay]], slot)@.Data
+    #response <- slot(object@assays[[assay]], slot)@.Data
+    response <- slot(object@assays[[assay]], slot)
     residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response), dimnames = dimnames(response))
 
     if (is.null(grouping)) {
@@ -281,7 +283,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
     }
 
 
-    response <- slot(object@assays[[assay]], slot)@.Data
+    #response <- slot(object@assays[[assay]], slot)@.Data
+    response <- slot(object@assays[[assay]], slot)
     residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
     rownames(residuals) <- rownames(response)
     colnames(residuals) <- colnames(response)
@@ -393,7 +396,8 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
         design <- model.matrix(formula, data = data)
     }
 
-    response <- slot(object@assays[[assay]], slot)@.Data
+    #response <- slot(object@assays[[assay]], slot)@.Data
+    response <- slot(object@assays[[assay]], slot)
 
     if (nrow(design) != nrow(response)) {
         stop("nrow(design) must equal nrow(assay)")
@@ -506,7 +510,8 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
         formula <- paste("~", paste(colnames(data), collapse = " + "))
     }
 
-    response <- slot(object@assays[[assay]], slot)@.Data
+    #response <- slot(object@assays[[assay]], slot)@.Data
+    response <- slot(object@assays[[assay]], slot)
 
     if (is.null(grouping)) {
         res <- lmm_matrix(response, data, formula = formula, ...)

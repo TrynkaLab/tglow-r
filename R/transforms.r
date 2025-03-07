@@ -58,9 +58,11 @@ fast_colscale <- function(x,
                           scale.method = "mean",
                           reference.group = NULL,
                           na.zero = F) {
-    if (is(x, "TglowMatrix")) {
-        x <- x@.Data
-    }
+                            
+    # This should no longer be needed and was bad
+    # if (is(x, "TglowMatrix")) {
+    #     x <- x@.Data
+    # }
 
     if (is.null(reference.group)) {
         x.ref <- x
@@ -398,10 +400,12 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
     check_dataset_assay_slot(dataset, assay, slot)
 
     if (assay == "image.data") {
-        mat <- slot(dataset@image.data, slot)@.Data
+        #mat <- slot(dataset@image.data, slot)@.Data
+        mat <- slot(dataset@image.data, slot)
         features <- dataset@image.data@features
     } else {
-        mat <- slot(dataset[[assay]], slot)@.Data
+        #mat <- slot(dataset[[assay]], slot)@.Data
+        mat <- slot(dataset[[assay]], slot)
         features <- dataset[[assay]]@features
 
         if (is.null(assay.out)) {
@@ -489,7 +493,8 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
     }
 
     if (is.null(grouping)) {
-        assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data@.Data, reference.group = reference.group, ...))
+        #assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data@.Data, reference.group = reference.group, ...))
+        assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data, reference.group = reference.group, ...))
     } else {
         if (length(grouping) != nrow(assay)) {
             stop("Length of grouping must equal nrow(assay)")
@@ -503,7 +508,8 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
                 stop("Currently only supporting logical reference.group selector to ensure interaction with grouping works")
             }
         }
-        mat <- assay@data@.Data
+        #mat <- assay@data@.Data
+        mat <- assay@data
         mat.scale <- matrix(NA, ncol = ncol(mat), nrow = nrow(mat), dimnames = dimnames(mat))
 
         for (group in unique(grouping)) {
@@ -570,7 +576,8 @@ scale_assay_min_max <- function(assay, slot = "data", min = 0, max = 1, scale.by
         stop("Assay must be TglowAssay")
     }
 
-    m <- slot(assay, slot)@.Data
+    #m <- slot(assay, slot)@.Data
+    m <- slot(assay, slot)
 
     # return (maxAllowed - minAllowed) * (unscaledNum - min) / (max - min) + minAllowed;
 
@@ -589,7 +596,8 @@ scale_assay_min_max <- function(assay, slot = "data", min = 0, max = 1, scale.by
         m <- m %*% diag(scaling.factors)
         features[,"scaling_factors"] <- scaling.factors
     } else if (scale.by.var) {
-        scaling.factors <- matrixStats::colVars(slot(assay, slot)@.Data)
+        #scaling.factors <- matrixStats::colVars(slot(assay, slot)@.Data)
+        scaling.factors <- matrixStats::colVars(slot(assay, slot))
         m <- m %*% diag(scaling.factors)
         features[,"scaling_factors"] <- scaling.factors
     }

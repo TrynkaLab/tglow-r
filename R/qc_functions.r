@@ -69,7 +69,8 @@ find_outliers_pca <- function(dataset,
         stop("Could not find data in slot, ", slot, "\n")
     }
 
-    data <- slot(cur.assay, slot)@.Data
+    #data <- slot(cur.assay, slot)@.Data
+    data <- slot(cur.assay, slot)
 
     # Define results matrix
     final.outliers <- rep(NA, nrow(data))

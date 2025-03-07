@@ -28,7 +28,8 @@ aggregate_tglow_matrix <- function(matrix, grouping, method = "mean", group.orde
         stop("input must be TglowMatrix")
     }
 
-    dt <- data.table::as.data.table(matrix@.Data)
+    #dt <- data.table::as.data.table(matrix@.Data)
+    dt <- data.table::as.data.table(matrix)
     dt[, group := grouping]
 
     if (method == "mean") {

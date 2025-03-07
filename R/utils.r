@@ -290,7 +290,8 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
   if (is.null(name)) {
     name <- feature
   }
-  cur.assay <- slot(dataset@assays[[assay]], slot)@.Data
+  #cur.assay <- slot(dataset@assays[[assay]], slot)@.Data
+  cur.assay <- slot(dataset@assays[[assay]], slot)
 
   f <- cur.assay[, feature]
   idx <- dataset@object.ids[!is.na(f)]
@@ -387,22 +388,26 @@ add_features_to_assay <- function(assay, slot, features, names = NULL, meta = NU
 
   if (slot == "data") {
     ncol <- ncol(assay@data)
-    assay@data@.Data <- cbind(assay@data@.Data, features)
+    #assay@data@.Data <- cbind(assay@data@.Data, features)
+    assay@data <- TglowMatrix(cbind(assay@data, features))
     colnames(assay@data)[(ncol + 1):(ncol + ncol(features))] <- names
 
     if (!preserve.other && !is.null(assay@scale.data)) {
-      assay@scale.data@.Data <- cbind(assay@scale.data@.Data, matrix(NA, nrow(features), ncol(features)))
+      #assay@scale.data@.Data <- cbind(assay@scale.data@.Data, matrix(NA, nrow(features), ncol(features)))
+      assay@scale.data <- TglowMatrix(cbind(assay@scale.data, matrix(NA, nrow(features), ncol(features))))
       colnames(assay@scale.data)[(ncol + 1):(ncol + ncol(features))] <- names
     }
   }
 
   if (slot == "scale.data") {
     ncol <- ncol(assay@scale.data)
-    assay@scale.data@.Data <- cbind(assay@scale.data@.Data, features)
+    #assay@scale.data@.Data <- cbind(assay@scale.data@.Data, features)
+    assay@scale.data <- TglowMatrix(cbind(assay@scale.data, features))
     colnames(assay@scale.data)[(ncol + 1):(ncol + ncol(features))] <- names
 
     if (!preserve.other && !is.null(assay@data)) {
-      assay@data@.Data <- cbind(assay@data@.Data, matrix(NA, nrow(features), ncol(features)))
+      #assay@data@.Data <- cbind(assay@data@.Data, matrix(NA, nrow(features), ncol(features)))
+      assay@data <- TglowMatrix(cbind(assay@data, matrix(NA, nrow(features), ncol(features))))
       colnames(assay@data)[(ncol + 1):(ncol + ncol(features))] <- names
     }
   }

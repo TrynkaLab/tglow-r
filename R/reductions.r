@@ -28,7 +28,8 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 
     if (rescale) {
         cat("[INFO] Rescaling data to mean 0 variance 1\n")
-        data <- fast_colscale(data@.Data)
+        #data <- fast_colscale(data@.Data)
+        data <- fast_colscale(data)
     }
 
     # Remove features with ANY NA

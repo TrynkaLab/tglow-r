@@ -240,7 +240,8 @@ setMethod(
     if (!is.null(assay)) {
       if (!is.null(slot)) {
         if (length(j.feature) >= 1) {
-          data <- data.frame(slot(object@assays[[assay]], slot)@.Data[, j.feature, drop = F])
+          #data <- data.frame(slot(object@assays[[assay]], slot)@.Data[, j.feature, drop = F])
+          data <- data.frame(slot(object@assays[[assay]], slot)[, j.feature, drop = F])
         }
       } else {
         stop("Must provide a slot")
