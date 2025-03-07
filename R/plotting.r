@@ -213,6 +213,8 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @param trim.outliers.z Remove outliers in z prior to plotting using modified z-score
 #' @param trim.outliers.z.thresh Modified z-score hreshold to consider an outlier
 #' @param bins.mincount Minimum number of objects in a bin to render it
+#' @param log2 Log2 transform the feature prior to all other steps.
+#' @param limits Limits for the color scale
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
@@ -232,7 +234,9 @@ tglow_plot_location_hex <- function(dataset,
                                     scale.z = F,
                                     trim.outliers.z = F,
                                     trim.outliers.z.thresh = 3.5,
-                                    bins.mincount = 0) {
+                                    bins.mincount = 10,
+                                    log2=F,
+                                    limits=NULL) {
     check_dataset_assay_slot(dataset, assay, slot)
 
 
@@ -240,13 +244,17 @@ tglow_plot_location_hex <- function(dataset,
     df.plot <- getDataByObject(dataset, c(feature.z, feature.x, feature.y), assay = assay, slot = slot)
 
     colnames(df.plot) <- c("z", "x", "y")
+    
+    if (log2) {
+        df.plot$z <- log2(df.plot$z)
+    }
 
     if (trim.outliers.z) {
         df.plot <- df.plot[abs(mod_zscore(df.plot$z)) < trim.outliers.z.thresh, ]
     }
 
     if (scale.to.well.mean) {
-        df.plot$z <- df.plot$z / mean(df.plot$z)
+        df.plot$z <- df.plot$z / mean(df.plot$z, na.rm=T)
     }
 
     if (scale.z) {
@@ -275,7 +283,7 @@ tglow_plot_location_hex <- function(dataset,
         xlab(xlab) +
         ylab(ylab) +
         ggtitle(main) +
-        scale_fill_viridis_c(name = zlab)
+        scale_fill_viridis_c(name = zlab, limits=limits)
 
 
 
