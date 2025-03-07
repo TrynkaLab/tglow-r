@@ -668,6 +668,7 @@ plot_boxline <- function(x, y, levels, xlab = "x", ylab = "y", main = "", line.c
 #' @importFrom pheatmap pheatmap
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
+#' @rdname heatmaps 
 #' @export
 plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12, limits = NULL, cluster = T, range = "symmetric", palette = NULL, border = NA, ...) {
     if (cellsize > 0) {
@@ -676,16 +677,16 @@ plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12,
     }
 
     if (is.null(limits)) {
-        max <- max(data)
-        min <- min(data)
-        max.abs <- max(abs(data))
-        min.abs <- min(abs(data))
+        max <- max(data, na.rm=T)
+        min <- min(data, na.rm=T)
+        max.abs <- max(abs(data), na.rm=T)
+        min.abs <- min(abs(data), na.rm=T)
     } else {
         if (length(limits) == 2 && is(limits, "numeric")) {
             max <- limits[2]
             min <- limits[1]
-            max.abs <- max(abs(limits))
-            min.abs <- min(abs(limits))
+            max.abs <- max(abs(limits), na.rm=T)
+            min.abs <- min(abs(limits), na.rm=T)
             range <- "auto"
         } else {
             stop("Limits must be a vector of length 2")
@@ -768,4 +769,12 @@ make_ident_labels <- function(x, y, memberships) {
     }
 
     return(output)
+}
+
+
+#------------------------------------------------------------------------------
+#' Plate level heatmap
+#' @rdname heatmaps 
+plot_plate <- function(...) {
+    return(plot_simple_hm(..., cluster=F))
 }

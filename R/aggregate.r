@@ -199,3 +199,56 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 
     return(new.object)
 }
+
+
+#-------------------------------------------------------------------------------
+#' Convert a feature to a 96/384 plate layout by aggreation function
+#' 
+#' @param object A \linkS4class{TglowDataset}
+#' @param assay A \linkS4class{TglowAssay}
+#' @param slot The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE
+#' @param feature A single feature
+#' @param well.column The column accessible by getDataByObject with well ID's
+#' @param plate.column The column accessible by getDataByObject with plates
+#' @param na.rm Should NA's be removed. Passed to method
+#' @param format Output plate format, character either '384' or '96'
+#' @param method A callable to use as aggeration function, mean, median, unique etc
+#' 
+#' @details 
+#' If feature is a string, method=[base::unique()], which will work if the well only has unique values
+#' 
+#' @returns A list of plates with features aggeregates
+#' @export
+#'
+aggregate_to_plate <- function(object, assay, slot, feature, well.column, plate.column, na.rm=T, format="384", method=base::mean) {
+  check_dataset_assay_slot(object, assay=assay, slot=slot)
+  data <- getDataByObject(object,j=c(well.column, plate.column, feature), assay=assay, slot=slot)
+
+  if (class(data[, feature]) == "character") {
+    warning("[WARN] Supplied feature is character, setting unique as default method but this might not work in case wells have multiple values")
+    method = unique
+  }
+  
+  plates <- list()
+  for (plate in unique(data[,plate.column])) {
+    cur.data <- data[data[,plate.column] == plate,]
+    tmp <- aggregate(cur.data[,feature, drop=F], by=list(well=cur.data[,well.column]), FUN=method, na.rm=na.rm)
+    
+    if (format == "384") {
+      cur_plate <- new_384_plate()
+    } else if (format == "96") {
+      cur_plate <- new_96_plate()
+    } else {
+      stop(paste0(format, " is not a valid plate format"))
+    }
+    
+    for (row in 1:nrow(tmp)) {
+      idx = well_to_index(tmp[row, 1])
+      cur_plate[idx$row, idx$col] = tmp[row, 2]
+    }
+  
+    plates[[plate]] <- cur_plate
+  }
+  
+  return(plates)
+}

@@ -447,84 +447,31 @@ list_has_overlap <- function(list) {
   return(FALSE)
 }
 
+
 #-------------------------------------------------------------------------------
-#' Caclulate the effective dimensionality of a dataset
-#'
-#' @description Calculates the effective dimensionality of a multidimensional dataset.
-#'
-#' @param data A matrix with data
-#' @param method 'LiJi', 'pc_var', 'Chevrud', 'Galwey' . See details
-#' @param var.test Percentage of variance cutoff
-#' @details
-#' `method`
-#'
-#' `eigenval` are the eigenvalues of the correlation matrix.
-#'
-#' `m` are the number of eigenvalues
-#'
-#' - `LiJi` Use Li and Ji's method - https://www.nature.com/articles/jhg201134#Sec2
-#'
-#'    `eff.tests <- sum(I( eigenval > 1) + ( eigenval - floor( eigenval)))`
-#'
-#' - `pc_var` Number of PC's needed to pass var.thresh
-#'
-#'     `eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)`
-#'
-#' - `Chevrud`:
-#'
-#'     `eff.tests <- m +(m - 1) * (1-(var(eigenval) / m))`
-#'
-#' - `Galwey`
-#'
+#' Utilities for making plate overviews
+#' @rdname plate_utils
 #' @export
-effective_dimensionality <- function(data, method = "LiJi", var.thresh = 0.95) {
-  if (!is.matrix(matrix)) {
-    stop("data should be of class matrix")
-  }
-  c <- cor(matrix, use = "pairwise.complete.obs")
-  e <- eigen(c, only.values = T)
-
-  eigenval <- e$values
-  m <- length(eigenval)
-
-  if (method == "LiJi") {
-    eff.tests <- sum(I(eigenval > 1) + (eigenval - floor(eigenval)))
-  } else if (method == "pc_var") {
-    eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)[0]
-  } else if (method == "Cheverud") {
-    eff.tests <- m + (m - 1) * (1 - (var(eigenval) / m))
-  } else if (method == "Galwey") {
-    eff.tests <- sum(eigenval)^2 / sum(eigenval^2)
-  } else {
-    stop(paste0(method, " is not a valid method"))
-  }
-
-  return(eff.tests)
+new_384_plate <- function() {
+  plate    <- matrix(NA, nrow=16, ncol=24)
+  rownames(plate) <- c("A", "B", "C", "D", "E", "F", "G" ,"H", "I", "J", "K", "L", "M", "N", "O", "P")
+  colnames(plate) <- 1:24
+  return(plate)
 }
 
-#-------------------------------------------------------------------
-#' Calculate the skewness, kurtosis
-#' 
-#' @param x Numeric vector
-#' @param na.rm Should NA's be removed
-#' @rdname moments
-#' @returns estimates for skewness, kurtosis respecitvely
+#' @rdname plate_utils
 #' @export
-skewness <- function(x, na.rm=F) {
-  if (na.rm){
-    x <- x[!is.na(x)]
-  }
-  
-  sum((x-mean(x))^3)/((length(x)-1)*sd(x)^3)
+new_96_plate <- function() {
+  plate    <- matrix(NA, nrow=8, ncol=12)
+  rownames(plate) <- c("A", "B", "C", "D", "E", "F", "G" ,"H")
+  colnames(plate) <- 1:12
+  return(plate)
 }
 
-#' @rdname moments
+#' @rdname plate_utils
 #' @export
-kurtosis <- function(x, na.rm=F) {
-  if (na.rm){
-    x <- x[!is.na(x)]
-  }
-  sum((x-mean(x))^4)/((length(x)-1)*sd(x)^4)
+well_to_index <- function(well) {
+  row_index <- match(substr(well, 1, 1), LETTERS)
+  col_index <- as.numeric(substr(well, 2, 3))
+  return(list(row = row_index, col = col_index))
 }
-
-
