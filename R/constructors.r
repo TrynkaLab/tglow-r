@@ -142,6 +142,42 @@ TglowAssayFromList <- function(output, assay, meta.cols, col.object) {
   return(assay)
 }
 
+
+#-------------------------------------------------------------------------------
+#' Create a new empty TglowFeatureMap
+#'
+#' @export
+TglowFeatureMap <- function() {
+  return(new("TglowFeatureMap"))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Create a new empty TglowFeatureLocation
+#'
+#' @param feature Character with the feature position
+#' @param assay asssay to grab feature from, or NULL if metadata feature
+#' @param slot slot to grab feature from, or NULL if metadata feature
+#' @export
+TglowFeatureLocation <- function(feature, assay=NULL, slot=NULL) {
+  if (is.null(feature)) {
+    stop("Feature cannot be empty")
+  }
+  
+  if (!is.null(assay) || !is.null(slot)) {
+    if (is.null(assay)) {
+      stop("If providing slot, assay must also be provided")
+    }
+    
+    if (is.null(slot)) {
+      stop("If providing assay, slot must also be provided")
+    }
+  }
+  
+  return(new("TglowFeatureLocation", feature=feature, assay=assay, slot=slot))
+}
+
+
 #-------------------------------------------------------------------------------
 #' Tglow dataset from list
 #'
@@ -224,3 +260,6 @@ check_dimnames <- function(object) {
 
   return(TRUE)
 }
+
+
+

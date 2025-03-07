@@ -137,7 +137,7 @@ check_dataset_assay_slot <- function(dataset, assay, slot, assay.image = NULL) {
   }
 
   if (!is.null(assay)) {
-    if (assay %in% c(names(dataset@assays), c("image.data", "image.data.trans", "image.data.norm"))) {
+    if (assay %in% c(names(dataset@assays), c("image.data", "image.data.trans", "image.data.norm", "image.meta"))) {
       if (assay %in% c(names(dataset@assays))) {
         if (!is(dataset[[assay]], "TglowAssay")) {
           stop("Assay must be of class TglowAssay")
@@ -155,8 +155,8 @@ check_dataset_assay_slot <- function(dataset, assay, slot, assay.image = NULL) {
   }
 
   if (!is.null(assay.image)) {
-    if (!assay.image %in% c("image.data", "image.data.trans", "image.data.norm")) {
-      stop("Assay.image must be in c('image.data', 'image.data.trans', 'image.data.norm')")
+    if (!assay.image %in% c("image.data", "image.data.trans", "image.data.norm", "image.meta")) {
+      stop("Assay.image must be in c('image.data', 'image.data.trans', 'image.data.norm', 'image.meta')")
     }
   }
 }

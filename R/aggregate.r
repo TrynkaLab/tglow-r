@@ -205,11 +205,11 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #' Convert a feature to a 96/384 plate layout by aggreation function
 #' 
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay A \linkS4class{TglowAssay}
+#' @param assay The assay to grab the feature from, passed to \code{\link{getDataByObject}}
 #' @param slot The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE
-#' @param feature A single feature
-#' @param well.column The column accessible by getDataByObject with well ID's
-#' @param plate.column The column accessible by getDataByObject with plates
+#' @param feature A single feature accessible by getDataByObject
+#' @param feature.well  \linkS4class{TglowFeatureLocation} describing the well feature or NULL (takes it from datasets@feature.map),
+#' @param feature.plate  \linkS4class{TglowFeatureLocation} describing the plate feature or NULL (takes it from datasets@feature.map),
 #' @param na.rm Should NA's be removed. Passed to method
 #' @param format Output plate format, character either '384' or '96'
 #' @param method A callable to use as aggeration function, mean, median, unique etc
@@ -220,35 +220,67 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #' @returns A list of plates with features aggeregates
 #' @export
 #'
-aggregate_to_plate <- function(object, assay, slot, feature, well.column, plate.column, na.rm=T, format="384", method=base::mean) {
-  check_dataset_assay_slot(object, assay=assay, slot=slot)
-  data <- getDataByObject(object,j=c(well.column, plate.column, feature), assay=assay, slot=slot)
+aggregate_to_plate <- function(object, assay, slot, feature, feature.well=NULL, feature.plate=NULL, na.rm=T, format="384", method=base::mean) {
 
-  if (class(data[, feature]) == "character") {
+    # Grab features from the feature map
+    if (is.null(feature.well) || is.null(feature.plate)) {
+        if (is.null(object@feature.map)) {
+            stop("Must either set object@feature.map or provide feature.well and feature.plate")
+        }
+        
+        if (is.null(feature.well)) {
+            feature.well <- object@feature.map@well
+        }
+        if (is.null(feature.plate)) {
+            feature.plate <- object@feature.map@plate
+        }   
+    } 
+
+    if ((class(feature.well) != "TglowFeatureLocation") || (class(feature.plate) != "TglowFeatureLocation")) {
+        stop("feature.well/feature.plate must be of type TglowFeatureLocation")
+    }
+
+    if (assay %in% c("image.data", "image.meta", "image.data.norm", "image.data.norm")) {
+        # Build the plot df
+        data <- cbind(getImageData(object, feature, assay=assay, slot=slot, drop=F),
+                    getImageData(object, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
+                    getImageData(object, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
+    } else {
+        # Build the plot df
+        check_dataset_assay_slot(object, assay=assay, slot=slot)
+        
+        data <- cbind(getDataByObject(object, feature, assay=assay, slot=slot, drop=F),
+                    getDataByObject(object, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
+                    getDataByObject(object, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
+    }
+
+    #data <- getDataByObject(object,j=c(feature.well, feature.plate, feature), assay=assay, slot=slot)
+
+    if (class(data[, feature]) == "character") {
     warning("[WARN] Supplied feature is character, setting unique as default method but this might not work in case wells have multiple values")
     method = unique
-  }
-  
-  plates <- list()
-  for (plate in unique(data[,plate.column])) {
-    cur.data <- data[data[,plate.column] == plate,]
-    tmp <- aggregate(cur.data[,feature, drop=F], by=list(well=cur.data[,well.column]), FUN=method, na.rm=na.rm)
-    
+    }
+
+    plates <- list()
+    for (plate in unique(data[,feature.plate@feature])) {
+    cur.data <- data[data[,feature.plate@feature] == plate,]
+    tmp <- aggregate(cur.data[,feature, drop=F], by=list(well=cur.data[,feature.well@feature]), FUN=method, na.rm=na.rm)
+
     if (format == "384") {
-      cur_plate <- new_384_plate()
+        cur_plate <- new_384_plate()
     } else if (format == "96") {
-      cur_plate <- new_96_plate()
+        cur_plate <- new_96_plate()
     } else {
-      stop(paste0(format, " is not a valid plate format"))
+        stop(paste0(format, " is not a valid plate format"))
     }
-    
+
     for (row in 1:nrow(tmp)) {
-      idx = well_to_index(tmp[row, 1])
-      cur_plate[idx$row, idx$col] = tmp[row, 2]
+        idx = well_to_index(tmp[row, 1])
+        cur_plate[idx$row, idx$col] = tmp[row, 2]
     }
-  
+
     plates[[plate]] <- cur_plate
-  }
-  
-  return(plates)
+    }
+
+    return(plates)
 }

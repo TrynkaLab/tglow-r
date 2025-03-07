@@ -54,7 +54,7 @@ effective_dimensionality <- function(data, method = "LiJi", var.thresh = 0.95) {
 }
 
 #-------------------------------------------------------------------
-#' Calculate the skewness, kurtosis
+#' Calculate the skewness, kurtosis, geometric mean
 #' 
 #' @param x Numeric vector
 #' @param na.rm Should NA's be removed
@@ -76,4 +76,11 @@ kurtosis <- function(x, na.rm=F) {
     x <- x[!is.na(x)]
   }
   sum((x-mean(x))^4)/((length(x)-1)*sd(x)^4)
+}
+
+
+#' @rdname moments
+#' @export
+geometric.mean <- function(x, na.rm=TRUE) {
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
 }

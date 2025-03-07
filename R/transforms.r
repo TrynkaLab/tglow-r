@@ -165,13 +165,6 @@ modul_std <- function(y, lambda) {
   return(y)
 }
 
-#' @rdname modul
-#' @export
-geometric.mean <- function(x, na.rm=TRUE){
-  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-}
-
-
 #-------------------------------------------------------------------------------
 #' Transform vector using modulus transform, finding optimal lambda
 #'

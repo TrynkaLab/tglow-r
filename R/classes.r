@@ -1,5 +1,6 @@
 setClassUnion(name = "MatrixOrNull", members = c("matrix", "NULL"))
 setClassUnion(name = "NumericOrNull", members = c("numeric", "NULL"))
+setClassUnion(name = "CharacterOrNull", members = c("character", "NULL"))
 
 #-------------------------------------------------------------------------------
 #' TglowMatrix
@@ -63,13 +64,15 @@ setClass("TglowDataset",
         image.ids = "character",
         reduction = "list",
         graph = "ANY",
-        active.assay = "character"
+        active.assay = "character",
+        feature.map="TglowFeatureMapOrNull"
     ),
     prototype = list(
         reduction = list(),
         graph = NULL,
         image.data.trans = NULL,
-        image.data.norm = NULL
+        image.data.norm = NULL,
+        feature.map=NULL
     )
 )
 
@@ -118,3 +121,41 @@ setClass("TglowReduction",
     ),
     prototype = list(var = NULL, var_total = NULL, object = NULL)
 )
+
+
+#-------------------------------------------------------------------------------
+#' TglowFeatureMap
+#'
+#' @slot feature.x Feature describing object X
+#' @slot feature.y Feature describing object Y
+#' @slot feature.z Feature describing object Z
+#' @slot feature.well Feature describing well position
+#' @slot feature.plate Feature describing plate
+#' @slot feature.field Feature describing field
+setClass("TglowFeatureMap",
+    slots = list(
+        x = "TglowFeatureLocation",
+        y = "TglowFeatureLocation",
+        z = "TglowFeatureLocation",
+        well = "TglowFeatureLocation",
+        plate = "TglowFeatureLocation",
+        field = "TglowFeatureLocation"
+    )
+)
+setClassUnion(name = "TglowFeatureMapOrNull", members = c("TglowFeatureMap", "NULL"))
+
+
+#-------------------------------------------------------------------------------
+#' TglowFeatureMap
+#'
+#' @slot feature Character with the feature position
+#' @slot assay to grab feature from, or NULL if metadata feature
+#' @slot slot to grab feature from, or NULL if metadata feature
+setClass("TglowFeatureLocation",
+    slots = list (
+        feature = "character",
+        assay = "CharacterOrNull",
+        slot = "CharacterOrNull"
+    )
+)
+setClassUnion(name = "TglowFeatureLocationOrNull", members = c("TglowFeatureLocation", "NULL"))

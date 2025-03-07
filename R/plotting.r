@@ -87,7 +87,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #'
 #' @description Plot a reduction on a \linkS4class{TglowDataset}
 #'
-#' @param dataset A \linkS4class{TglowDataset}
+#' @param object A \linkS4class{TglowDataset}
 #' @param reduction A name of a reduction on dataset.
 #' @param ident The item to use for coloring points, passed to \code{\link{getDataByObject}}
 #' @param assay The assay to use for coloring, passed to \code{\link{getDataByObject}}
@@ -200,9 +200,12 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #-------------------------------------------------------------------------------
 #' Plot a hexbin colored on a 3rd variable
 #'
-#' @param dataset A \linkS4class{TglowDataset}
+#' @param object A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param feature.z feature to aggregate and color on,
+#' @param feature.x \linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)
+#' @param feature.y \linkS4class{TglowFeatureLocation} describing the y feature or NULL (takes it from datasets@feature.map)
 #' @param xlab xlab
 #' @param ylab ylab
 #' @param zlab Scale title
@@ -219,12 +222,12 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
 #' @export
-tglow_plot_location_hex <- function(dataset,
+tglow_plot_location_hex <- function(object,
                                     assay,
                                     slot,
-                                    feature.z,
-                                    feature.x = "nucl_AreaShape_Center_X",
-                                    feature.y = "nucl_AreaShape_Center_Y",
+                                    feature.c,
+                                    feature.x = NULL,
+                                    feature.y = NULL,
                                     xlab = "X centroid",
                                     ylab = "Y centroid",
                                     zlab = "Z",
@@ -237,11 +240,32 @@ tglow_plot_location_hex <- function(dataset,
                                     bins.mincount = 10,
                                     log2=F,
                                     limits=NULL) {
-    check_dataset_assay_slot(dataset, assay, slot)
+    check_dataset_assay_slot(object, assay, slot)
 
 
-    # Build the plot
-    df.plot <- getDataByObject(dataset, c(feature.z, feature.x, feature.y), assay = assay, slot = slot)
+    # Grab features from the feature map
+    if (is.null(feature.x) || is.null(feature.y)) {
+        if (is.null(object@feature.map)) {
+            stop("Must either set object@feature.map or provide feature.x and feature.y")
+        }
+        
+        if (is.null(feature.x)) {
+            feature.x <- object@feature.map@x
+        }
+        if (is.null(feature.y)) {
+            feature.y <- object@feature.map@y
+        }   
+    } 
+    
+    if ((class(feature.x) != "TglowFeatureLocation") || (class(feature.y) != "TglowFeatureLocation")) {
+        stop("feature.x/feature.y must be of type TglowFeatureLocation")
+    }
+
+    # Build the plot df
+    df.plot <- cbind(getDataByObject(object, feature.c, assay=assay, slot=slot, drop=F),
+                     getDataByObject(object, feature.x@feature, assay=feature.x@assay, slot=feature.x@slot, drop=F),
+                     getDataByObject(object, feature.y@feature, assay=feature.y@assay, slot=feature.y@slot, drop=F))
+    #df.plot <- getDataByObject(object, c(feature.z, feature.x, feature.y), assay = assay, slot = slot)
 
     colnames(df.plot) <- c("z", "x", "y")
     
@@ -261,8 +285,8 @@ tglow_plot_location_hex <- function(dataset,
         df.plot$z <- scale(df.plot$z)
     }
 
-    if (is.null(main) && is.character(feature.z)) {
-        main <- feature.z
+    if (is.null(main) && is.character(feature.c)) {
+        main <- feature.c
     }
 
 
@@ -284,9 +308,6 @@ tglow_plot_location_hex <- function(dataset,
         ylab(ylab) +
         ggtitle(main) +
         scale_fill_viridis_c(name = zlab, limits=limits)
-
-
-
 
     return(theme_plain(p1))
 }
