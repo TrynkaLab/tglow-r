@@ -125,7 +125,7 @@ TglowAssayFromList <- function(output, assay, meta.cols, col.object) {
     stop(paste0("Object ID column col.object must be in meta.cols but ", col.object, " is not"))
   }
 
-  row.meta <- output[[assay]][, meta.cols]
+  row.meta <- output[[assay]][, meta.cols, drop=F]
   data <- as.matrix(output[[assay]][, !colnames(output[[assay]]) %in% meta.cols])
   rownames(data) <- row.meta[, col.object]
 
@@ -230,12 +230,24 @@ TglowDatasetFromList <- function(
 
   # Image level data
   image.cols <- unlist(sapply(img.feature.patterns, grep, colnames(output$meta), value = T))
-  dataset@image.data <- new("TglowAssay",
-    data = TglowMatrix(as.matrix(output$meta[, image.cols])),
-    features = tglowr::get_feature_meta_from_names(image.cols)
-  )
+  
+  if (length(image.cols) >= 1) {
+    dataset@image.data <- new("TglowAssay",
+      data = TglowMatrix(as.matrix(output$meta[, image.cols, drop=F])),
+      features = tglowr::get_feature_meta_from_names(image.cols)
+    )
+  } else {
+    
+    tmpmat <- matrix(0, nrow(output$meta), ncol=1)
+    colnames(tmpmat) <- c("dummy")
+    dataset@image.data <- new("TglowAssay",
+      data = TglowMatrix(tmpmat),
+      features = data.frame(id="dummy")
+    )
+  }
+
   rownames(dataset@image.data@data) <- output$meta[, col.meta.img.id]
-  dataset@image.meta <- output$meta[, !colnames(output$meta) %in% image.cols]
+  dataset@image.meta <- output$meta[, !colnames(output$meta) %in% image.cols, drop=F]
   rownames(dataset@image.meta) <- output$meta[, col.meta.img.id]
 
   dataset@image.ids <- dataset@meta[, col.img.id]
