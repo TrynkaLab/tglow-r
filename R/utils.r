@@ -475,3 +475,154 @@ well_to_index <- function(well) {
   col_index <- as.numeric(substr(well, 2, 3))
   return(list(row = row_index, col = col_index))
 }
+
+
+
+
+##-------------------------------------------------------------------------------
+#' Match two objects together based on shared images and nearest neighbour in XY
+#'
+#' @description Adds features to an existing assay
+#'
+#' @param a A \linkS4class{TglowDataset} used as reference
+#' @param b A \linkS4class{TglowDataset} used as query (added to reference)
+#' @param tol Euclidian distance in xy space to consider the NN as valid
+#' @param mode 'add' | 'merge', see details
+#' @param assay.prefix The prefix to add to assay names when assays in a and b have the same name and mode = merge
+#' @param meta.prefix The prefix to add to b@meta columns prior to merging, columns with the same name as a in b are dropped
+#' 
+#' @details 
+#' In mode add all assays from b are added to a as new assays. In mode merge, assays with the same name
+#' are merged together, only new features are added. If the @scale.data slot is missing in one of the
+#' datasets this is set to NULL
+#' 
+#' NOTE: Image level data is not merged at this time
+#' @returns The object a with the extra data from b
+#' @export
+match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta.prefix=NULL) {
+  
+  if (is.null(a@feature.map)) {
+    stop("Object a must have @feature.map set")
+  }
+  
+  if (is.null(b@feature.map)) {
+    stop("Object b must have @feature.map set")
+  }
+  
+  
+  df.a <- getDataByObject(a, c(a@feature.map@plate@feature,
+                               a@feature.map@well@feature,
+                               a@feature.map@field@feature,
+                               a@feature.map@x@feature,
+                               a@feature.map@y@feature),
+                          assay=a@feature.map@x@assay,
+                          slot=a@feature.map@x@slot)
+  colnames(df.a) <- c("plate", "well", "field", "x", "y")
+  
+  df.b <- getDataByObject(b, c(b@feature.map@plate@feature,
+                               b@feature.map@well@feature,
+                               b@feature.map@field@feature,
+                               b@feature.map@x@feature,
+                               b@feature.map@y@feature),
+                          assay=b@feature.map@x@assay,
+                          slot=b@feature.map@x@slot)
+  colnames(df.b) <- c("plate", "well", "field", "x", "y")
+  
+  df.a$x <- trunc(df.a$x)
+  df.a$y <- trunc(df.a$y)
+  df.b$x <- trunc(df.b$x)
+  df.b$y <- trunc(df.b$y)
+
+  df.a$pwf <- paste0(df.a$plate, ":", df.a$well, ":", df.a$field)
+  df.b$pwf <- paste0(df.b$plate, ":", df.b$well, ":", df.b$field)
+  
+  df.a$idx <- 1:nrow(df.a)
+  df.b$idx <- 1:nrow(df.b)
+  
+  # Use data table as it is much faster to subset then dataframe
+  df.a <- data.table(df.a)
+  df.b <- data.table(df.b)
+  
+  pb <- progress::progress_bar$new(format = "[INFO] Finding nearest neighbour [:bar] :current/:total (:percent) eta :eta", total = length(unique(df.a$pwf)))
+  pb$tick(0)
+  
+  nearest.n <- matrix(NA, ncol=2, nrow=nrow(df.a))
+  colnames(nearest.n) <- c("index_b", "dist")
+  for (pwfc in unique(df.a$pwf)) {
+    pb$tick()
+    cur.a <- df.a[pwf == pwfc]
+    cur.b <- df.b[df.b$pwf == pwfc]
+    cur.knn <- RANN::nn2(cur.b[,c("x", "y")], cur.a[,c("x", "y")], k=1)
+
+    nearest.n[cur.a$idx, 1] <- cur.b[cur.knn$nn.idx[,1]]$idx
+    nearest.n[cur.a$idx, 2] <- cur.knn$nn.dists[,1]
+  }
+  pb$terminate()
+
+  nearest.n[nearest.n[,2] > tol,1] <- NA 
+
+  perc <- (sum(!is.na(nearest.n[,1])) / nrow(df.a))*100
+  cat("[INFO] ", round(perc, digits=2), "% of objects in object a matched to b at tolerance of ", tol, " distance\n")
+  
+  b.assays <- names(b@assays)
+  
+  # Merge assays with the same name
+  if (mode == "merge") {
+    for (assay in names(a@assays)) {
+      if (assay %in% b.assays) {
+        
+        features.b <- setdiff(colnames(b@assays[[assay]]@data), colnames(a@assays[[assay]]@data))
+        bb         <- b@assays[[assay]][nearest.n[,1],features.b]
+        
+        a@assays[[assay]]@data       <- cbind(a@assays[[assay]]@data, b@assays[[assay]]@data)
+        
+        # Merge feature DF
+        featcols <- unique(c(colnames(a@assays[[assay]]@features), colnames(b@assays[[assay]]@features)))
+        features <- data.frame(matrix(NA, nrow=nrow(a@assays[[assay]]@features)+length(features.b), ncol=length(featcols)))
+        colnames(features) <- featcols
+        rownames(features) <- c(rownames(a@assays[[assay]]@features), features.b)
+        features[rownames(a@assays[[assay]]@features), colnames(a@assays[[assay]]@features)] <- a@assays[[assay]]@features
+        features[rownames(b@assays[[assay]]@features), colnames(b@assays[[assay]]@features)] <- b@assays[[assay]]@features[features.b,]
+        a@assays[[assay]]@features   <- features
+        
+        
+        if (!is.null(a@assays[[assay]]@scale.data)) {
+          if (!is.null(b@assays[[assay]]@scale.data)) {
+            a@assays[[assay]]@scale.data <- cbind(a@assays[[assay]]@scale.data, b@assays[[assay]]@scale.data)
+          } else {
+            warning(paste0("@scale.data on object b and assay ", assay, " was null, dropping @scale.data on output"))
+            a@assays[[assay]]@scale.data <- NULL
+          }
+        }
+        
+        b.assays <- b.assays[!b.assays %in% c(assay)]
+      }
+      
+    } 
+  } 
+    
+  # Add whatever wasn't merged as a new assay
+  for (assay in b.assays) {
+    if (assay %in% names(a@assays)) {
+      new <- paste0(assay.prefix, assay)
+    } else {
+      new <- assay
+    }
+    a@assays[[new]] <- b@assays[[assay]][nearest.n[,1],]
+    
+    # Update the object IDs to the ones in a
+    objectIds(a@assays[[new]]) <- objectIds(a)
+  }
+  
+  
+  if (!is.null(meta.prefix)) {
+    colnames(b@meta) <- paste0(meta.prefix, colnames(b@meta))
+  }
+  
+  meta.names <- meta.names[!meta.names %in% colnames(a@meta)]
+  a@meta <- cbind(a@meta, b@meta[nearest.n[,1], meta.names])
+    
+  return(a)
+    
+}
+  
