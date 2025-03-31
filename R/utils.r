@@ -291,9 +291,12 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
     name <- feature
   }
   #cur.assay <- slot(dataset@assays[[assay]], slot)@.Data
-  cur.assay <- slot(dataset@assays[[assay]], slot)
-
-  f <- cur.assay[, feature]
+  #cur.assay <- slot(dataset@assays[[assay]], slot)
+  
+  #f <- cur.assay[, feature]
+  
+  f <- getDataByObject(dataset, feature, assay=assay, slot=slot)
+  
   idx <- dataset@object.ids[!is.na(f)]
   f <- f[!is.na(f)]
   fs <- order(f)

@@ -275,6 +275,7 @@ modulus <- function(object, lambda = seq(-2, 2, 1/10), plotit =  TRUE,
 #' @param fudge Fudgefactor to apply either log transform, or just leave it as is
 #' @param downsample Calculate labmda's on a random sample of the data. Either NULL (no downsampling), an integer (selects x values), or a selection vector
 #' @param add.lambda Return a list with two items instead, one transformed x, two, the lamda used
+#' @param filter.iqr Should values outside the 2xIQR be removed prior to estimating lambda
 #'
 #' @returns A numeric vector with the boxcox transformed data or the optimal lambda value
 #' 
@@ -283,7 +284,7 @@ modulus <- function(object, lambda = seq(-2, 2, 1/10), plotit =  TRUE,
 #' In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See [modulus_transform()]
 #' 
 #' @export
-boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5, fudge = 0.2, downsample = NULL, add.lambda = FALSE, filter.iqr=TRUE) {
+boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5, fudge = 0.2, downsample = NULL, add.lambda = FALSE, filter.iqr=FALSE) {
     
     
     if (mode == "boxcox") {
@@ -373,22 +374,17 @@ boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5,
 #' @param trim Logical indicating to trim zero variance columns and NA's after applying boxcox transform
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param verbose Raise a warning if columns are trimmed
-#' @param filter.iqr Remove values outside +- 1.5x IQR to reduce impact of outliers
+#' @param filter.iqr Remove values outside +- 2x IQR to reduce impact of outliers
 #' @param ... Arguments passed to \code{\link{boxcox_transform}}
 #'
 #' @details
-#'
-#' `rfast.zerotol`
-#' NOTE: Currently NOT using \code{\link{Rfast::colVars()}} as there are inconsistencies with \code{\link{matrixStats::colVars()}}
-#' Rfast's does not return zero variances, so we have to set some minial value to consider as 0
-#' https://github.com/RfastOfficial/Rfast/issues/62
-#' https://github.com/RfastOfficial/Rfast/issues/115
+#' Calls boxcox_transform on an assay, please read  \code{\link{boxcox_transform}} for more relvant details and options
 #'
 #'
 #' @returns \linkS4class{TglowDataset} with new boxcox assay
 #' @importFrom progress progress_bar
 #' @export
-apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, filter.iqr=T, ...) {
+apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "data", verbose = TRUE, filter.iqr=F, ...) {
     # Checks for input
     check_dataset_assay_slot(dataset, assay, slot)
 

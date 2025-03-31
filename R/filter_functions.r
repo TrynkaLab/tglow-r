@@ -54,10 +54,11 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
     check_filter_list(filters)
 
     if (is.null(features)) {
-        features <- colnames(slot(dataset@assays[[assay]], slot))
+        #features <- colnames(slot(dataset@assays[[assay]], slot))
+        data <- slot(dataset[[assay]], slot)
+    } else {
+        data <- slot(dataset[[assay]], slot)[, features]
     }
-
-    data <- slot(dataset[[assay]], slot)[, features]
 
     res <- matrix(TRUE, nrow = ncol(data), ncol = length(filters))
     rownames(res) <- colnames(data)
@@ -75,23 +76,33 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
         cat("[INFO] ", filter@name, ": ", filter@func, "\n")
 
         # Select the features to apply to
-        if (filter@column_pattern == "all") {
+        if (filter@column_pattern == "all" || is.null(filter@column_pattern)) {
             cur.features <- colnames(data)
         } else {
             cur.features <- grep(filter@column_pattern, colnames(data), value = T)
         }
 
-        cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
 
+        if (length(cur.features) >=1) {
+            cat("[INFO] Applying pattern: ", filter@column_pattern, " and selected: ", length(cur.features), " features \n")
+        } else {
+            cat("[WARN] Applying pattern: ", filter@column_pattern, " and selected: 0 features, ingoring filter \n")
+            res[1:nrow(res),filter@name] <- TRUE
+            next()
+        }
+        
         pb <- progress::progress_bar$new(format = paste0("[INFO] ", filter@name, " [:bar] :current/:total (:percent) eta :eta"), total = length(cur.features))
-        res[cur.features, filter@name] <- apply(data[, cur.features, drop = FALSE], 2, function(x) {
+        #res[cur.features, filter@name] <- apply(data[, cur.features, drop = FALSE], 2, function(x) {
+        tmp <- sapply(cur.features, function(x) {
             pb$tick()
             if (is.na(filter@threshold) || is.null(filter@threshold)) {
-                return(do.call(filter@func, list(vec = x)))
+                return(do.call(filter@func, list(vec = data[,x])))
             } else {
-                return(do.call(filter@func, list(vec = x, thresh = filter@threshold)))
+                return(do.call(filter@func, list(vec = data[,x], thresh = filter@threshold)))
             }
         })
+        
+        res[cur.features, filter@name] <- tmp
     }
 
     if (na.fail) {

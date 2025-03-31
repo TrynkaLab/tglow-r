@@ -26,11 +26,28 @@
 #' @param pc.thresh The percentage of variance of PC's to select for outlier detection
 #' @param pc.max The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}
 #' @param pc.n The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max
-#' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance (not impl).
+#' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
-#' @returns Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
+#' @returns A list with:
+#' - outliers: Boolean indicating outlier status
+#' - dist: Distance metric, in case of 'z' or 'mod.z' the number of components that the object is an outlier in
+#' - df: Degrees of freedom for chi-sqr (number of PC's used)
+#' - pval: Pvalue of chiqr test of dist in case method='mahalanobis'
+#' - pcs: In case return.pcs is true, a list of pca object with the pc's for each qc.group
 #'
+#' @details 
+#' 
+#' When method 'z' or 'mod.z' PC's for a qc.group are scaled by either z-score or modified z-score respectively, and if a cell is an outlier in 
+#' any PC it is considered an overall outlier.
+#' 
+#' When method is 'mahalanobis' an "approximate mahalanobis distance" is calculated.  The pc's passing pc.thresh are taken and the Euclidian distance
+#' from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
+#' Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
+#' 
+#' Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
+#' records FDR < 0.05 considered outliers. The `thresh` parameter applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
+#' 
 #' @importFrom irlba prcomp_irlba
 #' @export
 find_outliers_pca <- function(dataset,
@@ -76,7 +93,20 @@ find_outliers_pca <- function(dataset,
     final.outliers <- rep(NA, nrow(data))
     names(final.outliers) <- rownames(data)
     final.pca <- list()
-
+    
+    # Track the distances
+    final.distances <- rep(NA, nrow(data))
+    names(final.distances) <- rownames(data)
+    
+    # Track the dfs
+    final.df <- rep(NA, nrow(data))
+    names(final.df) <- rownames(data)
+    
+     # Track the pvals
+    final.pval <- rep(NA, nrow(data))
+    names(final.pval) <- rownames(data)
+    
+    
     # Now for each group
     unique.groups <- unique(qc.group)
     for (group in unique.groups) {
@@ -100,6 +130,7 @@ find_outliers_pca <- function(dataset,
             }
         }
 
+        # Rescale the data after subsetting
         cur.data <- fast_colscale(cur.data, add_attr = F)
 
         # Remove features with ANY NA
@@ -166,20 +197,47 @@ find_outliers_pca <- function(dataset,
         # Now we perform z-scoring on the PCs
         if (method == "mod.z") {
             if (thresh == "auto") {thresh <- 3.5}
-            pcs.norm <- apply(pca$x[, 1:pc.n.final, drop = F], 2, mod_zscore)
-            outliers <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
+            pcs.norm  <- apply(pca$x[, 1:pc.n.final, drop = F], 2, mod_zscore)        
+            outliers  <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
+            distances <- rowSums(abs(pcs.norm) < thresh)
+            pval      <- NA
         } else if (method == "z") {
             if (thresh == "auto") {thresh <- 3.5}
-            pcs.norm <- fast_colscale(pca$x[, 1:pc.n.final, drop = F])
-            outliers <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
+            pcs.norm  <- fast_colscale(pca$x[, 1:pc.n.final, drop = F])
+            outliers  <- rowSums(abs(pcs.norm) < thresh) != pc.n.final
+            distances <- rowSums(abs(pcs.norm) < thresh)
+            pval      <- NA
             # pcs.norm <- apply(pca$x, 2, scale, center = T, scale = T)[, 1:pc.n, drop = F]
-        } else if (methods == "mahalanobis") {
+        } else if (method == "mahalanobis") {
             # Implement it here, you just want to set the vector "outliers" as a TRUE/FALSE logical
             # PCSs are in 'pca$x', data is in 'cur.data'
-            if (thresh == "auto") {thresh <- 0.05 / nrow(cur.data)}
-            stop("Method mahalanobis is not yet implemented")
+            #if (thresh == "auto") {thresh <- 0.05 / nrow(cur.data)}
+            #cov.matrix <- diag(pca$sdev^2)
+            #dist       <- mahalanobis(pca$x[, 1:pc.n.final, drop = F], center=F, diag(pca$sdev[1:pc.n.final]^2))
+            
+            # mahalanobis distance = euclidian distance in PCA space if data is centered and scaled
+            eigenval   <- pca$sdev[1:pc.n.final]^2
+            # Weigh the rotation by the eigenvalues
+            tmp        <- pca$x[, 1:pc.n.final, drop = F] %*% diag(eigenval^-0.5)
+
+            # Center each col and calc euclidian distance
+            tmp         <- tmp - colMeans(tmp)
+            dist        <- apply(tmp, 1, function(x){ sum(x^2)})
+                        
+            # Calculate pvalues on this 
+            pval       <- pchisq(dist, df = pc.n.final, lower.tail = FALSE)
+            distances  <- dist
+            
+            if (thresh == "auto") {
+                thresh <- 0.05
+                pval   <- p.adjust(pval, method="fdr")
+            }
+            
+            outliers <- pval < thresh
+            
+            #stop("Method mahalanobis is not yet implemented")
         } else {
-            stop(paste0("Method ", method, " is not available. Must be 'z' or 'mod.z'"))
+            stop(paste0("Method ", method, " is not available. Must be 'z', 'mod.z', 'mahalanobis'"))
         }
 
         if (return.pcs) {
@@ -187,12 +245,15 @@ find_outliers_pca <- function(dataset,
         }
 
         # Add results to the outlier list
-        final.outliers[rownames(cur.data)] <- outliers
+        final.outliers[rownames(cur.data)]  <- outliers
+        final.distances[rownames(cur.data)] <- distances
+        final.df[rownames(cur.data)]        <- pc.n.final
+        final.pval[rownames(cur.data)]      <- pval
     }
 
     if (return.pcs) {
-        return(list(outliers = final.outliers, pcs = final.pca))
+        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=pval, pcs = final.pca))
     } else {
-        return(list(outliers = final.outliers))
+        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=pval))
     }
 }
