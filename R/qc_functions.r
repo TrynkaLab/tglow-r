@@ -8,17 +8,29 @@
 #' To run on image data, just specify assay="image.data"|"image.data.trans"|"image.data.norm" which is implemented
 #' as a special case
 #'
-#'
 #' This does not use existing dimension reductions to avoid issues when running with different QC groups
-#'
-#'
+#' 
 #' NA values are removed on a column basis and a warning message is raised. If you want
 #' to handle them differenlty, could make a new assay where the NA's are handled manually
 #'
+#' 'pc.thresh', 'pc.max', 'pc.n'
 #' By default, estimates the 0.25 * ncol(assay) PC's assuming this is enough PC's to get to 75%. If this is
 #' not enough a warning is raised, and you can provide pc.max to override this behaviour or set use_irlba
 #' to FALSE to compute all components using \code{\link[=prcomp]{prcomp()}}
 #'
+#' 
+#' 'method'
+#' When method 'z' or 'mod.z' PC's for a qc.group are scaled by either z-score or modified z-score respectively, and if a cell is an outlier in 
+#' any PC it is considered an overall outlier.
+#' 
+#' When method is 'mahalanobis' an "approximate mahalanobis distance" is calculated.  The pc's passing pc.thresh are taken and the Euclidian distance
+#' from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
+#' Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
+#' 
+#' Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
+#' records FDR < 0.05 considered outliers. If the `thresh` parameter is supplied, it applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
+#' Note, the pvalue adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
+#' 
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
 #' @param qc.group A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once
@@ -29,24 +41,14 @@
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
+#' @param features Features to include in PCA. By default uses all (NULL)
+#' @param padj.method Adjustment to apply to outlier pvalues. Any accepted by [stats::p.adjust()]
 #' @returns A list with:
 #' - outliers: Boolean indicating outlier status
 #' - dist: Distance metric, in case of 'z' or 'mod.z' the number of components that the object is an outlier in
 #' - df: Degrees of freedom for chi-sqr (number of PC's used)
 #' - pval: Pvalue of chiqr test of dist in case method='mahalanobis'
 #' - pcs: In case return.pcs is true, a list of pca object with the pc's for each qc.group
-#'
-#' @details 
-#' 
-#' When method 'z' or 'mod.z' PC's for a qc.group are scaled by either z-score or modified z-score respectively, and if a cell is an outlier in 
-#' any PC it is considered an overall outlier.
-#' 
-#' When method is 'mahalanobis' an "approximate mahalanobis distance" is calculated.  The pc's passing pc.thresh are taken and the Euclidian distance
-#' from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
-#' Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
-#' 
-#' Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
-#' records FDR < 0.05 considered outliers. The `thresh` parameter applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
 #' 
 #' @importFrom irlba prcomp_irlba
 #' @export
@@ -58,9 +60,11 @@ find_outliers_pca <- function(dataset,
                               pc.max = NULL,
                               pc.n = NULL,
                               slot = "data",
-                              method = "z",
+                              method = "mahalanobis",
                               return.pcs = FALSE,
-                              use_irlba = TRUE) {
+                              use_irlba = TRUE,
+                              features = NULL,
+                              padj.method="fdr") {
     # Check inputs
     check_dataset_assay_slot(dataset, assay, slot)
 
@@ -88,6 +92,11 @@ find_outliers_pca <- function(dataset,
 
     #data <- slot(cur.assay, slot)@.Data
     data <- slot(cur.assay, slot)
+    
+    
+    if (!is.null(features)) {
+        data <- data[,features]
+    }
 
     # Define results matrix
     final.outliers <- rep(NA, nrow(data))
@@ -227,13 +236,15 @@ find_outliers_pca <- function(dataset,
             # Calculate pvalues on this 
             pval       <- pchisq(dist, df = pc.n.final, lower.tail = FALSE)
             distances  <- dist
+            outliers   <- NA
+            #if (thresh == "auto") {
+            #    thresh <- 0.05
+            #    padj   <- p.adjust(pval, method=padj.method)
+            #} else {
+            #    padj <- pval
+            #}
             
-            if (thresh == "auto") {
-                thresh <- 0.05
-                pval   <- p.adjust(pval, method="fdr")
-            }
-            
-            outliers <- pval < thresh
+            #outliers <- padj < thresh
             
             #stop("Method mahalanobis is not yet implemented")
         } else {
@@ -250,10 +261,21 @@ find_outliers_pca <- function(dataset,
         final.df[rownames(cur.data)]        <- pc.n.final
         final.pval[rownames(cur.data)]      <- pval
     }
+    
+    
+    if (method == "mahalanobis" ){
+        if (thresh == "auto") {
+           thresh <- 0.05
+           padj   <- p.adjust(final.pval, method=padj.method)
+        } else {
+           padj   <- final.pval
+        }
+        final.outliers <- padj < thresh
+    }
 
     if (return.pcs) {
-        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=pval, pcs = final.pca))
+        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=final.pval, pcs = final.pca))
     } else {
-        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=pval))
+        return(list(outliers = final.outliers, dist=final.distances, df=final.df, pval=final.pval))
     }
 }

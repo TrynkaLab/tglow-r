@@ -389,19 +389,34 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
     }
 
     covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
-
+    #current.na.action <- options('na.action')
+    #options(na.action='na.pass')
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
     } else {
         design <- model.matrix(formula, data = data)
     }
+    #options(na.action=current.na.action)
 
     #response <- slot(object@assays[[assay]], slot)@.Data
     response <- slot(object@assays[[assay]], slot)
 
+    # Remove NA's from the design matrix
+    rows.to.keep <- rowSums(is.na(data))==0
+    
+    if (sum(rows.to.keep) != nrow(design)) {
+        warning(paste0(sum(!rows.to.keep), " NA's in the design matrix, removing these"))
+    }
+    
+    #design <- design[rows.to.keep,]
+    response <- response[rows.to.keep,]
+    
     if (nrow(design) != nrow(response)) {
         stop("nrow(design) must equal nrow(assay)")
     }
+    
+    
+    
 
     if (is.null(grouping)) {
         res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use)
