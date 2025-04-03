@@ -12,7 +12,7 @@
 #' @param method Clustering method to use 'louvain' or 'leiden'
 #' @param resolution Resolution for method 'louvain' or 'leiden'. Can be a vector of resolutions
 #' @param exact.nn Instead of using Seurat ANNOY for kNN use \code{\link[=nn2]{RANN::nn2()}}
-#' @param col.out Prefix for column name to store the clustering under added to the meta slot on the output object
+#' @param col.out Prefix for column name to store the clustering under added to the meta slot on the output object. <col.out>_res_<res>
 #'
 #' @details
 #' Here I use the Seurat implementation of the kNN, which is NOT and exact

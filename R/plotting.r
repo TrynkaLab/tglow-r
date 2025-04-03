@@ -187,9 +187,9 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 
 
     if (is.numeric(col)) {
-        p <- p + scale_color_viridis_c(name = ident)
+        p <- p + ggplot2::scale_color_viridis_c(name = ident)
     } else {
-        p <- p + scale_color_viridis_d(name = ident)
+        p <- p + ggplot2::scale_color_viridis_d(name = ident)
     }
 
     return(p)
@@ -653,11 +653,12 @@ plot_hist_dens_grouped <- function(x,
 #' @param facet Vector with facet variable
 #' @param facet.ncol Number of columns in facet
 #' @param method Method for fitting the line. Anything supported by \code{\link{ggplot2::geom_smooth()}}
+#' @param do.fit Should fit be added. Usefull for adding custom lines
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab scale_x_continuous facet_wrap geom_boxplot geom_smooth
 #' @export
-plot_boxline <- function(x, y, levels, xlab = "x", ylab = "y", main = "", line.col = "#3d403d", facet = NULL, facet.ncol = NULL, method = NULL) {
+plot_boxline <- function(x, y, levels, xlab = "x", ylab = "y", main = "", line.col = "#3d403d", facet = NULL, facet.ncol = NULL, method = NULL, do.fit=T) {
     df.plot <- data.frame(x = as.numeric(factor(x, levels = levels)), y = y)
     if (!is.null(facet)) {
         df.plot$facet <- facet
@@ -665,12 +666,49 @@ plot_boxline <- function(x, y, levels, xlab = "x", ylab = "y", main = "", line.c
 
     p1 <- ggplot(data = df.plot, mapping = aes(x = x, y = y, group = x, facet = facet)) +
         geom_boxplot() +
-        geom_smooth(se = F, aes(group = 1), col = line.col, method = method) +
         xlab(xlab) +
         ylab(ylab) +
         ggtitle(main) +
         scale_x_continuous(breaks = 1:length(levels), labels = unique(levels))
 
+    if (do.fit) {
+        p1 <- p1 + geom_smooth(se = F, aes(group = 1), col = line.col, method = method)
+    }
+
+    if (!is.null(facet)) {
+        p1 <- p1 + facet_wrap(~facet, ncol = facet.ncol)
+    }
+
+    return(p1)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Plot boxplot with a numerically ordered x and a loess line
+#'
+#' @param x x
+#' @param y y
+#' @param levels The order of the levels on the x-axis
+#' @param xlab xlab
+#' @param ylab ylab
+#' @param main title
+#' @param facet Vector with facet variable
+#' @param facet.ncol Number of columns in facet
+#'
+#' @returns A ggplot2 object
+#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab scale_x_continuous facet_wrap geom_boxplot geom_smooth
+#' @export
+plot_box <- function(x, y, xlab = "x", ylab = "y", main = "", facet = NULL, facet.ncol = NULL) {
+    df.plot <- data.frame(x =x, y = y)
+    if (!is.null(facet)) {
+        df.plot$facet <- facet
+    }
+
+    p1 <- ggplot(data = df.plot, mapping = aes(x = x, y = y, facet = facet)) +
+        geom_boxplot() +
+        xlab(xlab) +
+        ylab(ylab) +
+        ggtitle(main)
     if (!is.null(facet)) {
         p1 <- p1 + facet_wrap(~facet, ncol = facet.ncol)
     }

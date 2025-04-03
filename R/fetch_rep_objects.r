@@ -173,6 +173,10 @@ fetch_representative_object_nn <- function(dataset, feature, reduction, assay=NU
   cells  <- c()
   groups <- c()
   
+  if (class(x) == "numeric") {
+    stop("Currently does not support numeric features, if it is categorical numeric, convert to a string/factor first")
+  }
+  
   # Find for each group, the closest cell to the mean in reduction space  
   for (cur.group in unique(x[,1])) {
     

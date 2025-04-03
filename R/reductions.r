@@ -13,11 +13,12 @@
 #' @param reduction.name The name to save the PCA results under. Defualts to PCA-<assay>
 #' @param ret.prcomp Instead of returning just the PCs and variances, return the whole prcomp object
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
+#' @param recenter Logical if matrix will be recentered. This is advisable if using modified z-score
 #' @param rescale Logical if matrix will be rescaled. This is advisable if using modified z-score
 
 #' @returns \linkS4class{TglowDataset} with populated PCA slot
 #' @export
-calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, reduction.name = NULL, ret.prcomp = FALSE, use_irlba = FALSE, rescale = FALSE) {
+calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, reduction.name = NULL, ret.prcomp = FALSE, use_irlba = FALSE, recenter = FALSE, rescale = FALSE) {
     # Checks for input
     # check_dataset_assay_slot(dataset, assay, slot)
     if (is.null(slot(dataset[[assay]], slot))) {
@@ -26,10 +27,9 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 
     data <- slot(dataset@assays[[assay]], slot)
 
-    if (rescale) {
-        cat("[INFO] Rescaling data to mean 0 variance 1\n")
-        #data <- fast_colscale(data@.Data)
-        data <- fast_colscale(data)
+    if (rescale || recenter) {
+        cat("[INFO] Rescaling and or recentering data to mean 0 variance 1\n")
+        data <- fast_colscale(data, center=recenter, scale=rescale)
     }
 
     # Remove features with ANY NA

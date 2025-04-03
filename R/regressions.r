@@ -389,16 +389,12 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
     }
 
     covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
-    #current.na.action <- options('na.action')
-    #options(na.action='na.pass')
+
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
     } else {
         design <- model.matrix(formula, data = data)
     }
-    #options(na.action=current.na.action)
-
-    #response <- slot(object@assays[[assay]], slot)@.Data
     response <- slot(object@assays[[assay]], slot)
 
     # Remove NA's from the design matrix
@@ -408,20 +404,19 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
         warning(paste0(sum(!rows.to.keep), " NA's in the design matrix, removing these"))
     }
     
-    #design <- design[rows.to.keep,]
     response <- response[rows.to.keep,]
+    grouping <- grouping[rows.to.keep]
     
     if (nrow(design) != nrow(response)) {
         stop("nrow(design) must equal nrow(assay)")
     }
     
-    
-    
-
     if (is.null(grouping)) {
         res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use)
         return(res)
     } else {
+        
+        
         if (length(grouping) != nrow(response)) {
             stop("grouping must have the same length as nrow(assay)")
         }
@@ -501,6 +496,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #'  Should be a string interpretable by [stats::formula()] and [lmerTest::lmer()] but should NOT
 #'  have response in the forumla. E.g. when regressing `y ~ x + (1|donor)` forumula should be `~ x + (1|donor)`
 #'  Defaults to a regular additive linear model.
+#'  To specify derrived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
@@ -524,9 +520,14 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
     if (is.null(formula)) {
         formula <- paste("~", paste(colnames(data), collapse = " + "))
     }
-
-    #response <- slot(object@assays[[assay]], slot)@.Data
+    
     response <- slot(object@assays[[assay]], slot)
+
+
+    #response <- response[rows.to.keep,]
+    #grouping <- grouping[rows.to.keep]
+    #data     <- data[rows.to.keep]
+
 
     if (is.null(grouping)) {
         res <- lmm_matrix(response, data, formula = formula, ...)

@@ -389,10 +389,11 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
                           slot=b@feature.map@x@slot)
   colnames(df.b) <- c("plate", "well", "field", "x", "y")
   
-  df.a$x <- trunc(df.a$x)
-  df.a$y <- trunc(df.a$y)
-  df.b$x <- trunc(df.b$x)
-  df.b$y <- trunc(df.b$y)
+  # This is no longer needed as we used distance now
+  #df.a$x <- trunc(df.a$x)
+  #df.a$y <- trunc(df.a$y)
+  #df.b$x <- trunc(df.b$x)
+  #df.b$y <- trunc(df.b$y)
 
   df.a$pwf <- paste0(df.a$plate, ":", df.a$well, ":", df.a$field)
   df.b$pwf <- paste0(df.b$plate, ":", df.b$well, ":", df.b$field)
@@ -409,10 +410,11 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
   
   nearest.n <- matrix(NA, ncol=2, nrow=nrow(df.a))
   colnames(nearest.n) <- c("index_b", "dist")
-  for (pwfc in unique(df.a$pwf)) {
+  for (pwfc in intersect(unique(df.a$pwf), unique(df.b$pwf))) {
     pb$tick()
     cur.a <- df.a[pwf == pwfc]
     cur.b <- df.b[df.b$pwf == pwfc]
+    
     cur.knn <- RANN::nn2(cur.b[,c("x", "y")], cur.a[,c("x", "y")], k=1)
 
     nearest.n[cur.a$idx, 1] <- cur.b[cur.knn$nn.idx[,1]]$idx
@@ -480,7 +482,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
     colnames(b@meta) <- paste0(meta.prefix, colnames(b@meta))
   }
   
-  meta.names <- meta.names[!meta.names %in% colnames(a@meta)]
+  meta.names <- colnames(b@meta)[!colnames(b@meta) %in% colnames(a@meta)]
   a@meta <- cbind(a@meta, b@meta[nearest.n[,1], meta.names])
     
   return(a)
