@@ -61,6 +61,19 @@ setMethod(
   function(x, i, j, drop = F) {
     object <- x
 
+
+    if (!missing(i)) {
+      if (sum(is.na(i)) != 0 ) {
+        stop("i has NA values, this is not allowed")
+      }
+    }
+
+    if (!missing(j)) {
+      if (sum(is.na(j)) != 0 ) {
+        stop("j has NA values, this is not allowed")
+      }
+    }
+
     # Select rows
     if (!missing(i)) {
       # Filter assays
@@ -167,10 +180,9 @@ setMethod(
     if (class(j) != "character") {
       stop("j must be character vector with column names in meta or assay.")
     }
-    if (sum(is.na(j)) > 0) {
-      stop("j can not have NA")
+    if (sum(is.na(j)) != 0 ) {
+      stop("j has NA values, this is not allowed")
     }
-
     # Image level features
     if (!is.null(assay.image)) {
       is.image <- j %in% colnames(slot(object, assay.image))

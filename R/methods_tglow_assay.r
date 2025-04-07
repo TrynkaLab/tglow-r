@@ -97,7 +97,17 @@ setMethod(
       return(object)
     }
 
+    if (!missing(i)) {
+      if (sum(is.na(i)) != 0 ) {
+        stop("i has NA values, this is not allowed")
+      }
+    }
 
+    if (!missing(j)) {
+      if (sum(is.na(j)) != 0 ) {
+        stop("j has NA values, this is not allowed")
+      }
+    }
     # Select rows
     if (!missing(i)) {
       # Filter main assay

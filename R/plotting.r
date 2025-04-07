@@ -218,6 +218,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @param bins.mincount Minimum number of objects in a bin to render it
 #' @param log2 Log2 transform the feature prior to all other steps.
 #' @param limits Limits for the color scale
+#' @param func Aggregation function. Reccomend [base::mean()], [base::median()] or [base::sum()]
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
@@ -239,7 +240,8 @@ tglow_plot_location_hex <- function(object,
                                     trim.outliers.z.thresh = 3.5,
                                     bins.mincount = 10,
                                     log2=F,
-                                    limits=NULL) {
+                                    limits=NULL,
+                                    func=base::mean) {
     check_dataset_assay_slot(object, assay, slot)
 
 
@@ -297,7 +299,7 @@ tglow_plot_location_hex <- function(object,
         stat_summary_hex(
             fun = function(x) {
                 if (length(x) > bins.mincount) {
-                    mean(x)
+                    func(x)
                 } else {
                     return(NA)
                 }

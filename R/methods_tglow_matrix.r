@@ -29,6 +29,19 @@ setMethod(
   "[",
   "TglowMatrix",
   function(x, i, j, drop = F) {
+    
+    if (!missing(i)) {
+      if (sum(is.na(i)) != 0 ) {
+        stop("i has NA values, this is not allowed")
+      }
+    }
+
+    if (!missing(j)) {
+      if (sum(is.na(j)) != 0 ) {
+        stop("j has NA values, this is not allowed")
+      }
+    }
+    
     # if (drop) {
     #   if ((!missing(i) && !missing(j)) && (length(i) == 1 || length(j) == 1)) {
     #     return(x@.Data[i, j, drop = drop])

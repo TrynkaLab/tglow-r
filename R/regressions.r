@@ -77,6 +77,16 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             x <- cur.assay[ident.is.class, col]
             y <- cur.assay[ident.is.ref, col]
 
+            if (is.null(x) || is.null(y)) {
+                msg <- paste0("Null after subsetting, skipping class:feature (", class, ":", col, ")")
+                warning(msg)
+                #cat("\n[WARN] ", msg, "\n")
+                res[i, "class"] <- class
+                res[i, "feature"] <- col
+                i <- i + 1
+                next()
+            }
+
             # Double check for NA values
             if ((sum(is.na(x)) >= (length(x) - 3)) || (sum(is.na(y)) >= (length(y) - 3)) || var(x, na.rm = TRUE) < 1e-16 || var(y, na.rm = TRUE) < 1e-16) {
                 msg <- paste0("Need at least 3 non NA's in class or reference groups and need variance > 1e-16, skipping class:feature (", class, ":", col, ")")
