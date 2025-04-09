@@ -389,6 +389,17 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
                           slot=b@feature.map@x@slot)
   colnames(df.b) <- c("plate", "well", "field", "x", "y")
   
+  if (any(is.na(df.a))) {
+    stop("Object a has NA values in plate/well/field/x/y. This is not allowed. Please remove NA's before running")
+    #df.a <- na.omit(df.a)
+  }
+  
+  if (any(is.na(df.b))) {
+    warning("Object b has NA values in plate/well/field/x/y This shouldn't normally happen and NA's are dropped")
+    df.b <- na.omit(df.b)
+  }
+  
+  
   # This is no longer needed as we used distance now
   #df.a$x <- trunc(df.a$x)
   #df.a$y <- trunc(df.a$y)

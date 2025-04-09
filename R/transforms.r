@@ -67,13 +67,13 @@ fast_colscale <- function(x,
     if (is.null(reference.group)) {
         x.ref <- x
     } else {
-        x.ref <- x[reference.group, ]
+        x.ref <- x[reference.group,]
     }
 
     if (na.zero) {
         x.ref[x.ref == 0] <- NA
     }
-
+    
     if (scale.method == "mean") {
         # Get the column means
         cm <- colMeans(x.ref, na.rm = na.rm)
@@ -479,6 +479,14 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
     if (!is(assay, "TglowAssay")) {
         stop("Assay must be TglowAssay")
+    }
+    
+    if (any(is.na(grouping))) {
+        stop("grouping may not have NA values")
+    }
+
+    if (any(is.na(reference.group))) {
+        stop("reference.group may not have NA values")
     }
 
     if (is.null(grouping)) {
