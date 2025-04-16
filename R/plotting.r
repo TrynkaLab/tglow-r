@@ -218,7 +218,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @param bins.mincount Minimum number of objects in a bin to render it
 #' @param log2 Log2 transform the feature prior to all other steps.
 #' @param limits Limits for the color scale
-#' @param func Aggregation function. Reccomend [base::mean()], [base::median()] or [base::sum()]
+#' @param func Aggregation function. Reccomend [base::mean()], [stats::median()] or [base::sum()]
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
@@ -637,7 +637,7 @@ plot_hist_dens_grouped <- function(x,
     }
 
     if (!is.null(facet)) {
-        p <- p + facet_wrap(~facet, ncol = facet.ncol)
+        p1 <- p1 + facet_wrap(~facet, ncol = facet.ncol)
     }
     return(p1)
 }
