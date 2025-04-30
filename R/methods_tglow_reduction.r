@@ -2,15 +2,15 @@
 setMethod(
   "[",
   "TglowReduction",
-  function(x, i, j, drop = F) {
+  function(x, i, j, drop = F, na.check = T) {
     
-    if (!missing(i)) {
+    if (!missing(i) && na.check) {
       if (sum(is.na(i)) != 0 ) {
         stop("i has NA values, this is not allowed")
       }
     }
 
-    if (!missing(j)) {
+    if (!missing(j) && na.check) {
       stop("Can only subset rows on TglowReduction")
     }
     x@x <- x@x[i, , drop = F]

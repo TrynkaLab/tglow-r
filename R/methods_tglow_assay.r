@@ -86,7 +86,7 @@ setMethod(
 setMethod(
   "[",
   "TglowAssay",
-  function(x, i, j, drop = F) {
+  function(x, i, j, drop = F, na.check = T) {
     object <- x
 
     if (is.null(object@data)) {
@@ -97,13 +97,13 @@ setMethod(
       return(object)
     }
 
-    if (!missing(i)) {
+    if (!missing(i) && na.check) {
       if (sum(is.na(i)) != 0 ) {
         stop("i has NA values, this is not allowed")
       }
     }
 
-    if (!missing(j)) {
+    if (!missing(j) && na.check) {
       if (sum(is.na(j)) != 0 ) {
         stop("j has NA values, this is not allowed")
       }

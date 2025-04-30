@@ -58,17 +58,17 @@ setMethod(
 setMethod(
   "[",
   "TglowDataset",
-  function(x, i, j, drop = F) {
+  function(x, i, j, drop = F, na.check = T) {
     object <- x
 
 
-    if (!missing(i)) {
+    if (!missing(i) && na.check) {
       if (sum(is.na(i)) != 0 ) {
         stop("i has NA values, this is not allowed")
       }
     }
 
-    if (!missing(j)) {
+    if (!missing(j) && na.check) {
       if (sum(is.na(j)) != 0 ) {
         stop("j has NA values, this is not allowed")
       }
@@ -78,7 +78,7 @@ setMethod(
     if (!missing(i)) {
       # Filter assays
       for (assay in seq_along(object@assays)) {
-        object@assays[[assay]] <- object@assays[[assay]][i, , drop = F]
+        object@assays[[assay]] <- object@assays[[assay]][i, , drop = F, na.check = na.check]
       }
 
       # Filter meta
@@ -92,20 +92,20 @@ setMethod(
 
       # Select images
       object@image.ids <- object@image.ids[i, drop = F]
-      object@image.data <- object@image.data[unique(object@image.ids), , drop = F]
+      object@image.data <- object@image.data[unique(object@image.ids), , drop = F, na.check = na.check]
       object@image.meta <- object@image.meta[unique(object@image.ids), , drop = F]
 
       if (!is.null(object@image.data.trans)) {
-        object@image.data.trans <- object@image.data.trans[unique(object@image.ids), , drop = F]
+        object@image.data.trans <- object@image.data.trans[unique(object@image.ids), , drop = F, na.check = na.check]
       }
       if (!is.null(object@image.data.norm)) {
-        object@image.data.norm <- object@image.data.norm[unique(object@image.ids), , drop = F]
+        object@image.data.norm <- object@image.data.norm[unique(object@image.ids), , drop = F, na.check = na.check]
       }
 
       # Filter dimension reductions
       if (length(object@reduction) >= 1) {
         for (k in seq_along(object@reduction)) {
-          object@reduction[[k]] <- object@reduction[[k]][i, , drop = F]
+          object@reduction[[k]] <- object@reduction[[k]][i, , drop = F, na.check = na.check]
         }
       }
 
@@ -124,7 +124,7 @@ setMethod(
 
       # Filter assays
       for (assay in seq_along(object@assays)) {
-        object@assays[[assay]] <- object@assays[[assay]][, j, drop = F]
+        object@assays[[assay]] <- object@assays[[assay]][, j, drop = F, na.check = na.check]
       }
     }
 

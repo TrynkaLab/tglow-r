@@ -446,7 +446,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
       if (assay %in% b.assays) {
         
         features.b <- setdiff(colnames(b@assays[[assay]]@data), colnames(a@assays[[assay]]@data))
-        bb         <- b@assays[[assay]][nearest.n[,1],features.b]
+        bb         <- b@assays[[assay]][nearest.n[,1],features.b, na.check=F]
         
         a@assays[[assay]]@data       <- cbind(a@assays[[assay]]@data, b@assays[[assay]]@data)
         
@@ -482,7 +482,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
     } else {
       new <- assay
     }
-    a@assays[[new]] <- b@assays[[assay]][nearest.n[,1],]
+    a@assays[[new]] <- b@assays[[assay]][nearest.n[,1], na.check=F]
     
     # Update the object IDs to the ones in a
     objectIds(a@assays[[new]]) <- objectIds(a)
