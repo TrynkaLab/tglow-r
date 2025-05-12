@@ -242,7 +242,7 @@ TglowDatasetFromList <- function(
     colnames(tmpmat) <- c("dummy")
     dataset@image.data <- new("TglowAssay",
       data = TglowMatrix(tmpmat),
-      features = data.frame(id="dummy")
+      features = data.frame(id="dummy", row.names="dummy")
     )
   }
 

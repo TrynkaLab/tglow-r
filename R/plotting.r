@@ -585,6 +585,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
 #' @param facet Vector with facet variable
 #' @param facet.ncol Number of columns in facet
 #' @param density Plot as a density plot instead
+#' @param add.median Add a vline for median
 #'
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_vline geom_histogram scale_fill_viridis_d facet_wrap geom_density scale_color_viridis_d
@@ -596,7 +597,8 @@ plot_hist_dens_grouped <- function(x,
                                    bins = 100,
                                    facet = NULL,
                                    facet.ncol = NULL,
-                                   density = FALSE) {
+                                   density = FALSE,
+                                   add.median = TRUE) {
     if (is.null(z)) {
         z <- "1"
     }
@@ -620,20 +622,24 @@ plot_hist_dens_grouped <- function(x,
             mapping = aes(x = x, fill = z), alpha = 0.5, color = "black"
         ) +
             geom_histogram() +
-            geom_vline(xintercept = med, color = "red", linetype = "dashed", size = 1) + # Add vertical line for the median
             xlab(xlab) +
             ggtitle(main) +
             scale_fill_viridis_d()
+        
+
     } else {
         p1 <- ggplot(
             data = df.plot,
             mapping = aes(x = x, col = z), alpha = 0.5, color = "black"
         ) +
             geom_density() +
-            geom_vline(xintercept = med, color = "red", linetype = "dashed", size = 1) + # Add vertical line for the median
             xlab(xlab) +
             ggtitle(main) +
             scale_color_viridis_d()
+    }
+
+    if (add.median) {
+        p1 <- p1 + geom_vline(xintercept = med, color = "red", linetype = "dashed", size = 1) # Add vertical line for the median
     }
 
     if (!is.null(facet)) {
