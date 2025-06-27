@@ -219,7 +219,10 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @param log2 Log2 transform the feature prior to all other steps.
 #' @param limits Limits for the color scale
 #' @param func Aggregation function. Reccomend [base::mean()], [stats::median()] or [base::sum()]
-#'
+#' @param side.profile Return two plots of X and Y postion vs feature.c instead of the color view
+#' @param side.linecol Linecolor of horizontal line in the sideview. Set to NULL to not draw the line.
+#' @param ... Paramaters passed to [plot_hex()] when side.profile=T
+#' 
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
 #' @export
@@ -241,8 +244,13 @@ tglow_plot_location_hex <- function(object,
                                     bins.mincount = 10,
                                     log2=F,
                                     limits=NULL,
-                                    func=base::mean) {
-    check_dataset_assay_slot(object, assay, slot)
+                                    func=base::mean,
+                                    side.profile=FALSE,
+                                    side.linecol="black",
+                                    side.lwd=1,
+                                    side.lty=2,
+                                    ...) {
+    #check_dataset_assay_slot(object, assay, slot)
 
 
     # Grab features from the feature map
@@ -292,26 +300,45 @@ tglow_plot_location_hex <- function(object,
     }
 
 
-    p1 <- ggplot(
-        data = df.plot,
-        mapping = aes(x = x, y = y, z = z)
-    ) +
-        stat_summary_hex(
-            fun = function(x) {
-                if (length(x) > bins.mincount) {
-                    func(x)
-                } else {
-                    return(NA)
-                }
-            },
-            bins = bins
-        ) +
-        xlab(xlab) +
-        ylab(ylab) +
-        ggtitle(main) +
-        scale_fill_viridis_c(name = zlab, limits=limits)
 
-    return(theme_plain(p1))
+    if (side.profile) {
+        
+        p1 <- plot_hex(df.plot$x, df.plot$z, xlab="X position", ylab=feature.c, bins=bins, ...)
+        p2 <- plot_hex(df.plot$y, df.plot$z, xlab="Y position", ylab=feature.c, bins=bins, ...)
+        
+        if (!is.null(side.linecol)) {
+            p1 <- p1 + geom_hline(yintercept=mean(df.plot$z, na.rm=T), col=side.linecol, lty=side.lty, lwd=side.lwd)
+            p2 <- p2 + geom_hline(yintercept=mean(df.plot$z, na.rm=T), col=side.linecol, lty=side.lty, lwd=side.lwd)
+        }
+
+        p1 <- theme_plain(p1)
+        p2 <- theme_plain(p2)
+  
+        return(cowplot::plot_grid(plotlist=list(p1, p2),nrow=2,  align="hv"))
+        
+    } else {
+        p1 <- ggplot(
+            data = df.plot,
+            mapping = aes(x = x, y = y, z = z)
+        ) +
+            stat_summary_hex(
+                fun = function(x) {
+                    if (length(x) > bins.mincount) {
+                        func(x)
+                    } else {
+                        return(NA)
+                    }
+                },
+                bins = bins
+            ) +
+            xlab(xlab) +
+            ylab(ylab) +
+            ggtitle(main) +
+            scale_fill_viridis_c(name = zlab, limits=limits)
+
+        return(theme_plain(p1))
+    }
+
 }
 
 #-------------------------------------------------------------------------------
@@ -332,7 +359,7 @@ tglow_plot_location_hex <- function(object,
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_smooth geom_hex facet_wrap
 #' @importFrom stats cor.test
 #' @export
-plot_hex <- function(x, y, bins = 50, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main.prefix = NULL, main = NULL, facet = NULL, ...) {
+plot_hex <- function(x, y, bins = 50, binwidth=NULL, do.lm = T, lm.col = "lightgrey", xlab = "x", ylab = "y", main.prefix = NULL, main = NULL, facet = NULL, ...) {
     df.plot <- data.frame(x = x, y = y)
 
     if (!is.null(facet)) {
@@ -340,7 +367,7 @@ plot_hex <- function(x, y, bins = 50, do.lm = T, lm.col = "lightgrey", xlab = "x
     }
 
     p1 <- ggplot(data = df.plot, mapping = aes(x = x, y = y)) +
-        geom_hex(bins = bins) +
+        geom_hex(bins = bins, binwidth=binwidth) +
         xlab(xlab) +
         ylab(ylab)
 
