@@ -397,6 +397,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
   if (any(is.na(df.b))) {
     warning("Object b has NA values in plate/well/field/x/y This shouldn't normally happen and NA's are dropped")
     df.b <- na.omit(df.b)
+    b    <- b[rownames(df.b),]
   }
   
   
