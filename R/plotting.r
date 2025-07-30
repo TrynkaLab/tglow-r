@@ -855,7 +855,7 @@ plot_simple_hm <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12,
 #'
 #' @returns A matrix with xy positions and a label
 #' 
-#' @keywords internal
+#' @export
 make_ident_labels <- function(x, y, memberships) {
     if (!(length(x) == length(y) && length(x) == length(memberships))) {
         stop("All input vectors must be of equal length")
@@ -866,8 +866,8 @@ make_ident_labels <- function(x, y, memberships) {
 
     i <- 1
     for (cl in unique(memberships)) {
-        output[i, "x"] <- mean(x[memberships == cl])
-        output[i, "y"] <- mean(y[memberships == cl])
+        output[i, "x"] <- mean(x[memberships == cl], na.rm=T)
+        output[i, "y"] <- mean(y[memberships == cl], na.rm=T)
         output[i, "label"] <- cl
         # output <- rbind(output, c(mx, my, cl))
 
