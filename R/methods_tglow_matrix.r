@@ -30,6 +30,8 @@ setMethod(
   "TglowMatrix",
   function(x, i, j, drop = F) {
 
+    # This does add quite a bit of overhead, better to work on the raw matrix
+    # if you need many accessions
     result <- callNextMethod()
     
     if (is(result, "matrix")) {

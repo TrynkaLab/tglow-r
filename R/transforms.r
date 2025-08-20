@@ -58,12 +58,15 @@ fast_colscale <- function(x,
                           scale.method = "mean",
                           reference.group = NULL,
                           na.zero = F) {
-                            
-    # This should no longer be needed and was bad
-    # if (is(x, "TglowMatrix")) {
-    #     x <- x@.Data
-    # }
-
+    
+    # This is here for speed, the whole S4 system adds
+    # quite a bit of overhead                            
+    in.is.tglow <- F
+    if (is(x, "TglowMatrix")) {
+        x <- as(x, "matrix")
+        in.is.tglow <- T
+    }
+    
     if (is.null(reference.group)) {
         x.ref <- x
     } else {
@@ -115,6 +118,11 @@ fast_colscale <- function(x,
             attr(x, "scaled:scale") <- csd
         }
     }
+    
+    if (in.is.tglow) {
+        x <- as(x,"TglowMatrix")
+    }
+    
     return(x)
 }
 
