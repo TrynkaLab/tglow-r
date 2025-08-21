@@ -15,6 +15,7 @@
 #' @param verbose Should I be chatty?
 #' @param col.object The collumn name in the features which contains the per object object identifier. See details
 #' @param col.meta.img.id The collumn name in the image level data which contains the image id. See details
+#' @param max.per.well Maximumn number of objects in a well to consider. Set to NULL to ignore
 #' @param ... Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #'
 #' @details
@@ -34,30 +35,29 @@
 #' @importFrom progress progress_bar
 #' @export
 read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
-  files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T)
-
+  files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T, max.per.well=10000)
+  
   if (type == "A") {
     prefixes <- gsub(pattern, "", files)
   } else {
     prefixes <- files
   }
-
+  
   if (!is.null(n)) {
     prefixes <- prefixes[n]
   }
-
+  
   # TODO: Replace this global with a function argument
   # Reset global fileset index
   # assign("FILESET_ID", 0, envir = .GlobalEnv)
   fileset.id <- 1
-
+  
   # Read filesets
   filesets <- list()
   null.filesets <- 0
-  pb <- progress::progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta", total = length(prefixes))
+  pb <- progress::progress_bar$new(format = "[INFO] Reading [:bar] :current/:total (:percent) eta :eta, mem :mem (GB)", total = length(prefixes))
   pb$tick(0)
   for (pre in prefixes) {
-    pb$tick()
     if (type == "A") {
       cur <- tglowr::read_cellprofiler_fileset_a(pre, return.feature.meta = F, skip.orl = skip.orl, fileset.id = fileset.id, ...)
     } else if (type == "B") {
@@ -65,9 +65,16 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
     } else {
       stop(paste0("Invalid type: ", type))
     }
+    
+    if (!is.null(max.per.well)) {
+      if (nrow(cur) > max.per.well) {
+        warning(paste0("Well ", pre, " has > ", max.per.well, " objects, skip. Increase max.per.well to ignore"))
+        continue
+      }
+    }
 
     fileset.id <- fileset.id + 1
-
+    
     if (!is.null(cur)) {
       filesets[[pre]] <- cur
       if (verbose) cat("\n[DEBUG] cols:", ncol(cur$cells), " cols meta", ncol(cur$meta), " cols orl:", ncol(cur$orl), "\n")
@@ -75,40 +82,46 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
       null.filesets <- null.filesets + 1
       # warning("Fileset was NULL, skipped.")
     }
+    
+    memory_used <- round(object.size(filesets, unit="GB"), 2) 
+    pb$tick(tokens = list(mem = memory_used))      
   }
-
+  
   if (null.filesets != 0) {
     msg <- paste0("Dectected ", null.filesets, "/", length(filesets), " as NULL (no cells)")
     warning(msg)
     cat(paste0("[WARN] ", msg, "\n"))
   }
-
+  
+  cat("[INFO] Read filesets into list of ", object.size(filesets, unit="GB"))
+  
   cat("\n[INFO] Merging filesets\n")
   output <- tglowr::merge_filesets(filesets, skip.orl = skip.orl)
-
+  
   cat("[INFO] names: ", names(output), "\n")
-
+  
   if (verbose) {
     cat("[DEBUG] colnames:\n", colnames(output$cells))
   }
-
+  
   features <- tglowr::get_feature_meta_from_names(colnames(output$cells))
   classes <- sapply(output$cells, class)
   features$type <- classes[features$id]
-
+  
   features <- features[colnames(output$cells), ]
   selector <- !is.na(output$cells[, col.object])
-
+  
   if (sum(!selector) != 0) {
     warning(paste0("Detected ", sum(!selector), " objects with NA in ", col.object, " removing these"))
   }
-
+  
   output$cells <- output$cells[selector, ]
   rownames(output$cells) <- output$cells[, col.object]
   rownames(output$meta) <- output$meta[, col.meta.img.id]
-
+  
   return(c(output, list(features = features)))
 }
+
 
 #-------------------------------------------------------------------------------
 #' Add a global id to a matrix of image files
