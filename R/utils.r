@@ -500,3 +500,125 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
   return(a)
     
 }
+
+
+#' Log R Session State and Variables to a File
+#'
+#' This function writes a structured session log to a file, including a header with 
+#' timestamp and working directory, selected variable values, and the versions of
+#' any non-base packages currently loaded. It is designed to capture the state of an 
+#' R session in a human-readable log file for reproducibility or debugging.
+#'
+#' @param vars A named list of variables to log. Each element must be named; unnamed
+#'   elements will trigger an error. Variables can be scalars, vectors, matrices, or
+#'   data frames.
+#' @param file A character string giving the path to the output log file. The file 
+#'   will be opened for writing and overwritten if it already exists.
+#' @param max_rows Integer, maximum number of rows to print for tabular variables
+#'   (matrices or data frames). Defaults to 20 to avoid overly large logs.
+#'
+#' @details
+#' - Scalar and vector variables are written as plain values.
+#' - Tabular variables (`data.frame` or `matrix`) are written with one row per line,
+#'   and columns are padded to maintain consistent alignment across rows.
+#'   If the number of rows exceeds `max_rows`, the output will be truncated
+#'   with a message indicating this.
+#' - After all variables are logged, the function writes a section listing the 
+#'   package names and versions for all non-base, user-loaded packages.
+#'
+#' The function is useful for creating reproducibility logs, session audits, or
+#' traceable outputs when running scripts in batch or production environments.
+#'
+#' @return This function is called for its side effects; it does not return a value.
+#'
+#' @examples
+#' log_state(
+#'   vars = list(
+#'     scalar = 42,
+#'     vector = c("A", "B", "C"),
+#'     df = data.frame(id = 1:3, name = c("Alice", "Bob", "Cara"), score = c(89, 72, 95))
+#'   ),
+#'   file = "session_log.txt"
+#' )
+#'
+#' @export
+log_state <- function(vars, file, max_rows = 20) {
+  # Ensure 'vars' is a named list
+  if (is.null(names(vars)) || any(names(vars) == "")) {
+    stop("Please provide a named list of variables!")
+  }
+  
+  sep_line <- paste(rep("-", 80), collapse = "")
+  
+  con <- file(file, open = "wt")
+  on.exit(close(con))
+  
+  # Header info
+  cat(sep_line, "\n", file = con)
+  cat("SESSION LOG\n", file = con)
+  cat(sep_line, "\n", file = con)
+  cat("Timestamp   : ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n", file = con, sep = "")
+  cat("Working Dir : ", getwd(), "\n", file = con, sep = "")
+  cat(sep_line, "\n\n", file = con)
+  
+  #-----------------------------------------------------------------------------
+  # Variables
+  cat(sep_line, "\n", file = con)
+  cat("VARIABLES\n", file = con)
+  cat(sep_line, "\n", file = con)
+
+  for (nm in names(vars)) {
+    cat("Variable:", nm, "\n", file = con, sep = " ")
+    obj <- vars[[nm]]
+    
+    if (is.data.frame(obj) || is.matrix(obj)) {
+      n <- min(nrow(obj), max_rows)
+      
+      # Convert to character matrix for alignment
+      obj_chr <- as.matrix(format.data.frame(obj, justify = "left"))
+      
+      # Compute max width for each column
+      col_widths <- apply(obj_chr, 2, function(col) max(nchar(c(col, colnames(obj)))))
+      
+      # Helper to pad strings
+      pad <- function(x, width) sprintf(paste0("%-", width, "s"), x)
+      
+      # Write column headers
+      header <- paste(mapply(pad, colnames(obj), col_widths), collapse = "  ")
+      cat(header, "\n", file = con)
+      
+      # Write rows, aligned
+      for (i in 1:n) {
+        row_vals <- paste(mapply(pad, obj_chr[i, ], col_widths), collapse = "  ")
+        cat(row_vals, "\n", file = con)
+      }
+      
+      if (nrow(obj) > max_rows) {
+        cat("... (truncated after", max_rows, "rows)\n", file = con)
+      }
+      
+    } else {
+      # Generic values
+      val_str <- paste(noquote(obj), collapse = "\n")
+      cat(val_str, "\n", file = con)
+    }
+    cat("\n", file = con)
+  }
+  
+  #-----------------------------------------------------------------------------
+  # Package versions
+  cat(sep_line, "\n", file = con)
+  cat("LOADED PACKAGE VERSIONS\n", file = con)
+  cat(sep_line, "\n", file = con)
+
+  pkgs <- sessionInfo()$otherPkgs
+  if (!is.null(pkgs)) {
+    for (pkg_name in names(pkgs)) {
+      cat(pkg_name, ":", pkgs[[pkg_name]]$Version, "\n", file = con, sep = "")
+    }
+  } else {
+    cat("No additional packages loaded.\n", file = con)
+  }
+  
+  cat(sep_line, "\n", file = con)
+}
