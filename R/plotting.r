@@ -158,8 +158,8 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 
 
     p <- theme_plain(plot_xy(
-        dim[, axis.x],
-        dim[, axis.y],
+        dim[, 1],
+        dim[, 2],
         col = col,
         do.lm = F,
         xlab = xlab,
@@ -173,7 +173,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 
     if (labs.add) {
         if ((is.character(col) && length(unique(col)) <= 50) || is.factor(col) && length(unique(col)) <= 50) {
-            labs <- make_ident_labels(dim[, axis.x], dim[, axis.y], as.character(col))
+            labs <- make_ident_labels(dim[, 1], dim[, 2], as.character(col))
 
             p <- p + geom_text_repel(
                 mapping = aes(x = x, y = y, label = label, col = "grey"),

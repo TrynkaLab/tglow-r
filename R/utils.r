@@ -298,6 +298,11 @@ add_features_to_assay <- function(assay, slot, features, names = NULL, meta = NU
 #' @export
 list_has_overlap <- function(list) {
   n <- length(list)
+  
+  if (n==1) {
+    return(FALSE)
+  }
+  
   for (i in 1:(n - 1)) {
     for (j in (i + 1):n) {
       if (length(intersect(list[[i]], list[[j]])) > 0) {
@@ -570,6 +575,10 @@ log_state <- function(vars, file, max_rows = 20) {
   for (nm in names(vars)) {
     cat("Variable:", nm, "\n", file = con, sep = " ")
     obj <- vars[[nm]]
+    
+    if (is.null(obj)) {
+      obj <- "NULL"
+    }
     
     if (is.data.frame(obj) || is.matrix(obj)) {
       n <- min(nrow(obj), max_rows)

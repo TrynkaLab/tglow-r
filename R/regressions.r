@@ -238,7 +238,8 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
 #' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
-#'
+#' @param na.rm Remove NA's from the design matrix prior to regressing (does not remove NAs in the response)
+#' 
 #' @details
 #'
 #' `covariates.group`
@@ -258,7 +259,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
+correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, na.rm=F) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (!is.list(covariates.group)) {
@@ -295,7 +296,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
     #response <- slot(object@assays[[assay]], slot)@.Data
     response <- slot(object@assays[[assay]], slot)
-    residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
+    residuals <- matrix(as.numeric(NA), nrow = nrow(response), ncol = ncol(response))
     rownames(residuals) <- rownames(response)
     colnames(residuals) <- colnames(response)
 
@@ -316,18 +317,43 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
         for (fgroup in names(covariates.group)) {
             data <- getDataByObject(object, covariates.group[[fgroup]], assay.covar, assay.image, slot.covar, drop = F)
 
+            has.na <- rowSums(is.na(data)) != 0
+
+            if (na.rm) {
+                # Optionally remove NAs from the design matrix    
+                if (sum(has.na) > 0 ) {
+                    warning(paste0("Dropping ", sum(has.na), " cells from design matrix because of NAs in: ", fgroup))
+                }
+                selector.final <- selector & !has.na
+            } else {
+                
+                if (sum(has.na) > 0 ) {
+                    stop("Detected NA's in design matrix. Either set na.rm=T or remove them manually.")
+                }                
+                selector.final <- selector
+            }
+
             covariates.dont.use.cur <- check_unused_covar(data, covariates.dont.use)
-            design <- model.matrix(~., data = data[selector, , drop = FALSE])
-            group.features <- feature.colnames[[fgroup]]
+            design                  <- model.matrix(~., data = data[selector.final, , drop = FALSE])
+            group.features          <- feature.colnames[[fgroup]]
+            
+            # Remove the features being regressed so its not regressing features against themselves
+            group.features <- group.features[!group.features %in% covariates.group[[fgroup]]]
+            
+            if (length(group.features) == 0) {
+                warning(paste0("Skipped group, found no features for group", group, " and pattern ", fgroup))
+                next()
+            }
+            
             cat("[INFO] Running object group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
 
-            res <- lm_matrix(response.cur[, group.features],
+            res <- lm_matrix(response.cur[selector.final, group.features],
                 design,
                 covariates.dont.use = covariates.dont.use.cur,
                 residuals.only = TRUE
             )
 
-            residuals[selector, group.features] <- res
+            residuals[selector.final, group.features] <- res
         }
     }
 
@@ -355,7 +381,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @param assay The assay to use
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
 #' @param covariates Character vector of independent variables to use in the model
-#' @param formula The formula to use for regression. Defaults to additive model. See details
+#' @param formula The formula to use for regression, string or formula. Defaults to additive model. See details
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
@@ -403,6 +429,12 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
     } else {
+        
+        if (is.character(formula)) {
+            formula <- as.formula(formula)
+            warning(paste0("Formula is character, converting to formula object: ", paste0(as.character(formula), collapse=" ")))
+        }
+        
         design <- model.matrix(formula, data = data)
     }
     response <- slot(object@assays[[assay]], slot)
@@ -723,7 +755,16 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     }
 
     # Return output list
-    out.list <- list(coef = coef, se = se, model.stats = model.stats, df = df, df.m = ncol(design.tmp) - 1, residuals = NULL, mse = mse.vec, cov.unscaled = b)
+    out.list <- list(coef = coef,
+                    se = se,
+                    pval = 2 * pt(-abs(coef/se), df = df),
+                    model.stats = model.stats,
+                    df = df,
+                    df.m = ncol(design.tmp) - 1,
+                    residuals = NULL,
+                    mse = mse.vec,
+                    cov.unscaled = b)
+                    
     class(out.list) <- "tglowlm"
     if (return.residuals) {
         out.list$residuals <- residuals
@@ -739,8 +780,8 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 #' @description Fit a linear mixed model using REML / MLE (lme4) and find coefficients
 #' @param response A matrix with response variables
 #' @param design The matrix with predictor variables
-#' @param formula The latter component of the formula. I.e. `~ x + (1|donor)`
-#' @param formula.null The null formula for a LRT. The latter component of the formula. I.e. `~ x + (1|donor)`
+#' @param formula The latter component of the formula as a string. I.e. `~ x + (1|donor)`
+#' @param formula.null The null formula for a LRT as a string. The latter component of the formula. I.e. `~ x + (1|donor)`
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param refit Refit the models using MLE during the LRT (anova)
@@ -753,6 +794,17 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 #' @importFrom lme4 lFormula
 #' @export
 lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = FALSE, ...) {
+    
+    if (is(formula, "formula")) {
+        formula <- paste0(as.character(formula), collapse=" ")
+        warning(paste0("Provided formula is formula object, converted to character for parsing: ", formula))
+    }
+    
+    if (is(formula.null, "formula")) {
+        formula.null <- paste0(as.character(formula.null), collapse=" ")
+        warning(paste0("Provided formula.null is formula object, converted to character for parsing: ", formula.null))
+    }
+    
     if (!is(formula, "character")) {
         stop("formula must be of class character")
     }
@@ -806,6 +858,12 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
 
         data.cur <- cbind(response[, col, drop = F], design)
         form.cur <- as.formula(paste(colnames(data.cur)[1], formula))
+        
+        if (any(colSums(is.na(data.cur))==nrow(data.cur))) {
+            warning(paste0("No non-NA cases, skipping col: ", col))
+            next()
+        }
+        
         m <- lmerTest::lmer(form.cur, data = data.cur, ...)
 
         if (!is.null(formula.null)) {
@@ -845,6 +903,7 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
 
     # Return output list
     out.list <- list(coef = coef, se = se, pval = pval, df = df, model.stats = model.stats, residuals = NULL)
+    class(out.list) <- "tglowlm"
     if (return.residuals) {
         out.list$residuals <- residuals
     }

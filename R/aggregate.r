@@ -120,6 +120,12 @@ aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm
             x <- as.character(x)
             x <- paste(unique(x), collapse = sep)
             return(factor(x))
+        } else if (is.logical(x)) {
+            if (length(unique(x)) == 1) {
+                return(as.logical(unique(x)))
+            } else {
+                return(NA)
+            }
         }
     }, method = method)
 
@@ -159,6 +165,16 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         stop("Grouping must be a single character indicating a column in image.meta")
     }
 
+    if (class(grouping) == "logical") {
+        warning(paste0("Specified grouping is logical. Converting to character"))
+        grouping <- as.character(grouping)
+    }
+
+    if (class(grouping.image) == "logical") {
+        warning(paste0("Specified image grouping is logical. Converting to character"))
+        grouping.image <- as.character(grouping.image)
+    }
+
 
     # Aggreage assays
     new.assays <- list()
@@ -181,7 +197,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         new.image.data.norm <- NULL
     }
 
-    new.meta <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
+    new.meta       <- aggregate_metadata(object@meta, grouping, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
     new.image.meta <- aggregate_metadata(object@image.meta, grouping.image, method, group.order, na.rm, drop.multival.string, drop.na.col, sep)
 
     image.ids <- group.order
@@ -196,6 +212,8 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
         object.ids = group.order,
         image.ids = image.ids
     )
+    
+    names(new.object@object.ids)   <- new.object@object.ids
 
     return(new.object)
 }

@@ -66,16 +66,18 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
       stop(paste0("Invalid type: ", type))
     }
     
-    if (!is.null(max.per.well)) {
-      if (nrow(cur) > max.per.well) {
-        warning(paste0("Well ", pre, " has > ", max.per.well, " objects, skip. Increase max.per.well to ignore"))
-        continue
-      }
-    }
-
     fileset.id <- fileset.id + 1
     
     if (!is.null(cur)) {
+      if (!is.null(max.per.well)) {
+        if (nrow(cur[["cells"]]) > max.per.well) {
+          cat(paste0("\nWell ", pre, " has ", nrow(cur[["cells"]]) ," (> ", max.per.well, ") objects, skipped. Increase max.per.well to ignore\n"))
+          
+          warning(paste0("Well ", pre, " has ", nrow(cur[["cells"]]) ," (> ", max.per.well, ") objects, skipped. Increase max.per.well to ignore"))
+          next
+        }
+      }
+      
       filesets[[pre]] <- cur
       if (verbose) cat("\n[DEBUG] cols:", ncol(cur$cells), " cols meta", ncol(cur$meta), " cols orl:", ncol(cur$orl), "\n")
     } else {
@@ -83,7 +85,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
       # warning("Fileset was NULL, skipped.")
     }
     
-    memory_used <- round(object.size(filesets, unit="GB"), 2) 
+    memory_used <- format(object.size(filesets), units="GB", digits=2)
     pb$tick(tokens = list(mem = memory_used))      
   }
   
@@ -93,7 +95,7 @@ read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE
     cat(paste0("[WARN] ", msg, "\n"))
   }
   
-  cat("[INFO] Read filesets into list of ", object.size(filesets, unit="GB"))
+  cat("[INFO] Read filesets into list of ", format(object.size(filesets), units="GB", digits=2), "GB\n")
   
   cat("\n[INFO] Merging filesets\n")
   output <- tglowr::merge_filesets(filesets, skip.orl = skip.orl)
