@@ -34,8 +34,8 @@
 #' `col.object` or `col.meta.img.id``.
 #' @importFrom progress progress_bar
 #' @export
-read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", ...) {
-  files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T, max.per.well=10000)
+read_cellprofiler_dir <- function(path, pattern, type, n = NULL, skip.orl = TRUE, verbose = F, col.object = "cell_ObjectNumber_Global", col.meta.img.id = "ImageNumber_Global", max.per.well=NULL, ...) {
+  files <- list.files(path, recursive = T, pattern = paste0("*", pattern), full.names = T)
   
   if (type == "A") {
     prefixes <- gsub(pattern, "", files)
