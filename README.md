@@ -36,7 +36,7 @@ tglow@assays[["raw"]] <- tglow@assays$raw[,1:50]
 tglow <- tglow[sample(nrow(tglow), 2000),]
 
 # Scale data
-tglow@assays[["raw"]] <- scale_assay(tglow@assays$raw)
+tglow <- scale_dataset(tglow, assay="raw")
 
 # Run PCA
 tglow <- calculate_pca(tglow, assay="raw")
