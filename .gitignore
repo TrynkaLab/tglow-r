@@ -15,3 +15,4 @@ tglow/cellprofiler/.DS_Store
 install.r
 add_imports.r
 DESCRIPTION copy
+create_function_list.r
