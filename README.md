@@ -9,7 +9,7 @@ Please see the [wiki](https://github.com/TrynkaLab/tglow-r/wiki/) for a detaille
 
 # Installation
 
-Please see the wiki for detailled [install instructions](https://github.com/TrynkaLab/tglow-r/wiki/Installation)
+Please see the wiki for detailled [install instructions](https://github.com/TrynkaLab/tglow-r/wiki/1.-Installation)
 
 For the basic install (does not cover optional dependencies) and given blas, lapack, nlopt and libxml2 are available to the system (see install instructions otherwise):
 
