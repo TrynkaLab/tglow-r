@@ -72,7 +72,7 @@ A version compatible with the tglow-r softpack module comes pre-installed in `/s
 > NOTE: The version here changes often at the moment, so might not be the most stable.
 
 ``` 
-module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/10
 ```
 
 Then launch R.
@@ -83,7 +83,7 @@ library(tglowr, lib="/software/teamtrynka/installs/tglow-rlibs")
 #### Installing into your personal library from git
 Alternatively you can install if using R from the headnode or jammy64 directly through gitlab. This module should have all dependencies pre-installed.
 ```
-module load HGI/softpack/groups/cell_activation_tc/tglow-r/6
+module load HGI/softpack/groups/cell_activation_tc/tglow-r/10
 ```
 
 Then launch R.
