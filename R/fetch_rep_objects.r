@@ -144,9 +144,9 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
 #' Retrieve a cell (and its neighbours) based on a feature sumstat
 #'
 #' @description
-#' Gets a objects and its closes neighbours based on a single feature and a
-#' sumstat (mean, median, upper.q, lower.q). To customise the quantile used
-#' specify q.
+#' Gets a objects and its closes neighbours based on a reduction and a feature.
+#' Feature should be catagorical, can be used to find the object that is closest to the centroid
+#' of a group in reduction space. To get more than one object per group, specify n.
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
