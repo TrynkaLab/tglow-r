@@ -10,6 +10,7 @@ correct_lm(
   slot,
   covariates,
   slot.covar = NULL,
+  assay.covar = NULL,
   assay.image = NULL,
   formula = NULL,
   assay.out = NULL,
@@ -28,6 +29,8 @@ correct_lm(
 \item{covariates}{Character vector of covariates to correct for}
 
 \item{slot.covar}{The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot}
+
+\item{assay.covar}{The assay to grab covariates from. Defaults to assay argument}
 
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 

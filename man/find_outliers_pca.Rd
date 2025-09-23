@@ -8,14 +8,16 @@ find_outliers_pca(
   dataset,
   assay,
   qc.group = NULL,
-  thresh = 3.5,
+  thresh = "auto",
   pc.thresh = 0.75,
   pc.max = NULL,
   pc.n = NULL,
   slot = "data",
-  method = "z",
+  method = "mahalanobis",
   return.pcs = FALSE,
-  use_irlba = TRUE
+  use_irlba = TRUE,
+  features = NULL,
+  padj.method = "fdr"
 )
 }
 \arguments{
@@ -25,7 +27,7 @@ find_outliers_pca(
 
 \item{qc.group}{A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once}
 
-\item{thresh}{Threshold in absolute PC to consider an outlier}
+\item{thresh}{Threshold in absolute PC to consider an outlier. "auto" defaults to 3.5 for zscore/mad modes, and to bonferoni for mahalanobis}
 
 \item{pc.thresh}{The percentage of variance of PC's to select for outlier detection}
 
@@ -33,14 +35,25 @@ find_outliers_pca(
 
 \item{pc.n}{The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max}
 
-\item{method}{Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score or 'mod.z' for modified zscore}
+\item{method}{Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.}
 
 \item{return.pcs}{Should the grouped PC's be returned?}
 
 \item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
+
+\item{features}{Features to include in PCA. By default uses all (NULL)}
+
+\item{padj.method}{Adjustment to apply to outlier pvalues. Any accepted by \code{\link[stats:p.adjust]{stats::p.adjust()}}}
 }
 \value{
-Logical indicating if object is an outlier in pca space, or a list if return.pcs=TRUE
+A list with:
+\itemize{
+\item outliers: Boolean indicating outlier status
+\item dist: Distance metric, in case of 'z' or 'mod.z' the number of components that the object is an outlier in
+\item df: Degrees of freedom for chi-sqr (number of PC's used)
+\item pval: Pvalue of chiqr test of dist in case method='mahalanobis'
+\item pcs: In case return.pcs is true, a list of pca object with the pc's for each qc.group
+}
 }
 \description{
 Find outliers in the PCA space of a TglowAssay. Works for both
@@ -55,7 +68,20 @@ This does not use existing dimension reductions to avoid issues when running wit
 NA values are removed on a column basis and a warning message is raised. If you want
 to handle them differenlty, could make a new assay where the NA's are handled manually
 
+'pc.thresh', 'pc.max', 'pc.n'
 By default, estimates the 0.25 * ncol(assay) PC's assuming this is enough PC's to get to 75\%. If this is
 not enough a warning is raised, and you can provide pc.max to override this behaviour or set use_irlba
 to FALSE to compute all components using \code{\link[=prcomp]{prcomp()}}
+
+'method'
+When method 'z' or 'mod.z' PC's for a qc.group are scaled by either z-score or modified z-score respectively, and if a cell is an outlier in
+any PC it is considered an overall outlier.
+
+When method is 'mahalanobis' an "approximate mahalanobis distance" is calculated.  The pc's passing pc.thresh are taken and the Euclidian distance
+from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
+Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
+
+Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
+records FDR < 0.05 considered outliers. If the \code{thresh} parameter is supplied, it applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
+Note, the pvalue adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
 }

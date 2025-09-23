@@ -30,7 +30,7 @@ calculate_clustering(
 
 \item{exact.nn}{Instead of using Seurat ANNOY for kNN use \code{\link[=nn2]{RANN::nn2()}}}
 
-\item{col.out}{Prefix for column name to store the clustering under added to the meta slot on the output object}
+\item{col.out}{Prefix for column name to store the clustering under added to the meta slot on the output object. <col.out>\emph{res}\if{html}{\out{<res>}}}
 }
 \value{
 The \linkS4class{TglowDataset} with clusters added to meta slot and the graph

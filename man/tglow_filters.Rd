@@ -14,6 +14,10 @@
 \alias{filter_agg_zero_var_multicol}
 \alias{filter_agg_coef_var}
 \alias{filter_agg_coef_var_multicol}
+\alias{filter_agg_skewness}
+\alias{filter_agg_skewness_multicol}
+\alias{filter_agg_kurtosis}
+\alias{filter_agg_kurtosis_multicol}
 \alias{filter_agg_unique_val}
 \alias{filter_agg_unique_val_multicol}
 \alias{filter_agg_inf_median}
@@ -50,6 +54,14 @@ filter_agg_zero_var_multicol(...)
 filter_agg_coef_var(vec, thresh)
 
 filter_agg_coef_var_multicol(...)
+
+filter_agg_skewness(vec, thresh)
+
+filter_agg_skewness_multicol(...)
+
+filter_agg_kurtosis(vec, thresh)
+
+filter_agg_kurtosis_multicol(...)
 
 filter_agg_unique_val(vec, thresh = NULL)
 

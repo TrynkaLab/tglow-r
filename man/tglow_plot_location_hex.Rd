@@ -5,12 +5,12 @@
 \title{Plot a hexbin colored on a 3rd variable}
 \usage{
 tglow_plot_location_hex(
-  dataset,
+  object,
   assay,
   slot,
-  feature.z,
-  feature.x = "nucl_AreaShape_Center_X",
-  feature.y = "nucl_AreaShape_Center_Y",
+  feature.c,
+  feature.x = NULL,
+  feature.y = NULL,
   xlab = "X centroid",
   ylab = "Y centroid",
   zlab = "Z",
@@ -20,15 +20,27 @@ tglow_plot_location_hex(
   scale.z = F,
   trim.outliers.z = F,
   trim.outliers.z.thresh = 3.5,
-  bins.mincount = 0
+  bins.mincount = 10,
+  log2 = F,
+  limits = NULL,
+  func = base::mean,
+  side.profile = FALSE,
+  side.linecol = "black",
+  side.lwd = 1,
+  side.lty = 2,
+  ...
 )
 }
 \arguments{
-\item{dataset}{A \linkS4class{TglowDataset}}
+\item{object}{A \linkS4class{TglowDataset}}
 
 \item{assay}{The assay to use}
 
 \item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+
+\item{feature.x}{\linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)}
+
+\item{feature.y}{\linkS4class{TglowFeatureLocation} describing the y feature or NULL (takes it from datasets@feature.map)}
 
 \item{xlab}{xlab}
 
@@ -49,6 +61,20 @@ tglow_plot_location_hex(
 \item{trim.outliers.z.thresh}{Modified z-score hreshold to consider an outlier}
 
 \item{bins.mincount}{Minimum number of objects in a bin to render it}
+
+\item{log2}{Log2 transform the feature prior to all other steps.}
+
+\item{limits}{Limits for the color scale}
+
+\item{func}{Aggregation function. Reccomend \code{\link[base:mean]{base::mean()}}, \code{\link[stats:median]{stats::median()}} or \code{\link[base:sum]{base::sum()}}}
+
+\item{side.profile}{Return two plots of X and Y postion vs feature.c instead of the color view}
+
+\item{side.linecol}{Linecolor of horizontal line in the sideview. Set to NULL to not draw the line.}
+
+\item{...}{Paramaters passed to \code{\link[=plot_hex]{plot_hex()}} when side.profile=T}
+
+\item{feature.z}{feature to aggregate and color on,}
 }
 \value{
 A ggplot2 object

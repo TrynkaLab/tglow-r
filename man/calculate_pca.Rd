@@ -12,6 +12,7 @@ calculate_pca(
   reduction.name = NULL,
   ret.prcomp = FALSE,
   use_irlba = FALSE,
+  recenter = FALSE,
   rescale = FALSE
 )
 }
@@ -29,6 +30,8 @@ calculate_pca(
 \item{ret.prcomp}{Instead of returning just the PCs and variances, return the whole prcomp object}
 
 \item{use_irlba}{Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA}
+
+\item{recenter}{Logical if matrix will be recentered. This is advisable if using modified z-score}
 
 \item{rescale}{Logical if matrix will be rescaled. This is advisable if using modified z-score}
 }

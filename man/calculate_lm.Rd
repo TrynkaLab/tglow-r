@@ -27,7 +27,7 @@ calculate_lm(
 
 \item{covariates}{Character vector of independent variables to use in the model}
 
-\item{formula}{The formula to use for regression. Defaults to additive model. See details}
+\item{formula}{The formula to use for regression, string or formula. Defaults to additive model. See details}
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 

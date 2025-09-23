@@ -17,6 +17,7 @@ read_cellprofiler_fileset_b(
   pat.others = "^.*_([a-zA-Z]+\\\\d*).txt$",
   na.rm = F,
   skip.orl = F,
+  skip.children = NULL,
   verbose = F,
   fileset.id = NULL
 )
@@ -43,6 +44,8 @@ read_cellprofiler_fileset_b(
 \item{na.rm}{Should NA's be removed when applying merging.strategy}
 
 \item{skip.orl}{Should object relationships be read (not used, can be quite large)}
+
+\item{skip.children}{List of child object names to skip during reading.}
 
 \item{verbose}{Should I be chatty?}
 

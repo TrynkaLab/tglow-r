@@ -26,6 +26,8 @@ tglow_dimplot(
 )
 }
 \arguments{
+\item{object}{A \linkS4class{TglowDataset}}
+
 \item{reduction}{A name of a reduction on dataset.}
 
 \item{ident}{The item to use for coloring points, passed to \code{\link{getDataByObject}}}
@@ -59,8 +61,6 @@ tglow_dimplot(
 \item{labs.bgcol}{Color of the background behind the text}
 
 \item{...}{Remaining arguments passed to \code{\link{plot_xy}}}
-
-\item{dataset}{A \linkS4class{TglowDataset}}
 }
 \description{
 Plot a reduction on a \linkS4class{TglowDataset}

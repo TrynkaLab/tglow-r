@@ -10,11 +10,13 @@ correct_lm_per_featuregroup(
   slot,
   covariates.group,
   slot.covar = NULL,
+  assay.covar = NULL,
   assay.image = NULL,
   assay.out = NULL,
   grouping = NULL,
   covariates.dont.use = NULL,
-  rescale.group = FALSE
+  rescale.group = FALSE,
+  na.rm = F
 )
 }
 \arguments{
@@ -28,6 +30,8 @@ correct_lm_per_featuregroup(
 
 \item{slot.covar}{The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot}
 
+\item{assay.covar}{The assay to grab covariates from. Defaults to assay argument}
+
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
 \item{assay.out}{Name of the output assay. Defaults to \if{html}{\out{<assay>}}.lm.corrected}
@@ -37,6 +41,8 @@ correct_lm_per_featuregroup(
 \item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
 
 \item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
+
+\item{na.rm}{Remove NA's from the design matrix prior to regressing (does not remove NAs in the response)}
 }
 \value{
 The \linkS4class{TglowDataset} with a corrected assay

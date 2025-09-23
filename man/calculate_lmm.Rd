@@ -59,4 +59,5 @@ Runs seperate regressions per group in the indicated grouping variable. length(g
 Should be a string interpretable by \code{\link[stats:formula]{stats::formula()}} and \code{\link[lmerTest:lmer]{lmerTest::lmer()}} but should NOT
 have response in the forumla. E.g. when regressing \code{y ~ x + (1|donor)} forumula should be \code{~ x + (1|donor)}
 Defaults to a regular additive linear model.
+To specify derrived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
 }

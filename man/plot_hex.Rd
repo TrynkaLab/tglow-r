@@ -8,6 +8,7 @@ plot_hex(
   x,
   y,
   bins = 50,
+  binwidth = NULL,
   do.lm = T,
   lm.col = "lightgrey",
   xlab = "x",

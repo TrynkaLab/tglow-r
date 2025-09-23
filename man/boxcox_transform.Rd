@@ -7,16 +7,20 @@
 boxcox_transform(
   x,
   return.lambda = FALSE,
+  mode = "boxcox",
   limit = 5,
-  fudge = 0.1,
+  fudge = 0.2,
   downsample = NULL,
-  add.lambda = FALSE
+  add.lambda = FALSE,
+  filter.iqr = FALSE
 )
 }
 \arguments{
 \item{x}{A numeric vector with values to transform}
 
 \item{return.lambda}{return the lambda value instead}
+
+\item{mode}{Either 'boxcox' or 'modulus', see details}
 
 \item{limit}{The absolute value of lambda's to test}
 
@@ -25,6 +29,8 @@ boxcox_transform(
 \item{downsample}{Calculate labmda's on a random sample of the data. Either NULL (no downsampling), an integer (selects x values), or a selection vector}
 
 \item{add.lambda}{Return a list with two items instead, one transformed x, two, the lamda used}
+
+\item{filter.iqr}{Should values outside the 2xIQR be removed prior to estimating lambda}
 }
 \value{
 A numeric vector with the boxcox transformed data or the optimal lambda value
@@ -32,4 +38,8 @@ A numeric vector with the boxcox transformed data or the optimal lambda value
 \description{
 Transform a vector using boxcox transform
 If value is not positive it is offset to make everything positive
+}
+\details{
+In mode boxcox \code{\link[MASS:boxcox]{MASS::boxcox()}} is fit on the offset values if there are any values < 0. Values are made positive by adding the min absolute value
+In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See \code{\link[=modulus_transform]{modulus_transform()}}
 }

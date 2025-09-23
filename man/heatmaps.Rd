@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotting.r
 \name{plot_simple_hm}
 \alias{plot_simple_hm}
+\alias{plot_plate}
 \title{Simple heatmap with auto labels}
 \usage{
 plot_simple_hm(
@@ -14,8 +15,11 @@ plot_simple_hm(
   range = "symmetric",
   palette = NULL,
   border = NA,
+  silent = T,
   ...
 )
+
+plot_plate(...)
 }
 \arguments{
 \item{data}{A matrix}
@@ -43,4 +47,6 @@ The pheatmap plot
 }
 \description{
 Simple heatmap with auto labels
+
+Plate level heatmap
 }

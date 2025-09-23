@@ -13,6 +13,7 @@ read_cellprofiler_dir(
   verbose = F,
   col.object = "cell_ObjectNumber_Global",
   col.meta.img.id = "ImageNumber_Global",
+  max.per.well = NULL,
   ...
 )
 }
@@ -34,6 +35,8 @@ for type A}
 \item{col.object}{The collumn name in the features which contains the per object object identifier. See details}
 
 \item{col.meta.img.id}{The collumn name in the image level data which contains the image id. See details}
+
+\item{max.per.well}{Maximumn number of objects in a well to consider. Set to NULL to ignore}
 
 \item{...}{Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}}
 }

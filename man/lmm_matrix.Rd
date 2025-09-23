@@ -20,9 +20,9 @@ lmm_matrix(
 
 \item{design}{The matrix with predictor variables}
 
-\item{formula}{The latter component of the formula. I.e. \code{~ x + (1|donor)}}
+\item{formula}{The latter component of the formula as a string. I.e. \code{~ x + (1|donor)}}
 
-\item{formula.null}{The null formula for a LRT. The latter component of the formula. I.e. \code{~ x + (1|donor)}}
+\item{formula.null}{The null formula for a LRT as a string. The latter component of the formula. I.e. \code{~ x + (1|donor)}}
 
 \item{residuals.only}{Only return the residual matrix}
 

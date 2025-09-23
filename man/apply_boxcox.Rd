@@ -11,7 +11,7 @@ apply_boxcox(
   trim = TRUE,
   slot = "data",
   verbose = TRUE,
-  rfast.zerotol = 1e-10,
+  filter.iqr = F,
   ...
 )
 }
@@ -28,7 +28,7 @@ apply_boxcox(
 
 \item{verbose}{Raise a warning if columns are trimmed}
 
-\item{rfast.zerotol}{threshold to consider variances zero in Rfast. See details}
+\item{filter.iqr}{Remove values outside +- 2x IQR to reduce impact of outliers}
 
 \item{...}{Arguments passed to \code{\link{boxcox_transform}}}
 }
@@ -40,9 +40,5 @@ Transform a assay using boxcox transform. If assay="image.data", result is store
 Lambda values are added to the features data.frame: 0=log, 1=no transformation
 }
 \details{
-\code{rfast.zerotol}
-NOTE: Currently NOT using \code{\link{Rfast::colVars()}} as there are inconsistencies with \code{\link{matrixStats::colVars()}}
-Rfast's does not return zero variances, so we have to set some minial value to consider as 0
-https://github.com/RfastOfficial/Rfast/issues/62
-https://github.com/RfastOfficial/Rfast/issues/115
+Calls boxcox_transform on an assay, please read  \code{\link{boxcox_transform}} for more relvant details and options
 }

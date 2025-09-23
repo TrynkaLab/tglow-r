@@ -12,7 +12,8 @@ plot_hist_dens_grouped(
   bins = 100,
   facet = NULL,
   facet.ncol = NULL,
-  density = FALSE
+  density = FALSE,
+  add.median = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ plot_hist_dens_grouped(
 \item{facet.ncol}{Number of columns in facet}
 
 \item{density}{Plot as a density plot instead}
+
+\item{add.median}{Add a vline for median}
 }
 \value{
 A ggplot2 object

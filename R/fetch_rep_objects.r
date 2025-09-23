@@ -55,6 +55,12 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 
   if (n > 0) {
     out <- (out - n):(out + n)
+    
+    if (sum(out <= 0) > 0 ) {
+      out[out <=0] <- max(out):((max(out)+sum(out <=0))-1)
+      warning("Ties detected leading to negative indices. Returning the closet as per base::sort() tie breaking")
+    }
+    #out <- out[out > 0 & out <= length(out)]
   }
 
   return(i[out])
