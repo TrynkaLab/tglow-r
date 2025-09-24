@@ -181,5 +181,61 @@ img_max_project <- function(img) {
 }
 
 
+#-------------------------------------------------------------------------------
+#' Pad an array by zero-padding the first two dimensions with centering
+#'
+#' This function takes an input array or matrix of any number of dimensions and
+#' pads or crops it along the first two dimensions to a specified target size.
+#' The input is centered in the output array, and zeros are used for padding.
+#' Dimensions beyond the first two are preserved.
+#' If the input is larger than the target size, it is cropped accordingly.
+#'
+#' @param input An array or matrix of any dimensionality.
+#' @param target.rows Integer. The desired number of rows in the output (first dimension).
+#' @param target.cols Integer. The desired number of columns in the output (second dimension).
+#'
+#' @return An array with the first two dimensions padded or cropped to the target size,
+#'   with the input array centered. Other dimensions remain the same as the input.
+#'
+#' @examples
+#' input <- array(1, dim = c(5, 5, 3))
+#' padded <- pad_center_nd(input, 10, 10)
+#' dim(padded)  # 10 10 3
+#' print(padded[,,1])  # Shows the first 2D slice padded and centered
+#'
+#' @export
+img_pad_center <- function(input, target.rows, target.cols) {
+  input_dims <- dim(input)
+  other_dims <- if(length(input_dims) > 2) input_dims[3:length(input_dims)] else NULL
+  
+  if (is.null(other_dims)) {
+    output_array <- array(0, dim = c(target.rows, target.cols))
+  } else {
+    output_array <- array(0, dim = c(target.rows, target.cols, other_dims))
+  }
+  
+  start_row <- max(1, floor((target.rows - input_dims[1]) / 2) + 1)
+  start_col <- max(1, floor((target.cols - input_dims[2]) / 2) + 1)
+  end_row <- min(target.rows, start_row + input_dims[1] - 1)
+  end_col <- min(target.cols, start_col + input_dims[2] - 1)
+  
+  input_start_row <- max(1, 1 + (1 - start_row))
+  input_start_col <- max(1, 1 + (1 - start_col))
+  input_end_row <- input_start_row + (end_row - start_row)
+  input_end_col <- input_start_col + (end_col - start_col)
+  
+  idx_out <- list(start_row:end_row, start_col:end_col)
+  idx_in <- list(input_start_row:input_end_row, input_start_col:input_end_col)
+  if (!is.null(other_dims)) {
+    for (i in seq_along(other_dims)) {
+      idx_out[[2 + i]] <- 1:other_dims[i]
+      idx_in[[2 + i]] <- 1:other_dims[i]
+    }
+  }
+  
+  output_array <- do.call(`[<-`, c(list(output_array), idx_out,
+                                   list(value = do.call(`[`, c(list(input), idx_in)))))
+  
+  return(output_array)
+}
 
-    

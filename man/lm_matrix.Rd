@@ -11,7 +11,8 @@ lm_matrix(
   residuals.only = FALSE,
   return.residuals = FALSE,
   keep.zerocol = FALSE,
-  eigen.tol = 1e-08
+  eigen.tol = 1e-08,
+  calculate_ll = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ lm_matrix(
 \item{keep.zerocol}{Keep columns in design matrix that sum to zero}
 
 \item{eigen.tol}{Minimal eigenvalue to keep columns in the design matrix}
+
+\item{calculate_ll}{calculate the log likelihood of the model}
 }
 \value{
 A list with regression results

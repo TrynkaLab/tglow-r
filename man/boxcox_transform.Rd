@@ -41,5 +41,5 @@ If value is not positive it is offset to make everything positive
 }
 \details{
 In mode boxcox \code{\link[MASS:boxcox]{MASS::boxcox()}} is fit on the offset values if there are any values < 0. Values are made positive by adding the min absolute value
-In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See \code{\link[=modulus_transform]{modulus_transform()}}
+In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See \code{\link[=modulus]{modulus()}}
 }

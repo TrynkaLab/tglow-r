@@ -609,6 +609,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param keep.zerocol Keep columns in design matrix that sum to zero
 #' @param eigen.tol Minimal eigenvalue to keep columns in the design matrix
+#' @param calculate_ll calculate the log likelihood of the model
 #'
 #' @details
 #' This is more efficient as the b component of the design matrix can be re-used between regressions
@@ -623,7 +624,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol = 1e-8) {
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol = 1e-8, calculate_ll=TRUE) {
     if (residuals.only && !return.residuals) {
         return.residuals <- TRUE
     }
@@ -664,13 +665,13 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
     if (!residuals.only) {
         coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
         se <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
-        model.stats <- matrix(NA, nrow = ncol(response), 5)
+        model.stats <- matrix(NA, nrow = ncol(response), ncol=8)
         rownames(coef) <- colnames(response)
         colnames(coef) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
         rownames(se) <- colnames(response)
         colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
         rownames(model.stats) <- colnames(response)
-        colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df")
+        colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df", "rss", "tss", "ll")
         mse.vec <- rep(NA, ncol(response))
         names(mse.vec) <- colnames(response)
 
@@ -711,7 +712,9 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
             beta.tmp <- beta[!colnames(design) %in% covariates.dont.use, ]
             design.tmp <- design[, !colnames(design) %in% covariates.dont.use]
         }
-        rs <- response[, col] - (design.tmp %*% beta.tmp)
+        
+        ypred <- (design.tmp %*% beta.tmp)
+        rs <- response[, col] - ypred
 
         # Optionally save residuals
         if (return.residuals) {
@@ -745,7 +748,14 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
             f.stat <- msr / mse
             p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
 
-            model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df)
+            # Calculate ll
+            if (calculate_ll) {
+                ll <- sum(dnorm(response[, col], mean = ypred, sd = sd(rs), log = TRUE))
+            } else {
+                ll <- NA
+            }
+
+            model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df, rss, tss, ll)
         }
     }
 

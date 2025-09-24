@@ -103,7 +103,7 @@ mode <- function(x, na.rm=TRUE) {
 #' @description
 #' Calculate the mean, median, mode, skewness, kurtosus, geometric mean, min, max
 #' Removes NA's for each feature individually.
-#' Stats are put on the assay@features slot under the name <slot>_<stat>
+#' Stats are put on the assay@features slot under the name 'slot'_'stat'
 #' 
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use

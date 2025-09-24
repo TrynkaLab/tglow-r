@@ -37,6 +37,7 @@ TglowMatrix <- function(matrix) {
 #' running PCA's etc, so overriding with non-scaled data may change your results.
 #'
 #' @returns A populated TglowDataset
+#' @rdname tglow_constructor
 #' @export
 TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = NULL, image.meta = NULL, assay.out = "raw") {
   if (!check_dimnames(objects)) {
@@ -76,6 +77,49 @@ TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = N
 
   return(dataset)
 }
+
+#' @rdname tglow_constructor
+#' @export
+TglowDatasetFromObjectMatrix <- function(objects, object.meta=NULL, assay.out="raw") {
+  if (!check_dimnames(objects)) {
+    stop("row and colnames on objects cannot be NULL")
+  }
+  
+  if (!is.null(object.meta)) {
+    if (!check_dimnames(object.meta)) {
+      stop("row and colnames on objects cannot be NULL")
+    }
+  }
+  dataset <- new("TglowDataset")
+  dataset@assays[[assay.out]] <- TglowAssayFromMatrix(objects)
+  
+  tmp <- matrix(as.numeric(NA), nrow=1, ncol=1)
+  rownames(tmp) <- "img_dummy"
+  colnames(tmp) <- "dummy"
+  dataset@image.data <- TglowAssayFromMatrix(tmp)
+  
+  dataset@object.ids <- rownames(objects)
+  names(dataset@object.ids) <- dataset@object.ids
+
+  dataset@image.ids <- rep("img_dummy", nrow(objects))
+  names(dataset@image.ids) <- dataset@object.ids
+  
+  if (is.null(object.meta)) {
+    dataset@meta <- data.frame(id = rownames(objects), image_id = dataset@image.ids, row.names = rownames(objects))
+  } else {
+    dataset@meta <- object.meta
+  }
+  
+  
+  dataset@image.meta <- data.frame(id = "img_dummy", row.names = "img_dummy")
+  
+  if (!tglowr::isValid(dataset)) {
+    warning("Dataset did not pass checks in isValid, returning anyway")
+  }
+  
+  return(dataset)
+}
+
 
 #-------------------------------------------------------------------------------
 #' Create a new TglowDataset

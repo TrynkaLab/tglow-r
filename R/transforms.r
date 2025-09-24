@@ -164,9 +164,9 @@ modul_std <- function(y, lambda) {
   u <- abs(y) + 1L
   lambda_absolute <- abs(lambda)
   if (lambda_absolute <= 1e-12) {  #case lambda=0
-    zt <-  sign(y) * log(u) * geometric.mean(u) 
+    zt <-  sign(y) * log(u) * geometric_mean(u) 
   } else {
-    zt <- sign(y)*(u^lambda - 1L)/lambda * (1/geometric.mean(u)^(lambda - 1))
+    zt <- sign(y)*(u^lambda - 1L)/lambda * (1/geometric_mean(u)^(lambda - 1))
   }
   y <- zt
   
@@ -289,7 +289,7 @@ modulus <- function(object, lambda = seq(-2, 2, 1/10), plotit =  TRUE,
 #' 
 #' @details 
 #' In mode boxcox [MASS::boxcox()] is fit on the offset values if there are any values < 0. Values are made positive by adding the min absolute value
-#' In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See [modulus_transform()]
+#' In mode modulus the modulus transform is applied instead, which is a generalization of boxcox. See [modulus()]
 #' 
 #' @export
 boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5, fudge = 0.2, downsample = NULL, add.lambda = FALSE, filter.iqr=FALSE) {
@@ -336,7 +336,7 @@ boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5,
         # Use modulus transform instrad
         bc <- modulus(y ~ 1, plotit = F, lambda = seq(-limit, limit, 1 / 10), interp=F) # don't plot lambda outcome
     } else {
-        stop(paste0(mode, " is not a valid mode, bust be boxcox or"))
+        stop(paste0(mode, " is not a valid mode, bust be boxcox or modulus"))
     }
 
     lambda <- bc$x[which.max(bc$y)]
@@ -569,8 +569,8 @@ scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
 #'
 #' @param assay \linkS4class{TglowAssay}
 #' @param slot The slot on assay to draw from. Should be 'data' in most cases.
-#' @param min The minimal value for each feature
-#' @param max The maximum value for each feature
+#' @param min The minimal value for each feature in output
+#' @param max The maximum value for each feature in output
 #' @param scale.by.var Multiply the result by the orignal variance
 #' @param scaling.factors Vector of scaling factors per feature
 #'

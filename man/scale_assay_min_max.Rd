@@ -18,9 +18,9 @@ scale_assay_min_max(
 
 \item{slot}{The slot on assay to draw from. Should be 'data' in most cases.}
 
-\item{min}{The minimal value for each feature}
+\item{min}{The minimal value for each feature in output}
 
-\item{max}{The maximum value for each feature}
+\item{max}{The maximum value for each feature in output}
 
 \item{scale.by.var}{Multiply the result by the orignal variance}
 

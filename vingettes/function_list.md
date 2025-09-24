@@ -6,6 +6,7 @@
 * TglowAssayFromMatrix
 * TglowDatasetFromList
 * TglowDatasetFromMatrices
+* TglowDatasetFromObjectMatrix
 * TglowFeatureLocation
 * TglowFeatureMap
 * TglowMatrix
@@ -30,6 +31,9 @@
 * calculate_umap
 * correct_lm
 * correct_lm_per_featuregroup
+* depr_tglow_build_img_index
+* depr_tglow_read_imgs
+* depr_tglow_read_imgs_aics
 * effective_dimensionality
 * fast_colscale
 * fetch_representative_object
@@ -74,6 +78,7 @@
 * img_max_per_channel
 * img_max_project
 * img_norm
+* img_pad_center
 * isAvailable
 * isValid
 * kurtosis
@@ -109,13 +114,11 @@
 * scale_assay_min_max
 * scale_dataset
 * skewness
-* tglow_build_img_index
 * tglow_dimplot
 * tglow_filters_from_table
 * tglow_plot_execution_time
 * tglow_plot_location_hex
 * tglow_read_binmat
 * tglow_read_imgs
-* tglow_read_imgs_aics
 * theme_plain
 * well_to_index

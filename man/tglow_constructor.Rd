@@ -2,6 +2,7 @@
 % Please edit documentation in R/constructors.r
 \name{TglowDatasetFromMatrices}
 \alias{TglowDatasetFromMatrices}
+\alias{TglowDatasetFromObjectMatrix}
 \title{Create a new TglowDataset}
 \usage{
 TglowDatasetFromMatrices(
@@ -12,6 +13,8 @@ TglowDatasetFromMatrices(
   image.meta = NULL,
   assay.out = "raw"
 )
+
+TglowDatasetFromObjectMatrix(objects, object.meta = NULL, assay.out = "raw")
 }
 \arguments{
 \item{objects}{The object level data matrix, must be a matrix, and be numeric}

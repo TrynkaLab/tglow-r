@@ -19,5 +19,5 @@ The \linkS4class{TglowDataset}
 \description{
 Calculate the mean, median, mode, skewness, kurtosus, geometric mean, min, max
 Removes NA's for each feature individually.
-Stats are put on the assay@features slot under the name \if{html}{\out{<slot>}}_\if{html}{\out{<stat>}}
+Stats are put on the assay@features slot under the name 'slot'_'stat'
 }

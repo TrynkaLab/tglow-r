@@ -339,7 +339,7 @@ new_96_plate <- function() {
 well_to_index <- function(well) {
   row_index <- match(substr(well, 1, 1), LETTERS)
   col_index <- as.numeric(substr(well, 2, 3))
-  return(list(row = row_index, col = col_index))
+  return(list(row = row_index, col = col_index, row_letter=substr(well, 1, 1)))
 }
 
 
