@@ -132,7 +132,7 @@ aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm
     rownames(result) <- result[, 1]
 
     if (drop.na.col) {
-        result <- result[, colSums(is.na(result)) != nrow(result)]
+        result <- result[, colSums(is.na(result)) != nrow(result),drop=F]
     }
 
     if (!is.null(group.order)) {
