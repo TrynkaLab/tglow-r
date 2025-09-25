@@ -86,8 +86,9 @@ setMethod(
 setMethod(
   "[",
   "TglowAssay",
-  function(x, i, j, drop = F, na.check = T) {
+  function(x, i, j, na.check = T, ..., drop = F) {
     object <- x
+ 
 
     if (is.null(object@data)) {
       return(object)

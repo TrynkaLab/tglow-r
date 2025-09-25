@@ -2,7 +2,7 @@
 setMethod(
   "[",
   "TglowReduction",
-  function(x, i, j, drop = F, na.check = T) {
+  function(x, i, j, na.check = T, ..., drop = F) {
     
     if (!missing(i) && na.check) {
       if (sum(is.na(i)) != 0 ) {

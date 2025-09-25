@@ -32,49 +32,40 @@ setClassUnion(name = "TglowAssayOrNull", members = c("TglowAssay", "NULL"))
 
 
 #-------------------------------------------------------------------------------
-#' TglowDataset
+#' TglowFeatureMap
 #'
-#' @description
-#' Object to store HCI features along side object (cell) and image level metadata
-#' Matrices are assumed to have row and column names set in the constructor function
-#' This is important for downstream functionality
-#'
-#' @slot assays List of TglowAssays containing the data
-#' @slot meta Data frame containing object (cell) level metadata
-#' @slot object.ids Vector containing object (cell) level identifiers
-#' @slot image.meta Image level metadata
-#' @slot image.data TglowAssay object with image level features
-#' @slot image.data.trans TglowAssay object with image level features after transformation
-#' @slot image.data.norm TglowAssay object with image level features after transformation and normalization
-#' @slot image.ids Vector of length objects with corresponding image ids
-#' @slot reduction List to store PCA/UMAP embeddings
-#' @slot graph Slot to store kNN/AkNN graph
-#' @slot active.assay The default assay to analyze. Not all functions may respect this
-#'
-#' @exportMethod nrow
-setClass("TglowDataset",
-    slots = list(
-        assays = "list",
-        meta = "data.frame",
-        object.ids = "character",
-        image.meta = "data.frame",
-        image.data = "TglowAssay",
-        image.data.trans = "TglowAssayOrNull",
-        image.data.norm = "TglowAssayOrNull",
-        image.ids = "character",
-        reduction = "list",
-        graph = "ANY",
-        active.assay = "character",
-        feature.map="TglowFeatureMapOrNull"
-    ),
-    prototype = list(
-        reduction = list(),
-        graph = NULL,
-        image.data.trans = NULL,
-        image.data.norm = NULL,
-        feature.map=NULL
+#' @slot feature Character with the feature position
+#' @slot assay to grab feature from, or NULL if metadata feature
+#' @slot slot to grab feature from, or NULL if metadata feature
+setClass("TglowFeatureLocation",
+    slots = list (
+        feature = "character",
+        assay = "CharacterOrNull",
+        slot = "CharacterOrNull"
     )
 )
+setClassUnion(name = "TglowFeatureLocationOrNull", members = c("TglowFeatureLocation", "NULL"))
+
+#-------------------------------------------------------------------------------
+#' TglowFeatureMap
+#'
+#' @slot feature.x Feature describing object X
+#' @slot feature.y Feature describing object Y
+#' @slot feature.z Feature describing object Z
+#' @slot feature.well Feature describing well position
+#' @slot feature.plate Feature describing plate
+#' @slot feature.field Feature describing field
+setClass("TglowFeatureMap",
+    slots = list(
+        x = "TglowFeatureLocation",
+        y = "TglowFeatureLocation",
+        z = "TglowFeatureLocation",
+        well = "TglowFeatureLocation",
+        plate = "TglowFeatureLocation",
+        field = "TglowFeatureLocation"
+    )
+)
+setClassUnion(name = "TglowFeatureMapOrNull", members = c("TglowFeatureMap", "NULL"))
 
 #-------------------------------------------------------------------------------
 #' TglowFilter
@@ -124,38 +115,46 @@ setClass("TglowReduction",
 
 
 #-------------------------------------------------------------------------------
-#' TglowFeatureMap
+#' TglowDataset
 #'
-#' @slot feature.x Feature describing object X
-#' @slot feature.y Feature describing object Y
-#' @slot feature.z Feature describing object Z
-#' @slot feature.well Feature describing well position
-#' @slot feature.plate Feature describing plate
-#' @slot feature.field Feature describing field
-setClass("TglowFeatureMap",
+#' @description
+#' Object to store HCI features along side object (cell) and image level metadata
+#' Matrices are assumed to have row and column names set in the constructor function
+#' This is important for downstream functionality
+#'
+#' @slot assays List of TglowAssays containing the data
+#' @slot meta Data frame containing object (cell) level metadata
+#' @slot object.ids Vector containing object (cell) level identifiers
+#' @slot image.meta Image level metadata
+#' @slot image.data TglowAssay object with image level features
+#' @slot image.data.trans TglowAssay object with image level features after transformation
+#' @slot image.data.norm TglowAssay object with image level features after transformation and normalization
+#' @slot image.ids Vector of length objects with corresponding image ids
+#' @slot reduction List to store PCA/UMAP embeddings
+#' @slot graph Slot to store kNN/AkNN graph
+#' @slot active.assay The default assay to analyze. Not all functions may respect this
+#'
+#' @exportMethod nrow
+setClass("TglowDataset",
     slots = list(
-        x = "TglowFeatureLocation",
-        y = "TglowFeatureLocation",
-        z = "TglowFeatureLocation",
-        well = "TglowFeatureLocation",
-        plate = "TglowFeatureLocation",
-        field = "TglowFeatureLocation"
+        assays = "list",
+        meta = "data.frame",
+        object.ids = "character",
+        image.meta = "data.frame",
+        image.data = "TglowAssay",
+        image.data.trans = "TglowAssayOrNull",
+        image.data.norm = "TglowAssayOrNull",
+        image.ids = "character",
+        reduction = "list",
+        graph = "ANY",
+        active.assay = "character",
+        feature.map="TglowFeatureMapOrNull"
+    ),
+    prototype = list(
+        reduction = list(),
+        graph = NULL,
+        image.data.trans = NULL,
+        image.data.norm = NULL,
+        feature.map=NULL
     )
 )
-setClassUnion(name = "TglowFeatureMapOrNull", members = c("TglowFeatureMap", "NULL"))
-
-
-#-------------------------------------------------------------------------------
-#' TglowFeatureMap
-#'
-#' @slot feature Character with the feature position
-#' @slot assay to grab feature from, or NULL if metadata feature
-#' @slot slot to grab feature from, or NULL if metadata feature
-setClass("TglowFeatureLocation",
-    slots = list (
-        feature = "character",
-        assay = "CharacterOrNull",
-        slot = "CharacterOrNull"
-    )
-)
-setClassUnion(name = "TglowFeatureLocationOrNull", members = c("TglowFeatureLocation", "NULL"))
