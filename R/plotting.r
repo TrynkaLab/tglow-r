@@ -508,7 +508,6 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
 #'
 #' @returns A ggplot2 object
 #' @importFrom stats cor.test
-#' @importFrom ggrastr rasterize
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab annotation_raster geom_point coord_fixed geom_smooth geom_abline facet_wrap xlim ylim
 #' @export
 plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", size = 1, col = "black", fixed = F, alpha = 0.75, shape = 16, lm.col = "blue", do.lm = T, method = "lm", lm.group = NULL, raster = F, dpi = 300, facet = NULL, facet.ncol = NULL) {
@@ -541,7 +540,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
     if (length(shape) > 1 && length(col > 1)) {
         if (raster) {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y, col = col, shape = shape)) +
-                rasterize(geom_point(alpha = alpha, size = size), dpi = dpi)
+                ggrastr::rasterize(geom_point(alpha = alpha, size = size), dpi = dpi)
         } else {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y, col = col, shape = shape)) +
                 geom_point(alpha = alpha, size = size)
@@ -549,7 +548,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
     } else if (length(col) > 1) {
         if (raster) {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y, col = col)) +
-                rasterize(geom_point(alpha = alpha, shape = shape, size = size), dpi = dpi)
+                ggrastr::rasterize(geom_point(alpha = alpha, shape = shape, size = size), dpi = dpi)
         } else {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y, col = col)) +
                 geom_point(alpha = alpha, shape = shape, size = size)
@@ -557,7 +556,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
     } else {
         if (raster) {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y)) +
-                rasterize(geom_point(alpha = alpha, color = col, shape = shape, size = size), dpi = dpi)
+                ggrastr::rasterize(geom_point(alpha = alpha, color = col, shape = shape, size = size), dpi = dpi)
         } else {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y)) +
                 geom_point(alpha = alpha, color = col, shape = shape, size = size)
