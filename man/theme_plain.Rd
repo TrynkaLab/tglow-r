@@ -4,7 +4,7 @@
 \alias{theme_plain}
 \title{Simple plotting theme wrapper for ggplot objects}
 \usage{
-theme_plain(p, base_size = 11, base_family = "ArialMT", legend = TRUE)
+theme_plain(p, base_size = 11, base_family = "sans", legend = TRUE)
 }
 \arguments{
 \item{p}{A ggplot object}

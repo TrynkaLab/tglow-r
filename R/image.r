@@ -239,3 +239,33 @@ img_pad_center <- function(input, target.rows, target.cols) {
   return(output_array)
 }
 
+
+#' Convert a matrix to a base64 text PNG
+#' Takes a 2d (greyscale) or 3d (RGB) matrix and converts it to a base64 encoded png
+#' 
+#' @param mat A 2d or 3d matrix
+#' @param add.html Should a HTML tag be added
+#' @param width If add.html, what should the width be of the <img> tag
+#' 
+#' @returns a base64 encoded version of the image, or HTML <img> tag with the data
+#' @export
+img_to_base64png <- function(mat, add.html=F, width=250) {
+  check_package("png")
+  check_package("base64enc")
+  
+  raw_conn <- base::rawConnection(raw(0), "wb")
+  png::writePNG(mat, raw_conn)
+  
+  img_data <- base::rawConnectionValue(raw_conn)
+  base::close(raw_conn)
+  
+  # Convert the binary data to base64
+  txt <- base64enc::base64encode(img_data)
+  
+  if (add.html) {
+    txt <- paste0("<img src='data:image/png;base64,", txt, "' width='",width,"/>")
+  }
+  
+  return(txt)
+}
+

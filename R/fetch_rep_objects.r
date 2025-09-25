@@ -79,70 +79,54 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' @param feature The feature to find a representative cell for
 #' @param name Prefix to add to the names of the names vector
 #' @param n How many objects either side of the representitative cell should be returend
+#' @param q A vector of quantiles [0-100]
+#' @param add.extremes Should the top and bottom n values be added
 #'
 #' @returns A list with row ids and labels for the objects
 #' @export
-fetch_representative_object_quantiles <- function(dataset, assay, slot, feature, name = NULL, n = 1) {
+fetch_representative_object_quantiles <- function(dataset, assay, slot, feature, name = NULL, n = 1, q=c(10, 25, 50, 75, 90), add.extremes=TRUE) {
   check_dataset_assay_slot(dataset, assay, slot)
+
+  if (length(feature) > 1) {
+    stop("Can only supply one feature at the time")
+  }
 
   if (is.null(name)) {
     name <- feature
   }
-  #cur.assay <- slot(dataset@assays[[assay]], slot)@.Data
-  #cur.assay <- slot(dataset@assays[[assay]], slot)
   
-  #f <- cur.assay[, feature]
-  
-  f <- getDataByObject(dataset, feature, assay=assay, slot=slot)
-  
+  f   <- getDataByObject(dataset, feature, assay=assay, slot=slot)
   idx <- dataset@object.ids[!is.na(f)]
-  f <- f[!is.na(f)]
-  fs <- order(f)
+  f   <- f[!is.na(f)]
+  fs  <- order(f)
 
-  lower <- which(dataset@object.ids %in% idx[head(fs, n = (n * 2) + 1)])
-  upper <- which(dataset@object.ids %in% idx[tail(fs, n = (n * 2) + 1)])
+  # Store the output
+  ids <- c()
+  cn  <- c()
 
-  l10 <- fetch_representative_object(dataset, assay, slot, feature,
-    metric = "lower.q",
-    q = 0.10,
-    n = n
-  )
+  if (add.extremes) {
+      lower <- which(dataset@object.ids %in% idx[head(fs, n = (n * 2) + 1)])
+      ids   <- c(ids, lower)
+      cn    <- c(cn, rep(paste0("q0 - ", name), (n * 2) + 1)) 
+  }
 
-  l25 <- fetch_representative_object(dataset, assay, slot, feature,
-    metric = "lower.q",
-    q = 0.25,
-    n = n
-  )
-
-  l50 <- fetch_representative_object(dataset, assay, slot, feature,
-    metric = "lower.q",
-    q = 0.5,
-    n = n
-  )
-
-  l75 <- fetch_representative_object(dataset, assay, slot, feature,
-    metric = "lower.q",
-    q = 0.75,
-    n = n
-  )
-
-  l90 <- fetch_representative_object(dataset, assay, slot, feature,
-    metric = "lower.q",
-    q = 0.90,
-    n = n
-  )
-
-  cn <- c(
-    rep(paste0("q0 - ", name), (n * 2) + 1),
-    rep(paste0("q10 - ", name), (n * 2) + 1),
-    rep(paste0("q25 - ", name), (n * 2) + 1),
-    rep(paste0("q50 - ", name), (n * 2) + 1),
-    rep(paste0("q75 - ", name), (n * 2) + 1),
-    rep(paste0("q90 - ", name), (n * 2) + 1),
-    rep(paste0("q100 - ", name), (n * 2) + 1)
-  )
-
-  return(list(ids = c(lower, l10, l25, l50, l75, l90, upper), names = cn))
+  for (cur.q in q) {
+    l <- fetch_representative_object(dataset, assay, slot, feature,
+      metric = "lower.q",
+      q = cur.q/100,
+      n = n
+    )
+    ids  <- c(l, lower)
+    cn   <- c(cn, rep(paste0("q", q, " - ", name), (n * 2) + 1)) 
+  }
+  
+  if (add.extremes) {
+      upper <- which(dataset@object.ids %in% idx[tail(fs, n = (n * 2) + 1)])
+      ids   <- c(ids, upper)
+      cn    <- c(cn, rep(paste0("q100 - ", name), (n * 2) + 1)) 
+  }
+  
+  return(list(ids = ids, names = cn))
 }
 
 

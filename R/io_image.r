@@ -94,6 +94,9 @@ tglow_read_binmat <- function(path) {
 #' @export
 tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NULL, path.col=NULL) {
   
+  check_package("EBImage")
+  check_package("hdf5r")
+
   if (is.null(path) && is.null(path.col)) {
     stop("Need to set either the root 'path' or specify a @meta column with the path through 'path.col'")
   }
@@ -140,7 +143,7 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
   for (h5file in files) {
     
     cur.pwf <- pwf[pwf$h5_path == h5file,]
-    file    <- H5File$new(h5file, mode = "r")
+    file    <- hdf5r::H5File$new(h5file, mode = "r")
     
     for (obj in 1:nrow(cur.pwf)) {
       cur.pwf.obj <- cur.pwf[obj,,drop=F]
@@ -148,7 +151,7 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
       if (!is.null(out.size)) {
         m <- img_pad_center(m, out.size, out.size)
       }
-      images[[cur.pwf.obj$object_id]] <- Image(m)
+      images[[cur.pwf.obj$object_id]] <- EBImage::Image(m)
       pb$tick()
     }
     

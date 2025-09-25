@@ -10,7 +10,9 @@ fetch_representative_object_quantiles(
   slot,
   feature,
   name = NULL,
-  n = 1
+  n = 1,
+  q = c(10, 25, 50, 75, 90),
+  add.extremes = TRUE
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ fetch_representative_object_quantiles(
 \item{name}{Prefix to add to the names of the names vector}
 
 \item{n}{How many objects either side of the representitative cell should be returend}
+
+\item{q}{A vector of quantiles \link{0-100}}
+
+\item{add.extremes}{Should the top and bottom n values be added}
 }
 \value{
 A list with row ids and labels for the objects

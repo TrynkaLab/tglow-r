@@ -79,6 +79,7 @@
 * img_max_project
 * img_norm
 * img_pad_center
+* img_to_base64png
 * isAvailable
 * isValid
 * kurtosis
@@ -100,13 +101,14 @@
 * objectIds
 * plot_box
 * plot_boxline
+* plot_heatmap
 * plot_hex
-* plot_hist_dens_grouped
+* plot_hist
 * plot_img
 * plot_img_set
 * plot_plate
-* plot_simple_hm
 * plot_xy
+* plot_xy_interactive
 * read_cellprofiler_dir
 * read_cellprofiler_fileset_a
 * read_cellprofiler_fileset_b
@@ -115,6 +117,7 @@
 * scale_dataset
 * skewness
 * tglow_dimplot
+* tglow_dimplot_interactive
 * tglow_filters_from_table
 * tglow_plot_execution_time
 * tglow_plot_location_hex
