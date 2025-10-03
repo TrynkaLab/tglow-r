@@ -116,8 +116,8 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
       q = cur.q/100,
       n = n
     )
-    ids  <- c(l, lower)
-    cn   <- c(cn, rep(paste0("q", q, " - ", name), (n * 2) + 1)) 
+    ids  <- c(l, ids)
+    cn   <- c(cn, rep(paste0("q", cur.q, " - ", name), (n * 2) + 1)) 
   }
   
   if (add.extremes) {

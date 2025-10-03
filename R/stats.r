@@ -4,7 +4,7 @@
 #' @description Calculates the effective dimensionality of a multidimensional dataset.
 #'
 #' @param data A matrix with data
-#' @param method 'LiJi', 'pc_var', 'Chevrud', 'Galwey' . See details
+#' @param method 'all', 'li_ji', 'pc_var', 'chevrud', 'galwey' . See details
 #' @param var.test Percentage of variance cutoff
 #' @details
 #' `method`
@@ -12,8 +12,10 @@
 #' `eigenval` are the eigenvalues of the correlation matrix.
 #'
 #' `m` are the number of eigenvalues
-#'
-#' - `LiJi` Use Li and Ji's method - https://www.nature.com/articles/jhg201134#Sec2
+#' 
+#' Formulas derrived from : https://www.nature.com/articles/jhg201134#Sec2
+#' 
+#' - `li_ji` Use Li and Ji's method
 #'
 #'    `eff.tests <- sum(I( eigenval > 1) + ( eigenval - floor( eigenval)))`
 #'
@@ -21,36 +23,42 @@
 #'
 #'     `eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)`
 #'
-#' - `Chevrud`:
+#' - `chevrud`:
 #'
-#'     `eff.tests <- m +(m - 1) * (1-(var(eigenval) / m))`
+#'     `eff.tests <- 1 +(m - 1) * (1-(var(eigenval) / m))`
 #'
-#' - `Galwey`
-#'
+#' - `galwey`:
+#' 
+#'     eff.tests <- sum(sqrt(eigenval))^2 / sum(eigenval)
+#' 
+#' @returns A list with the results if method='all' or the value of effective dimesionality.
 #' @export
-effective_dimensionality <- function(data, method = "LiJi", var.thresh = 0.95) {
-  if (!is.matrix(matrix)) {
+effective_dimensionality <- function(data, method = "li_ji", var.thresh = 0.95) {
+  if (!is.matrix(data)) {
     stop("data should be of class matrix")
   }
-  c <- cor(matrix, use = "pairwise.complete.obs")
+  c <- cor(data, use = "pairwise.complete.obs")
   e <- eigen(c, only.values = T)
 
   eigenval <- e$values
   m <- length(eigenval)
-
-  if (method == "LiJi") {
-    eff.tests <- sum(I(eigenval > 1) + (eigenval - floor(eigenval)))
-  } else if (method == "pc_var") {
-    eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)[0]
-  } else if (method == "Cheverud") {
-    eff.tests <- m + (m - 1) * (1 - (var(eigenval) / m))
-  } else if (method == "Galwey") {
-    eff.tests <- sum(eigenval)^2 / sum(eigenval^2)
-  } else {
+  
+  
+  if (!method %in% c("li_ji", "pc_var", "cheverud", "galwey", "all")) {
     stop(paste0(method, " is not a valid method"))
   }
+  
+  eff.tests <- list()
+  eff.tests[["li_ji"]]    <- list(dim=sum(I(eigenval > 1) + (eigenval - floor(eigenval))))
+  eff.tests[["cheverud"]] <- list(dim=1 + (m - 1) * (1-(var(eigenval) / m)))
+  eff.tests[["galwey"]]   <- list(dim=sum(sqrt(eigenval))^2 / sum(eigenval))
+  eff.tests[["pc_var"]]   <- list(dim=which(cumsum(eigenval / sum(eigenval)) >= var.thresh)[1], threshold=var.thresh)
 
-  return(eff.tests)
+  if (method == "all") {
+    return(list(tests=eff.tests, eigenval=eigenval))
+  } else {
+      return(eff.tests[[method]][['dim']])
+  }
 }
 
 #-------------------------------------------------------------------

@@ -848,9 +848,17 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
         se <- coef
         pval <- coef
         df <- coef
-        model.stats <- matrix(NA, nrow = ncol(response), 5)
-        rownames(model.stats) <- colnames(response)
-        colnames(model.stats) <- c("r2_cond", "r2_marg", "chisqr", "p-value", "df")
+
+        if (!is.null(formula.null)) {
+            model.stats <- matrix(NA, nrow = ncol(response), 7)
+            rownames(model.stats) <- colnames(response)
+            colnames(model.stats) <- c("r2_cond", "r2_marg","r2_cond_null", "r2_marg_null", "lrt_chisqr", "lrt_p-value", "lrt_df")
+        } else {
+            model.stats <- matrix(NA, nrow = ncol(response), 2)
+            rownames(model.stats) <- colnames(response)
+            colnames(model.stats) <- c("r2_cond", "r2_marg")
+        }
+
     }
 
     # Matrix to save residuals
@@ -899,9 +907,13 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
 
             if (!is.null(formula.null)) {
                 lrt <- anova(m.null, m, refit = refit)
-                model.stats[col, "chisqr"] <- lrt$`Chisq`[2]
-                model.stats[col, "p-value"] <- lrt$`Pr(>Chisq)`[2]
-                model.stats[col, "df"] <- lrt$`Df`[2]
+                perf.null <- performance::model_performance(m.null)
+                model.stats[col, "r2_cond_null"] <- perf.null$R2_conditional
+                model.stats[col, "r2_marg_null"] <- perf.null$R2_marginal
+                
+                model.stats[col, "lrt_chisqr"]   <- lrt$`Chisq`[2]
+                model.stats[col, "lrt_p-value"]  <- lrt$`Pr(>Chisq)`[2]
+                model.stats[col, "lrt_df"]       <- lrt$`Df`[2]
             }
         }
     }

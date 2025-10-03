@@ -4,14 +4,17 @@
 \alias{effective_dimensionality}
 \title{Caclulate the effective dimensionality of a dataset}
 \usage{
-effective_dimensionality(data, method = "LiJi", var.thresh = 0.95)
+effective_dimensionality(data, method = "li_ji", var.thresh = 0.95)
 }
 \arguments{
 \item{data}{A matrix with data}
 
-\item{method}{'LiJi', 'pc_var', 'Chevrud', 'Galwey' . See details}
+\item{method}{'all', 'li_ji', 'pc_var', 'chevrud', 'galwey' . See details}
 
 \item{var.test}{Percentage of variance cutoff}
+}
+\value{
+A list with the results if method='all' or the value of effective dimesionality.
 }
 \description{
 Calculates the effective dimensionality of a multidimensional dataset.
@@ -22,16 +25,20 @@ Calculates the effective dimensionality of a multidimensional dataset.
 \code{eigenval} are the eigenvalues of the correlation matrix.
 
 \code{m} are the number of eigenvalues
+
+Formulas derrived from : https://www.nature.com/articles/jhg201134#Sec2
 \itemize{
-\item \code{LiJi} Use Li and Ji's method - https://www.nature.com/articles/jhg201134#Sec2
+\item \code{li_ji} Use Li and Ji's method
 
 \code{eff.tests <- sum(I( eigenval > 1) + ( eigenval - floor( eigenval)))}
 \item \code{pc_var} Number of PC's needed to pass var.thresh
 
 \code{eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)}
-\item \code{Chevrud}:
+\item \code{chevrud}:
 
-\code{eff.tests <- m +(m - 1) * (1-(var(eigenval) / m))}
-\item \code{Galwey}
+\code{eff.tests <- 1 +(m - 1) * (1-(var(eigenval) / m))}
+\item \code{galwey}:
+
+eff.tests <- sum(sqrt(eigenval))^2 / sum(eigenval)
 }
 }

@@ -6,8 +6,8 @@
 \usage{
 tglow_dimplot_interactive(
   dataset,
-  reduction,
   ident,
+  reduction = NULL,
   images = NULL,
   tooltip = NULL,
   dim.x = 1,
@@ -15,15 +15,19 @@ tglow_dimplot_interactive(
   image.size = 250,
   xlab = NULL,
   ylab = NULL,
+  x = NULL,
+  y = NULL,
+  assay = NULL,
+  slot = NULL,
   ...
 )
 }
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{reduction}{Reduction to use}
-
 \item{ident}{Column to color on}
+
+\item{reduction}{Reduction to use}
 
 \item{images}{List of RGB images, assumed to be in the same order as dataset}
 
@@ -38,6 +42,10 @@ tglow_dimplot_interactive(
 \item{xlab}{The x-axis label}
 
 \item{ylab}{The y-axis label}
+
+\item{x}{Override x}
+
+\item{y}{Override y}
 
 \item{...}{remaining params passed to \code{\link[=plot_xy_interactive]{plot_xy_interactive()}}}
 }

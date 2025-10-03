@@ -916,6 +916,7 @@ plot_plate <- function(...) {
 #'
 #' @returns An interactive ggplot2 object
 #' @export
+#' @rdname plot_interactive
 plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", main="Interactive plot", opts=opts_tooltip(opacity = 1), add_func=tglowr::theme_plain, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", labs.scalename="color", ...) {
   #check_package("ggiraph")
   
@@ -937,17 +938,19 @@ plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", m
     ylab(ylab) +
     ggtitle(main)
   
-    if (labs.add) {
-        if ((is.character(col) && length(unique(col)) <= 50) || is.factor(col) && length(unique(col)) <= 50) {
-            labs <- make_ident_labels(x, y, as.character(col))
+    if (labs.add) { 
+        if (length(col) > 1) {
+            if ((is.character(col) && length(unique(col)) <= 50) || is.factor(col) && length(unique(col)) <= 50) {
+                labs <- make_ident_labels(x, y, as.character(col))
 
-            p <- p + geom_text_repel(
-                mapping = aes(x = x, y = y, label = label, col = "grey"),
-                data = labs,
-                col = labs.textcol,
-                size = labs.size,
-                bg.color = labs.bgcol
-            )
+                p <- p + ggrepel::geom_text_repel(
+                    mapping = aes(x = x, y = y, label = label, col = "grey"),
+                    data = labs,
+                    col = labs.textcol,
+                    size = labs.size,
+                    bg.color = labs.bgcol
+                )
+            }
         }
     }
 
@@ -957,8 +960,9 @@ plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", m
         p <- p + ggplot2::scale_color_viridis_d(name = labs.scalename, option="H")
     }
   
-  
-  p <- theme_func(p)
+  if (!is.null(add_func)) {
+      p <- add_func(p)
+  }
 
   # Make interactive
   g <- ggiraph::girafe(ggobj = p, ...)
@@ -982,9 +986,11 @@ plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", m
 #' @param image.size The size to render the image in the interactive plot
 #' @param xlab The x-axis label 
 #' @param ylab The y-axis label
+#' @param x Override x
+#' @param y Override y
 #' @param ... remaining params passed to [plot_xy_interactive()]
 #' @export
-tglow_dimplot_interactive <- function(dataset, reduction, ident, images=NULL, tooltip=NULL, dim.x=1, dim.y=2, image.size=250, xlab=NULL, ylab=NULL, ...) {
+tglow_dimplot_interactive <- function(dataset, ident,  reduction=NULL, images=NULL, tooltip=NULL, dim.x=1, dim.y=2, image.size=250, xlab=NULL, ylab=NULL, x=NULL, y=NULL, assay=NULL, slot=NULL, ...) {
   
   if (!is.null(tooltip)) {
     if (length(tooltip) == 1) {
@@ -994,10 +1000,17 @@ tglow_dimplot_interactive <- function(dataset, reduction, ident, images=NULL, to
       stop("length(tooltip) is not of nrow dataset")
     }
   }
-
+  
+  if (is.null(x) && is.null(y)) {
+    if(is.null(reduction)) {
+      stop("Must supply reduction or x and y")
+    }
+  }
+  
+  
   if (!is.null(images)) {
     if (nrow(dataset) != length(images)) {
-        stop("Dataset and images are not of the same size")
+      stop("Dataset and images are not of the same size")
     }
     
     img      <- sapply(images, img_to_base64png)
@@ -1020,9 +1033,9 @@ tglow_dimplot_interactive <- function(dataset, reduction, ident, images=NULL, to
         </div>
         ', img, image.size, tooltip)
     }
-
+    
   }
-
+  
   if (is.null(xlab)) {
     xlab <- paste0(reduction, " - ", dim.x)
   }
@@ -1032,9 +1045,16 @@ tglow_dimplot_interactive <- function(dataset, reduction, ident, images=NULL, to
   }
   
   
-  p1 <- plot_xy_interactive(x=dataset@reduction[[reduction]]@x[, dim.x],
-                            y=dataset@reduction[[reduction]]@x[, dim.y],
-                            ident=getDataByObject(dataset, ident),
+  if (!is.null(reduction)) {
+    x <- dataset@reduction[[reduction]]@x[, dim.x]
+    y <- dataset@reduction[[reduction]]@x[, dim.y]
+  }
+
+  
+  
+  p1 <- plot_xy_interactive(x=x,
+                            y=y,
+                            col=getDataByObject(dataset, ident, assay = assay, slot = slot),
                             tooltip=tooltip,
                             xlab=xlab,
                             ylab=ylab,
@@ -1043,4 +1063,3 @@ tglow_dimplot_interactive <- function(dataset, reduction, ident, images=NULL, to
   return(p1)
   
 }
-
