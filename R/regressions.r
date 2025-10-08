@@ -146,16 +146,20 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
 #' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
-#'
+#' @param ... Remaining arguments passed to [lm_matrix()]. Use with caution.
 #' @details
 #'
 #' `grouping`
 #'
-#'  If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
+#' This fits a model and calculates residuals per group seperately. 
+#' This can introduce a bias which can make groups uncomparable depending on the covariate structure. 
+#' Generally we do not reccomend using this unless you understand the implications.
+#' If this is provided, scaling for populating scale.data slot is done over ALL residuals, 
+#' not per group to ensure the mean and sd of the whole vector is as expected
 #'
 #' `formula`
 #'
-#'  If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by [stats::formula()]
+#' If NULL an additive model of all covariates is performed. Otherwise should be a string interpretable by [stats::formula()]
 #'
 #' `covariates.dont.use`
 #'
@@ -166,7 +170,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE) {
+correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -176,6 +180,13 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
     if (is.null(assay.covar)) {
         assay.covar <- assay
     }
+    
+    if (!is.null(grouping)) {
+        if (length(grouping) != nrow(object)) {
+        stop("grouping must be a vector of nrow(object)")
+        }
+    }
+
 
     data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
@@ -184,11 +195,16 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
     } else {
+        
+        if (is.character(formula)) {
+            formula <- as.formula(formula)
+            warning(paste0("Formula is character, converting to formula object: ", paste0(as.character(formula), collapse=" ")))
+        }
         design <- model.matrix(formula, data = data)
     }
 
     #response <- slot(object@assays[[assay]], slot)@.Data
-    response <- slot(object@assays[[assay]], slot)
+    response  <- slot(object@assays[[assay]], slot)
     residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response), dimnames = dimnames(response))
 
     if (is.null(grouping)) {
@@ -205,7 +221,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
             response.cur <- response[selector, ]
         }
 
-        residuals[selector, ] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, residuals.only = TRUE)
+        residuals[selector, ] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, residuals.only = TRUE, ...)
     }
 
     if (is.null(assay.out)) {
@@ -237,7 +253,7 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
-#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
+#' @param rescale.group When grouping is active, should the group be re-centered and scaled prior to regressing
 #' @param na.rm Remove NA's from the design matrix prior to regressing (does not remove NAs in the response)
 #' 
 #' @details
@@ -268,6 +284,13 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
     if (is.null(names(covariates.group))) {
         stop("Names attribute of grouping features must be a grep compatible pattern")
+    }
+
+    
+    if (!is.null(grouping)) {
+        if (length(grouping) != nrow(object)) {
+        stop("grouping must be a vector of nrow(object)")
+        }
     }
 
     for (fgroup in names(covariates.group)) {
@@ -387,7 +410,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param covariates.dont.use Only use if you understand the implications. See detaills
-#' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
+#' @param rescale.group When grouping is active, should the group be re-centered and scaled prior to regressing
+#' @param ... Remaining arguments passed to [lm_matrix()]. Use with caution.
 #'
 #' @details
 #' `grouping`
@@ -407,7 +431,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = TRUE) {
+calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
     check_dataset_assay_slot(object, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -416,6 +440,12 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
 
     if (is.null(assay.covar)) {
         assay.covar <- assay
+    }
+
+    if (!is.null(grouping)) {
+        if (length(grouping) != nrow(object)) {
+        stop("grouping must be a vector of nrow(object)")
+        }
     }
 
     data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
@@ -454,7 +484,7 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
     }
     
     if (is.null(grouping)) {
-        res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use)
+        res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use, ...)
         return(res)
     } else {
         
@@ -474,7 +504,7 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
                 response.cur <- response[selector, ]
             }
 
-            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use)
+            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, ...)
         }
         return(results)
     }
@@ -598,7 +628,6 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 }
 
 
-#-------------------------------------------------------------------------------
 #' Calculate linear coefficients
 #'
 #' @description Fit a linear mixed model using OLS and find coefficients
@@ -608,11 +637,21 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param keep.zerocol Keep columns in design matrix that sum to zero
-#' @param eigen.tol Minimal eigenvalue to keep columns in the design matrix
-#' @param calculate_ll calculate the log likelihood of the model
+#' @param tol Minimal eigenvalue to keep columns in the design matrix
+#' @param calculate_ll Calculate the log likelihood of the model
+#' @param use.qr Use the qr decomposition instead of the cholesky decomposition on the design matrix. See details
 #'
 #' @details
-#' This is more efficient as the b component of the design matrix can be re-used between regressions
+#' This function re-uses the decompostion of the design matrix between different responses, which makes it much faster compared to looped [lm()] calls.
+#' It also has extra options such as ignoring covariates when calculating residuals.
+#' 
+#' `use.qr`
+#' If TRUE, the qr decomposition is used to calculate the effectsizes. This avoids a matrix inversion that can be unstable with highly correlated designs.
+#' Singularites are removed based on the provided tol and the absolute diagonal of the QR decomp.
+#' It uses the same basic implementation as [lm()]. This is the reccomended way
+#' 
+#' If FALSE, the following is computed. In most cases, it procudes identical results, but there are cases where this is unstable.
+#' Singularities are removed based on the eigenvalue of crossprod(design) and the provided tol.
 #' b <- chol2inv(chol(crossprod(design)))
 #'
 #' `covariates.dont.use`
@@ -624,162 +663,206 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @export
-lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, eigen.tol = 1e-8, calculate_ll=TRUE) {
-    if (residuals.only && !return.residuals) {
-        return.residuals <- TRUE
+lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.only = FALSE, return.residuals = FALSE, keep.zerocol = FALSE, tol = 1e-7, calculate_ll=TRUE, use.qr=TRUE) {
+  if (residuals.only && !return.residuals) {
+    return.residuals <- TRUE
+  }
+  
+  if (!is.null(covariates.dont.use)) {
+    if (sum(covariates.dont.use %in% colnames(design)) != length(design)) {
+      warning("Not all covariates specified in covariates.dont.use found. Check the output carefully if all is expected. This can happen if covariates.dont.use contains factors")
     }
-
-    if (!is.null(covariates.dont.use)) {
-        if (sum(covariates.dont.use %in% colnames(design)) != length(design)) {
-            warning("Not all covariates specified in covariates.dont.use found. Check the output carefully if all is expected. This can happen if covariates.dont.use contains factors")
-        }
+  }
+  
+  if (!keep.zerocol) {
+    design.colsums <- colSums(design)
+    if (any(design.colsums == 0)) {
+      msg <- "Found columns which sum to zero, dropped these as usually they indicate an empty factor level\n"
+      msg <- paste0(msg, "If you do want to keep them, set keep.zerocol = TRUE\n")
+      msg <- paste0(msg, "Offending collumns: ", colnames(design)[design.colsums == 0])
+      warning(msg)
+      
+      design <- design[, design.colsums != 0]
     }
-
-    if (!keep.zerocol) {
-        design.colsums <- colSums(design)
-        if (any(design.colsums == 0)) {
-            msg <- "Found columns which sum to zero, dropped these as usually they indicate an empty factor level\n"
-            msg <- paste0(msg, "If you do want to keep them, set keep.zerocol = TRUE\n")
-            msg <- paste0(msg, "Offending collumns: ", colnames(design)[design.colsums == 0])
-            warning(msg)
-
-            design <- design[, design.colsums != 0]
-        }
+  }
+  
+  # Pre-calculate b component on design matrix
+  if (use.qr) {
+    cat("[INFO] Using QR decomp\n")
+    
+    # Find near singlular values
+    qr.decomp <- qr(design)
+    ev        <- abs(diag(qr.decomp$qr))
+    offenders <- qr.decomp$pivot[ev < tol]
+    
+    if (any(ev < tol)) {
+      msg <- paste0("qr diag < ", tol, " detected, dropping these variables from the design matrix. Set tol=NULL to skip this check\n")
+      msg <- paste0(msg, "Offending collumns: ", paste0(colnames(design)[offenders], collapse=", "))
+      warning(msg)
+      cat("[WARN] ", msg, "\n")
+      design <- design[, qr.decomp$pivot[ev > tol]]
     }
-
+    
+    # Final QR on the removed values
+    qr.decomp <- qr(design)
+    
+    # Used later for calculating SEs
+    p1           <- 1:qr.decomp$rank
+    R            <- chol2inv(qr.decomp$qr[p1, p1, drop = FALSE])
+    b            <- R
+  } else {
+    cat("[INFO] Using cholesky inverse of crossprod(design)\n")
     # Check for near zero eigenvalues in the design matrix
     a <- crossprod(design)
-    if (!is.null(eigen.tol)) {
-        ev <- eigen(a, only.values = T)$values
-        if (any(ev < eigen.tol)) {
-            msg <- paste0("Eigenvalues < ", eigen.tol, " detected, dropping these variables from the design matrix. Set eigen.tol=NULL to skip this check\n")
-            msg <- paste0(msg, "Offending collumns: ", colnames(design)[ev < eigen.tol])
-            warning(msg)
-            cat("[WARN] ", msg, "\n")
-            design <- design[, ev > eigen.tol]
-            a <- crossprod(design)
-        }
+    if (!is.null(tol)) {
+      ev <- eigen(a, only.values = T)$values
+      if (any(ev < tol)) {
+        msg <- paste0("Eigenvalues < ", tol, " detected, dropping these variables from the design matrix. Set tol=NULL to skip this check\n")
+        msg <- paste0(msg, "Offending collumns: ", paste0(colnames(design)[ev < tol], collapse=", "))
+        warning(msg)
+        cat("[WARN] ", msg, "\n")
+        design <- design[, ev > tol]
+        a <- crossprod(design)
+      }
     }
-
-    # Matrices to save model coefficients
-    if (!residuals.only) {
-        coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
-        se <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
-        model.stats <- matrix(NA, nrow = ncol(response), ncol=8)
-        rownames(coef) <- colnames(response)
-        colnames(coef) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
-        rownames(se) <- colnames(response)
-        colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
-        rownames(model.stats) <- colnames(response)
-        colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df", "rss", "tss", "ll")
-        mse.vec <- rep(NA, ncol(response))
-        names(mse.vec) <- colnames(response)
-
-        if (!is.null(covariates.dont.use)) {
-            warning("Specified covariates.dont.use while returning model stats, this is not reccomended unless you understand the implications.")
-        }
-    }
-
-    # Matrix to save residuals
-    if (return.residuals) {
-        residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
-        rownames(residuals) <- rownames(response)
-        colnames(residuals) <- colnames(response)
-    }
-
-    # Calculate the beta's. Use chol2inv on the cholesky decomposition
+    
+    # Use chol2inv on the cholesky decomposition
     # to invert rather then solve as this is faster. This only works on
     # positive-definite matrices, but I think this should always be true in this case
     # (dont quote me on this). If not it throws an error so you can use solve instead
-
-    # Pre-calculate b component on design matrix
+    # Update: Turns out there are rare cases where this procudes non-sensical results
+    # due to inversion not being perfect. The QR approach matches R's implementation
+    # and is to be preferred.
     b <- chol2inv(chol(a))
-    cat("[INFO] Starting regressions\n")
-
-    pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
-
-    for (col in seq_len(ncol(response))) {
-        pb$tick()
-        # Calculate effectiszes
-        beta <- crossprod(b, crossprod(design, response[, col]))
-
-        # Residuals
-        if (is.null(covariates.dont.use)) {
-            beta.tmp <- beta
-            design.tmp <- design
-        } else {
-            # Include covariates for beta fitting, but don't correct for them
-            beta.tmp <- beta[!colnames(design) %in% covariates.dont.use, ]
-            design.tmp <- design[, !colnames(design) %in% covariates.dont.use]
-        }
-        
-        ypred <- (design.tmp %*% beta.tmp)
-        rs <- response[, col] - ypred
-
-        # Optionally save residuals
-        if (return.residuals) {
-            residuals[, col] <- rs
-        }
-
-        # Optionally save model statistics
-        if (!residuals.only) {
-            if (!is.null(covariates.dont.use)) {
-                # Make sure residuals are centered when calculating stats
-                # This is not the case if dropping covariates
-                rs <- rs - mean(rs)
-            }
-
-            # Residual and total sum of squares
-            rss <- crossprod(rs)
-            tss <- crossprod(response[, col] - mean(response[, col]))
-
-            # RSS / df
-            df <- (length(rs) - ncol(design))
-            mse <- as.numeric(rss / df)
-            mse.vec[col] <- mse
-            se[col, ] <- as.numeric(sqrt(diag(mse * b)))[!colnames(design) %in% covariates.dont.use]
-            coef[col, ] <- as.numeric(beta.tmp)
-
-            r2 <- 1 - (rss / tss)
-            r2.adj <- 1 - (1 - r2) * (length(rs) - 1) / df
-
-            # Calculate F-statistic
-            msr <- (tss - rss) / (ncol(design.tmp) - 1)
-            f.stat <- msr / mse
-            p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
-
-            # Calculate ll
-            if (calculate_ll) {
-                ll <- sum(dnorm(response[, col], mean = ypred, sd = sd(rs), log = TRUE))
-            } else {
-                ll <- NA
-            }
-
-            model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df, rss, tss, ll)
-        }
+  }
+  
+  # Matrices to save model coefficients
+  if (!residuals.only) {
+    coef <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
+    se <- matrix(NA, nrow = ncol(response), ncol = sum(!colnames(design) %in% covariates.dont.use))
+    model.stats <- matrix(NA, nrow = ncol(response), ncol=8)
+    rownames(coef) <- colnames(response)
+    colnames(coef) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
+    rownames(se) <- colnames(response)
+    colnames(se) <- colnames(design)[!colnames(design) %in% covariates.dont.use]
+    rownames(model.stats) <- colnames(response)
+    colnames(model.stats) <- c("r2", "adj.r2", "f-stat", "p-value", "df", "rss", "tss", "ll")
+    mse.vec <- rep(NA, ncol(response))
+    names(mse.vec) <- colnames(response)
+    
+    if (!is.null(covariates.dont.use)) {
+      warning("Specified covariates.dont.use while returning model stats, this is not reccomended unless you understand the implications.")
     }
-
-    # Return only residual matrix
-    if (residuals.only) {
-        return(residuals)
+  }
+  
+  # Matrix to save residuals
+  if (return.residuals) {
+    residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response))
+    rownames(residuals) <- rownames(response)
+    colnames(residuals) <- colnames(response)
+  }
+  
+  cat("[INFO] Starting regressions\n")
+  
+  pb <- progress::progress_bar$new(format = paste0("[INFO] Regressing [:bar] :current/:total (:percent) eta :eta"), total = ncol(response))
+  
+  for (col in seq_len(ncol(response))) {
+    pb$tick()
+    
+    # Calculate effectiszes
+    if (use.qr) {
+      beta <- matrix(qr.coef(qr.decomp, response[, col]), ncol=1)
+    } else {
+      beta <- crossprod(b, crossprod(design, response[, col]))
     }
-
-    # Return output list
-    out.list <- list(coef = coef,
-                    se = se,
-                    pval = 2 * pt(-abs(coef/se), df = df),
-                    model.stats = model.stats,
-                    df = df,
-                    df.m = ncol(design.tmp) - 1,
-                    residuals = NULL,
-                    mse = mse.vec,
-                    cov.unscaled = b)
-                    
-    class(out.list) <- "tglowlm"
+    
+    # Residuals
+    if (is.null(covariates.dont.use)) {
+      beta.tmp   <- beta
+      design.tmp <- design
+    } else {
+      # Include covariates for beta fitting, but don't correct for them
+      beta.tmp   <- beta[!colnames(design) %in% covariates.dont.use, ]
+      design.tmp <- design[, !colnames(design) %in% covariates.dont.use]
+    }
+    
+    ypred <- (design.tmp %*% beta.tmp)
+    rs    <- response[, col] - ypred
+    
+    # Optionally save residuals
     if (return.residuals) {
-        out.list$residuals <- residuals
+      residuals[, col] <- rs
     }
-    return(out.list)
+    
+    # Optionally save model statistics
+    if (!residuals.only) {
+      if (!is.null(covariates.dont.use)) {
+        # Make sure residuals are centered when calculating stats
+        # This is not the case if dropping covariates
+        rs <- rs - mean(rs)
+      }
+      
+      # Residual and total sum of squares
+      rss <- crossprod(rs)
+      tss <- crossprod(response[, col] - mean(response[, col]))
+      
+      # RSS / df
+      df           <- (length(rs) - ncol(design))
+      mse          <- as.numeric(rss / df)
+      mse.vec[col] <- mse
+      
+      # SE
+      if (use.qr) {
+        # This is how summary.lm calculates SEs
+        se[col,]     <- sqrt(diag(R) * mse)[!colnames(design) %in% covariates.dont.use]
+      } else {
+        se[col, ]    <- as.numeric(sqrt(diag(mse * b)))[!colnames(design) %in% covariates.dont.use]
+      }
+      
+      # Beta
+      coef[col, ]  <- as.numeric(beta.tmp)
+      
+      # R2
+      r2           <- 1 - (rss / tss)
+      r2.adj       <- 1 - (1 - r2) * (length(rs) - 1) / df
+      
+      # Calculate F-statistic
+      msr <- (tss - rss) / (ncol(design.tmp) - 1)
+      f.stat <- msr / mse
+      p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
+      
+      # Calculate ll
+      if (calculate_ll) {
+        ll <- sum(dnorm(response[, col], mean = ypred, sd = sd(rs), log = TRUE))
+      } else {
+        ll <- NA
+      }
+      
+      model.stats[col, ] <- c(r2, r2.adj, f.stat, p, df, rss, tss, ll)
+    }
+  }
+  
+  # Return only residual matrix
+  if (residuals.only) {
+    return(residuals)
+  }
+  
+  # Return output list
+  out.list <- list(coef = coef,
+                   se = se,
+                   pval = 2 * pt(-abs(coef/se), df = df),
+                   model.stats = model.stats,
+                   df = df,
+                   df.m = ncol(design.tmp) - 1,
+                   residuals = NULL,
+                   mse = mse.vec,
+                   cov.unscaled = b)
+  
+  class(out.list) <- "tglowlm"
+  if (return.residuals) {
+    out.list$residuals <- residuals
+  }
+  return(out.list)
 }
 
 

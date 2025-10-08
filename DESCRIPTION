@@ -1,6 +1,6 @@
 Package: tglowr
 Title: An R package for analyzing HCI data at the single cell level
-Version: 0.1.11
+Version: 0.1.12
 Authors@R: person("Olivier", "Bakker", email = "ob7@sanger.ac.uk", role = c("aut", "cre"))
 Description: Data structure and analysis functions for processing high content imaging data, performing QC,
  normalizing, dimension reduction and statistics.
@@ -33,8 +33,7 @@ Suggests:
     ggiraph,
     png,
     base64enc,
-    hdf5r,
-    reticulate
+    hdf5r
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Collate: 

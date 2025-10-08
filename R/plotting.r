@@ -918,7 +918,7 @@ plot_plate <- function(...) {
 #' @export
 #' @rdname plot_interactive
 plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", main="Interactive plot", opts=opts_tooltip(opacity = 1), add_func=tglowr::theme_plain, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", labs.scalename="color", ...) {
-  #check_package("ggiraph")
+  check_package("ggiraph")
   
   df.plot <- data.frame(rowid=1:length(x),
                         x=x,

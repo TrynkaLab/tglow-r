@@ -111,20 +111,35 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
     }
   }
   
-  if (!isAvailable(dataset, c(index.col), assay=NULL, slot=NULL)) {
-    stop(paste0("index.col: ", index.col, " not available on dataset"))
+  if (!index.col %in% colnames(dataset@meta)) {
+  #if (!isAvailable(dataset, c(index.col), assay=NULL, slot=NULL)) {
+    stop(paste0("index.col: ", index.col, " not available on @meta of this dataset"))
   }
   
   
   object.names <- dataset@object.ids[objects]
-  dataset <- dataset[objects,]
+  dataset      <- dataset[objects,]
+  object.index <- getDataByObject(dataset, index.col)
   
+  # Check if object index have NAs in there (the h5 group names)
+  if (sum(is.na(object.index)!=0)) {
+    warning("NA's found in index.col. Removing these")
+    dataset      <- dataset[!is.na(object.index),]
+    object.names <- object.names[!is.na(object.index)]
+    object.index <- object.index[!is.na(object.index)]
+  }
+  
+  if (!is.character(object.index)) {
+    stop("h5 group index (provided through index.col) must be a chracter")
+  }
+  
+  # Construct the path to the h5 file
   plate <- getDataByObject(dataset, dataset@feature.map@plate@feature, assay=dataset@feature.map@plate@assay, slot=dataset@feature.map@plate@slot)
   well  <- getDataByObject(dataset, dataset@feature.map@well@feature, assay=dataset@feature.map@well@assay, slot=dataset@feature.map@well@slot)
   field <- getDataByObject(dataset, dataset@feature.map@field@feature, assay=dataset@feature.map@field@assay, slot=dataset@feature.map@field@slot)
   
-  pwf <- data.frame(plate=plate, well=well, field=field, cell_index=getDataByObject(dataset, index.col), object_id=object.names)
-  pwf <- cbind(pwf, t(sapply(pwf[,2], well_to_index)))
+  pwf   <- data.frame(plate=plate, well=well, field=field, cell_index=object.index, object_id=object.names)
+  pwf   <- cbind(pwf, t(sapply(pwf[,2], well_to_index)))
   rownames(pwf) <- object.names
   
   if (is.null(path.col)) {

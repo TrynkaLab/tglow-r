@@ -11,8 +11,9 @@ lm_matrix(
   residuals.only = FALSE,
   return.residuals = FALSE,
   keep.zerocol = FALSE,
-  eigen.tol = 1e-08,
-  calculate_ll = TRUE
+  tol = 1e-07,
+  calculate_ll = TRUE,
+  use.qr = TRUE
 )
 }
 \arguments{
@@ -28,9 +29,11 @@ lm_matrix(
 
 \item{keep.zerocol}{Keep columns in design matrix that sum to zero}
 
-\item{eigen.tol}{Minimal eigenvalue to keep columns in the design matrix}
+\item{tol}{Minimal eigenvalue to keep columns in the design matrix}
 
-\item{calculate_ll}{calculate the log likelihood of the model}
+\item{calculate_ll}{Calculate the log likelihood of the model}
+
+\item{use.qr}{Use the qr decomposition instead of the cholesky decomposition on the design matrix. See details}
 }
 \value{
 A list with regression results
@@ -39,7 +42,16 @@ A list with regression results
 Fit a linear mixed model using OLS and find coefficients
 }
 \details{
-This is more efficient as the b component of the design matrix can be re-used between regressions
+This function re-uses the decompostion of the design matrix between different responses, which makes it much faster compared to looped \code{\link[=lm]{lm()}} calls.
+It also has extra options such as ignoring covariates when calculating residuals.
+
+\code{use.qr}
+If TRUE, the qr decomposition is used to calculate the effectsizes. This avoids a matrix inversion that can be unstable with highly correlated designs.
+Singularites are removed based on the provided tol and the absolute diagonal of the QR decomp.
+It uses the same basic implementation as \code{\link[=lm]{lm()}}. This is the reccomended way
+
+If FALSE, the following is computed. In most cases, it procudes identical results, but there are cases where this is unstable.
+Singularities are removed based on the eigenvalue of crossprod(design) and the provided tol.
 b <- chol2inv(chol(crossprod(design)))
 
 \code{covariates.dont.use}

@@ -16,7 +16,8 @@ correct_lm(
   assay.out = NULL,
   grouping = NULL,
   covariates.dont.use = NULL,
-  rescale.group = FALSE
+  rescale.group = FALSE,
+  ...
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ correct_lm(
 \item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
 
 \item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
+
+\item{...}{Remaining arguments passed to \code{\link[=lm_matrix]{lm_matrix()}}. Use with caution.}
 }
 \value{
 The \linkS4class{TglowDataset} with a corrected assay
@@ -53,7 +56,11 @@ Fit a linear model using OLS and correct an assay for specified covariates
 \details{
 \code{grouping}
 
-If this is provided, scaling for populating scale.data slot is done over ALL residuals, not per group to ensure the mean and sd of the whole vector is as expected
+This fits a model and calculates residuals per group seperately.
+This can introduce a bias which can make groups uncomparable depending on the covariate structure.
+Generally we do not reccomend using this unless you understand the implications.
+If this is provided, scaling for populating scale.data slot is done over ALL residuals,
+not per group to ensure the mean and sd of the whole vector is as expected
 
 \code{formula}
 

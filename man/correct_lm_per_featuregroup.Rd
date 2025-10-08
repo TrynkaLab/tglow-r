@@ -40,7 +40,7 @@ correct_lm_per_featuregroup(
 
 \item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
 
-\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
+\item{rescale.group}{When grouping is active, should the group be re-centered and scaled prior to regressing}
 
 \item{na.rm}{Remove NA's from the design matrix prior to regressing (does not remove NAs in the response)}
 }

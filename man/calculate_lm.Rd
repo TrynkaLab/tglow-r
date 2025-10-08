@@ -15,7 +15,8 @@ calculate_lm(
   slot.covar = NULL,
   assay.image = NULL,
   covariates.dont.use = NULL,
-  rescale.group = TRUE
+  rescale.group = FALSE,
+  ...
 )
 }
 \arguments{
@@ -39,7 +40,9 @@ calculate_lm(
 
 \item{covariates.dont.use}{Only use if you understand the implications. See detaills}
 
-\item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
+\item{rescale.group}{When grouping is active, should the group be re-centered and scaled prior to regressing}
+
+\item{...}{Remaining arguments passed to \code{\link[=lm_matrix]{lm_matrix()}}. Use with caution.}
 }
 \value{
 A list of regression results. If grouping != NULL, there is one list per group
