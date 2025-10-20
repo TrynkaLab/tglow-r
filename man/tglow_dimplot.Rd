@@ -11,6 +11,7 @@ tglow_dimplot(
   assay = NULL,
   slot = NULL,
   downsample = NULL,
+  facet = NULL,
   log.ident = FALSE,
   axis.x = 1,
   axis.y = 2,
@@ -37,6 +38,8 @@ tglow_dimplot(
 \item{slot}{The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"}
 
 \item{downsample}{Should downsampling be applied prior to plot. NA's are removed first}
+
+\item{facet}{A vector or name of item to facet on}
 
 \item{log.ident}{Should color vector be log2 transformed}
 

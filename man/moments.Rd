@@ -4,7 +4,7 @@
 \alias{skewness}
 \alias{kurtosis}
 \alias{geometric_mean}
-\alias{mode}
+\alias{mode_distribution}
 \title{Calculate the skewness, kurtosis, geometric mean, mode}
 \usage{
 skewness(x, na.rm = F)
@@ -13,7 +13,7 @@ kurtosis(x, na.rm = F)
 
 geometric_mean(x, na.rm = TRUE)
 
-mode(x, na.rm = TRUE)
+mode_distribution(x, na.rm = TRUE)
 }
 \arguments{
 \item{x}{Numeric vector}

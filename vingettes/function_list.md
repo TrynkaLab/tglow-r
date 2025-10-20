@@ -91,7 +91,7 @@
 * match_objects_xy_nn
 * merge_filesets
 * mod_zscore
-* mode
+* mode_distribution
 * modul
 * modul_std
 * modulus
@@ -107,6 +107,7 @@
 * plot_img
 * plot_img_set
 * plot_plate
+* plot_violin
 * plot_xy
 * plot_xy_interactive
 * read_cellprofiler_dir

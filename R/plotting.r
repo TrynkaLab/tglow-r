@@ -93,6 +93,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #' @param assay The assay to use for coloring, passed to \code{\link{getDataByObject}}
 #' @param slot The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"
 #' @param downsample Should downsampling be applied prior to plot. NA's are removed first
+#' @param facet A vector or name of item to facet on
 #' @param log.ident Should color vector be log2 transformed
 #' @param axis.x Which dimension from reduction to plot in x
 #' @param axis.y Which dimension from reduction to plot in y
@@ -108,7 +109,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #'
 #' @importFrom ggrepel geom_text_repel
 #' @export
-tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", ...) {
+tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, facet=NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", ...) {
     if (!reduction %in% names(object@reduction)) {
         stop("Reduction not found on object")
     }
@@ -121,14 +122,16 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 
     dim <- object@reduction[[reduction]]@x[, c(axis.x, axis.y)]
 
+    na.filter <- rowSums(is.na(dim)) != ncol(dim)
+
     if (is.null(ident)) {
         col <- "blue"
     } else {
         col <- getDataByObject(object, ident, assay = assay, slot = slot)
-        col <- col[rowSums(is.na(dim)) != ncol(dim)]
+        col <- col[na.filter]
     }
 
-    dim <- dim[rowSums(is.na(dim)) != ncol(dim), ]
+    dim <- dim[na.filter, ]
 
     if (!is.null(downsample)) {
         if (length(downsample) == 1) {
@@ -155,6 +158,14 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
     if (log.ident) {
         col <- log2(col)
     }
+    
+    if (length(facet) == 1 && is.character(facet)) {
+        facet <- getDataByObject(object, facet, assay = assay, slot = slot)
+        facet <- facet[na.filter]
+        if (!is.null(downsample)) {
+            facet <- facet[downsample]
+        }
+    }
 
 
     p <- theme_plain(plot_xy(
@@ -164,6 +175,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
         do.lm = F,
         xlab = xlab,
         ylab = ylab,
+        facet=facet,
         ...
     ))
 
@@ -175,7 +187,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
         if ((is.character(col) && length(unique(col)) <= 50) || is.factor(col) && length(unique(col)) <= 50) {
             labs <- make_ident_labels(dim[, 1], dim[, 2], as.character(col))
 
-            p <- p + geom_text_repel(
+            p <- p + ggrepel::geom_text_repel(
                 mapping = aes(x = x, y = y, label = label, col = "grey"),
                 data = labs,
                 col = labs.textcol,
@@ -405,37 +417,103 @@ plot_hex <- function(x, y, bins = 50, binwidth=NULL, do.lm = T, lm.col = "lightg
 #' @param marker.col color of the marker
 #' @param marker.size size of marker
 #' @param marker.shape shape of marker
-#'
+#' @param scale.bar.size Size of the scale bar in microns. Set to 0 to disable
+#' @param scale.bar.pixel.size Size of a pixel in microns
+#' @param scale.bar.location Location of the scale bar, one of "bottomright", "bottomleft", "topright", "topleft"
+#' @param scale.bar.labelsize Size of the scale bar label text. Set to 0 to disable
+#' @param scale.bar.padding Padding of the scale bar from the image border in pixels
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab annotation_raster geom_point coord_fixed theme_void
 #' @export
-plot_img <- function(img, main = "img", marker.add = T, marker.x = NULL, marker.y = NULL, marker.col = "white", marker.size = 8, marker.shape = 18) {
-    p <- ggplot() +
-        ggtitle(main) +
-        annotation_raster(img, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
-        coord_fixed()
-
-    if (marker.add) {
-        if (is.null(marker.x)) {
-            marker.x <- round(dim(img)[1] / 2)
-        }
-
-        if (is.null(marker.y)) {
-            marker.y <- round(dim(img)[2] / 2)
-        }
-
-        marker.x
-
-        p <- p + geom_point(
-            mapping = aes(x = marker.x, y = marker.y),
-            col = marker.col,
-            shape = marker.shape,
-            size = marker.size
-        )
+plot_img <- function(img, main = "img", marker.add = F, marker.x = NULL, marker.y = NULL, marker.col = "white", marker.size = 8, marker.shape = 1, scale.bar.size=0, scale.bar.pixel.size=0.149, scale.bar.padding=5, scale.bar.location="bottomright", scale.bar.labelsize=3) {
+  
+  
+  # Calculate scale bar width in pixels
+  scale.bar.width <- scale.bar.size/scale.bar.pixel.size
+  
+  # Set scale bar position based on image dimensions and location parameter
+  img_height <- dim(img)[1]
+  img_width <- dim(img)[2]
+  padding <- scale.bar.padding
+  
+  # Calculate coordinates based on location
+  if(scale.bar.location == "bottomright") {
+    x_start <- img_width - padding - scale.bar.width
+    x_end <- img_width - padding
+    y_pos <- padding
+  } else if(scale.bar.location == "bottomleft") {
+    x_start <- padding
+    x_end <- padding + scale.bar.width
+    y_pos <- padding
+  } else if(scale.bar.location == "topright") {
+    x_start <- img_width - padding - scale.bar.width
+    x_end <- img_width - padding
+    y_pos <- img_height - padding
+  } else if(scale.bar.location == "topleft") {
+    x_start <- padding
+    x_end <- padding + scale.bar.width
+    y_pos <- img_height - padding
+  } else {
+    stop("Invalid scale.bar.location. Choose from 'bottomright', 'bottomleft', 'topright', 'topleft'.")
+  }
+  
+  # Normalize to 0-1 coordinate system for ggplot
+  x_start <- x_start / img_width
+  x_end <- x_end / img_width
+  y_pos <- y_pos / img_height
+  
+  
+  p <- ggplot() +
+    ggtitle(main) +
+    annotation_raster(img, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
+    coord_fixed() +
+    xlim(c(0,1)) +
+    ylim(c(0,1))
+  
+  if (marker.add) {
+    if (is.null(marker.x)) {
+      marker.x <- round(dim(img)[1] / 2) / img_width
     }
-    return(p + theme_void())
-}
+    
+    if (is.null(marker.y)) {
+      marker.y <- round(dim(img)[2] / 2) / img_height
+    }
+    
+    p <- p + geom_point(
+      mapping = aes(x = marker.x, y = marker.y),
+      col = marker.col,
+      shape = marker.shape,
+      size = marker.size
+    )
+  }
+  
+  
+  if (scale.bar.size > 0) {
+    p <- p +         
+      annotate("segment", 
+               x = x_start, 
+               xend = x_end,
+               y = y_pos, 
+               yend = y_pos,
+               color = "white",
+               size = 1)
+    
+    if (scale.bar.labelsize > 0) {
+      # Add scale bar label
+      p <- p +
+      annotate("text",
+               x = (x_start + x_end)/2,
+               y = y_pos - (scale.bar.labelsize/100),
+               label = paste0(scale.bar.size, " µm"),
+               color = "white",
+               size = scale.bar.labelsize)
+    }
 
+  }
+  
+  
+  return(p + theme_void())
+}
 
 #-------------------------------------------------------------------------------
 #' Plot a series of EBImage images with a title
@@ -476,6 +554,7 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
         theme(plot.background = element_rect(fill = background.col, colour = NA))
 
     title <- ggdraw() + draw_label(main, fontface = "bold")
+    p.tmp + xlim(0,1) + ylim(0,1)
 
     p.final <- plot_grid(title, p.tmp, ncol = 1, rel_heights = c(0.05, 1))
 
@@ -651,7 +730,7 @@ plot_hist  <- function(x,
             xlab(xlab) +
             ggtitle(main) +
             scale_fill_viridis_d()
-        
+
 
     } else {
         p1 <- ggplot(
@@ -750,6 +829,71 @@ plot_box <- function(x, y, xlab = "x", ylab = "y", main = "", facet = NULL, face
     return(p1)
 }
 
+#-------------------------------------------------------------------------------
+#' Plot boxplot with a numerically ordered x and a loess line
+#'
+#' @param x x
+#' @param y y
+#' @param violin Should violin plot be added
+#' @param q Quantiles to add as horizontal lines in the density plot
+#' @param main title
+#' @param xlab xlab
+#' @param ylab ylab
+#' @param facet Vector with facet variable
+#' 
+#' @returns A ggplot2 object
+#' @export
+plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main=NULL, xlab="x", ylab="y"){
+  
+  df <- data.frame(x=x, y=y)
+  
+  if (!is.null(facet)) {
+    df$facet <- facet
+  }
+  
+  # Prepare plots
+  qs <- quantile(df$y, probs = q, na.rm =T)
+  
+  p1 <- ggplot(df,aes(x=x, y=y)) 
+
+  if(violin){
+    p1 <- p1 + geom_violin(fill = "#E0E0E0", color = NA)
+  }
+  
+  p1 <- p1 + stat_summary(fun = "median", 
+                          colour = "blue", 
+                          size = 4, 
+                          geom = "point") + 
+    stat_summary(fun = median, 
+                 fun.min = function(z) { quantile(z,0.25) }, 
+                 fun.max = function(z) { quantile(z,0.75) }, 
+                 colour = "blue") +
+    theme_linedraw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    xlab(xlab) +
+    ylab(ylab)
+
+  
+  p2 <- ggplot(df, aes(y=y)) +
+    geom_density() +
+    geom_hline(yintercept = qs, linetype = "dashed") +
+    cowplot::theme_nothing()
+  
+  if(!is.null(facet)){
+    p1 <- p1 + facet_wrap(~facet)
+  }
+  
+  if (!is.null(main)) {
+    p1 <- p1 + ggtitle(main)
+  }
+
+  p <- patchwork::wrap_plots(p1, p2, widths = c(3, 1))
+  
+  return(p)
+  
+}
+
 
 #------------------------------------------------------------------------------
 #' Simple heatmap with auto labels
@@ -842,6 +986,9 @@ plot_heatmap <- function(data, cellsize = -1, cellwidth = 12, cellheight = 12, l
     
     return(ggplotify::as.ggplot(res$gtable))
 }
+
+
+
 
 
 #-----------------------------------------------------------------------------

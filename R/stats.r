@@ -95,7 +95,7 @@ geometric_mean <- function(x, na.rm=TRUE) {
 
 #' @rdname moments
 #' @export
-mode <- function(x, na.rm=TRUE) {
+mode_distribution <- function(x, na.rm=TRUE) {
   
   if (na.rm) {
     x <- x[!is.na(x)]
@@ -127,7 +127,7 @@ calculate_sumstats <- function(dataset, assay, slot) {
 
   dataset@assays[[assay]]@features[,paste0(slot, "_", "mean")] <- base::colMeans(data, na.rm=T)
   dataset@assays[[assay]]@features[,paste0(slot, "_", "median")] <- matrixStats::colMedians(data, na.rm=T)
-  dataset@assays[[assay]]@features[,paste0(slot, "_", "mode")] <- apply(data, 2, mode, na.rm=T)
+  dataset@assays[[assay]]@features[,paste0(slot, "_", "mode")] <- apply(data, 2, mode_distribution, na.rm=T)
   dataset@assays[[assay]]@features[,paste0(slot, "_", "skew")] <- apply(data, 2, skewness, na.rm=T)
   dataset@assays[[assay]]@features[,paste0(slot, "_", "kurt")] <- apply(data, 2, kurtosis, na.rm=T)
   dataset@assays[[assay]]@features[,paste0(slot, "_", "geom.mean")] <- apply(data, 2, geometric_mean, na.rm=T)

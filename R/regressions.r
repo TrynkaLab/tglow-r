@@ -851,7 +851,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
   out.list <- list(coef = coef,
                    se = se,
                    pval = 2 * pt(-abs(coef/se), df = df),
-                   model.stats = model.stats,
+                   model.stats = as.data.frame(model.stats),
                    df = df,
                    df.m = ncol(design.tmp) - 1,
                    residuals = NULL,
@@ -1007,7 +1007,7 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
     }
 
     # Return output list
-    out.list <- list(coef = coef, se = se, pval = pval, df = df, model.stats = model.stats, residuals = NULL)
+    out.list <- list(coef = coef, se = se, pval = pval, df = df, model.stats = as.data.frame(model.stats), residuals = NULL)
     class(out.list) <- "tglowlm"
     if (return.residuals) {
         out.list$residuals <- residuals

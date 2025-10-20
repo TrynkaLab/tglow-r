@@ -7,12 +7,17 @@
 plot_img(
   img,
   main = "img",
-  marker.add = T,
+  marker.add = F,
   marker.x = NULL,
   marker.y = NULL,
   marker.col = "white",
   marker.size = 8,
-  marker.shape = 18
+  marker.shape = 1,
+  scale.bar.size = 0,
+  scale.bar.pixel.size = 0.149,
+  scale.bar.padding = 5,
+  scale.bar.location = "bottomright",
+  scale.bar.labelsize = 3
 )
 }
 \arguments{
@@ -31,6 +36,16 @@ plot_img(
 \item{marker.size}{size of marker}
 
 \item{marker.shape}{shape of marker}
+
+\item{scale.bar.size}{Size of the scale bar in microns. Set to 0 to disable}
+
+\item{scale.bar.pixel.size}{Size of a pixel in microns}
+
+\item{scale.bar.padding}{Padding of the scale bar from the image border in pixels}
+
+\item{scale.bar.location}{Location of the scale bar, one of "bottomright", "bottomleft", "topright", "topleft"}
+
+\item{scale.bar.labelsize}{Size of the scale bar label text. Set to 0 to disable}
 }
 \value{
 A ggplot2 object
