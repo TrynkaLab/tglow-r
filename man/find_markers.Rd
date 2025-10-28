@@ -26,7 +26,7 @@ find_markers(
 
 \item{assay.image}{The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
-\item{return.top}{Return the top x values by t-statistic. Defaults to 10}
+\item{return.top}{Return the top x values by pvalue. Defaults to 10, set to NULL to return all}
 
 \item{ref.classes}{A vector of values to compare class mean against. Default NULL uses all other classes as reference}
 

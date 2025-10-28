@@ -10,7 +10,7 @@
 #' @param assay The assay to use
 #' @param assay.image The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot The slot to use for finding markers. Can be "data" or "scale.data"
-#' @param return.top Return the top x values by t-statistic. Defaults to 10
+#' @param return.top Return the top x values by pvalue. Defaults to 10, set to NULL to return all
 #' @param ref.classes A vector of values to compare class mean against. Default NULL uses all other classes as reference
 #' @param na.rm Should NA's be removed during t-test
 #'
@@ -23,7 +23,7 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 
     #cur.assay <- slot(dataset[[assay]], slot)@.Data
     cur.assay <- slot(dataset[[assay]], slot)
-    cur.ident <- as.character(tglowr::getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
+    cur.ident <- as.character(getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot))
 
     if (is.null(cur.ident)) {
         stop("Ident not valid")
@@ -119,7 +119,8 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
         subsets <- list()
         for (class in classes) {
             tmp <- res[res$class == class, ]
-            tmp <- tmp[order(tmp$`t-stat`, decreasing = T), ]
+            #tmp <- tmp[order(tmp$pval, decreasing = F), ]
+            tmp <- tmp[order(abs(tmp$`t-stat`), decreasing = T), ]
             subsets[[class]] <- tmp[1:return.top, ]
         }
 
@@ -128,6 +129,249 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
 
     return(res)
 }
+
+#------------------------------------------------------------------------------------------
+#' Find marker features using a linear (mixed) model
+#'
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param ident A column in meta, image.meta, assay, assay.image to use as class labels
+#' @param assay The assay to use
+#' @param slot The slot to use for finding markers
+#' @param covariates Character vector of covariates to use in model
+#' @param assay.covar The assay to grab covariates from
+#' @param slot.covar The slot to grab covariates from
+#' @param formula Formula for the mixed model
+#' @param contrast Contrast matrix for comparisons, see details
+#' @param ref.classes Reference classes to compare against
+#' @param assay.image The image assay to use for grabbing ident
+#' @param return.top Return the top x values by abs(t-stat). Defaults to NULL (all)
+#' @param method Method to use, either "lm" or "lmm"
+#' @param control Control parameters passed to lmerControl()
+#'
+#' @details
+#' 
+#' Defining the contrast matrix:
+#' The contrast matrix should have dimensions n x m where n is the number of levels in ident to test
+#' and m is the number of parameter in the model, includding any fixed effect covariates.
+#' Each row is treated as a separate test and must sum to 1. Positive class should be 1, reference
+#' classes should sum to -1 and all other classes should be 0.
+#'
+#' If NULL (default) a one-vs-all contrast matrix is created.
+#' If NULL and ref.classes is provided, the contrast is one-vs-ref.classes.
+#'
+#' Setting lmerControl:
+#' By default we set check.conv.singular to ignore, as singular fits are common for HCI features with low variance
+#' and these warings can mess up the progress bar.
+#' Rather then a warning, the output matrix will contain a column 'singular_reff' indicating if the fit was singular.
+#' 
+#' @return A data frame with mixed model results
+#' @export
+find_markers_lmm <- function(
+    dataset,
+    ident,
+    assay,
+    slot,
+    covariates=NULL,
+    assay.covar = NULL,
+    slot.covar = NULL,
+    formula = NULL,
+    contrast = NULL,
+    ref.classes = NULL,
+    assay.image = NULL,
+    return.top=NULL,
+    method="lmm",
+    control=lme4::lmerControl(check.conv.singular=list(action='ignore', tol=1e-4))
+) {
+  # Input validation
+  if (is.null(dataset) || is.null(ident) || is.null(assay) || is.null(slot)) {
+    stop("Required parameters missing")
+  }
+  
+  cur.assay <- slot(dataset[[assay]], slot)
+  cur.ident <- getDataByObject(dataset, ident, assay = assay, assay.image = assay.image, slot = slot)
+  if (is.null(cur.ident)) {
+    stop("Ident not valid")
+  }
+  
+  classes <- unique(cur.ident)
+  
+  # Sanity checking
+  if (length(classes) <= 1) {
+    stop("Ident only has one class")
+  }
+  if (length(classes) > 200) {
+    stop("More than 200 classes found, this is likely not correct, so returning NULL")
+  } else if (length(classes) > 50) {
+    warning("More than 50 classes found, are you sure you want to proceed?")
+  } 
+  if (length(classes) != nrow(contrast) && !is.null(contrast)) {
+    stop("Number of classes does not match number of rows in contrast matrix")
+  }
+  
+  if (!is.null(formula)) {
+    warning("If the formula contains fixed effects, it will crash, fixed covariates are currently not supported unless you provide a contrast matrix")
+  }
+  
+  if (method=="lm" && !is.null(covariates)) {
+    warning("Specified covariates with method LM, they are currently ignored, unless a custom contrast matrix is provided")
+  }
+  
+  # Fetch covariates into a df
+  if (!is.null(covariates)) {
+    covar <- getDataByObject(dataset, covariates, assay=assay.covar, slot=slot.covar)
+    
+    if (is.null(formula)) {
+      formula <- paste0("(1|", paste0(colnames(covar), collapse=":"), ")")
+    } else {
+      if (!is.character(formula)) {
+        formula <- as.character(formula)
+      }
+      # Sanity checking
+      if (startsWith(formula, "~") || startsWith(formula, " ~") || startsWith(formula, "+") || startsWith(formula, " +")) {
+        stop("Formula must only be the latter component of the full formula, the former part is: 'feature ~ -1 + class + '")
+      }
+    }
+  } else {
+    if (method == "lmm") {
+      stop("Must provide covariates with method 'lmm'")
+    }
+  }
+  
+  # Setup the contrast matrix
+  class <- as.factor(cur.ident)
+  
+  if (is.null(contrast)) {
+    lvls               <- levels(class)
+    contrast           <- matrix(0, ncol=length(lvls), nrow=length(lvls))
+    rownames(contrast) <- lvls
+    colnames(contrast) <- lvls
+    if (is.null(ref.classes)) {
+      contrast[lvls, lvls] <- -1*(1/(length(lvls)-1))
+      diag(contrast)     <- 1
+      
+    } else {
+      contrast[,ref.classes] <- -1*(1/length(ref.classes))
+      diag(contrast)         <- 1
+      
+      # Ensures the contrast for ref classes is not tested
+      contrast[ref.classes,] <-0
+    }
+  }
+  
+  
+  # Results data frame
+  res   <- data.frame()
+  pb    <- progress::progress_bar$new(format = "[INFO] Finding markers [:bar] :current/:total (:percent) eta :eta", total = ncol(cur.assay))
+  for (feature in colnames(cur.assay)) {
+    pb$tick()
+    
+    #---------------------------------------------------------------------------
+    # Calculate a class specific offset (mean of all others), for sanity checks only
+    class.means        <- rep(NA, length(classes))
+    class.refmeans     <- rep(NA, length(classes))
+    class.refcount     <- rep(NA, length(classes))
+    
+    names(class.means)    <- classes
+    names(class.refmeans) <- classes
+    names(class.refcount) <- classes
+    
+    for (cc in classes) {
+      if (is.null(ref.classes)) {
+        class.means[cc]     <- mean(cur.assay[cur.ident == cc, feature], na.rm=T)
+        class.refmeans[cc]  <- mean(cur.assay[cur.ident != cc, feature], na.rm=T)
+        class.refcount[cc]  <- sum(cur.ident != cc, na.rm=T)
+      } else {
+        class.means[cc]    <- mean(cur.assay[cur.ident == cc, feature], na.rm=T)
+        class.refmeans[cc] <- mean(cur.assay[cur.ident %in% ref.classes, feature], na.rm=T)
+        class.refcount[cc] <- sum(cur.ident %in% ref.classes, na.rm=T)
+      }
+    }
+    #---------------------------------------------------------------------------
+    # Side track on using base LM
+    if (method == "lm") {
+      m1        <- lm(cur.assay[,feature] ~ -1 + class)
+      beta      <- coef(m1)
+      V         <- vcov(m1)
+      
+      # Estimate the effects of the contrasts
+      df_res    <- df.residual(m1)
+      t_crit    <- qt(1 - 0.05 / 2, df_res)
+      
+      res.tmp        <- data.frame()
+      for (i in 1:nrow(contrast)) {
+        
+        # Estimate the effect for the contrast
+        theta_hat <- as.numeric(contrast[i,,drop=F] %*% beta)
+        
+        # Estimate the variance
+        var_theta <- as.numeric(contrast[i,,drop=F] %*% V %*% t(contrast[i,,drop=F]))
+        
+        # T statistic & pval
+        t_stat  <- theta_hat / sqrt(var_theta)
+        p_val   <- 2 * (pt(-abs(t_stat), df_res, lower.tail=T))
+        
+        lower   <- theta_hat - t_crit * sqrt(var_theta)
+        upper   <- theta_hat + t_crit * sqrt(var_theta)
+        
+        res.tmp <- rbind(res.tmp,
+                         data.frame(Estimate = theta_hat,
+                                    `Std. Error`=sqrt(var_theta),
+                                    df = df_res,
+                                    `t value` = t_stat,
+                                    lower=lower,
+                                    upper=upper,
+                                    ` Pr(>|t|)` = p_val,
+                                    check.names = F))
+      }
+      
+      # Annotate the results
+      res.cur  <- data.frame(feature,
+                             class=rownames(res.tmp),
+                             res.tmp,
+                             check.names = F)
+    } else if (method == "lmm") {
+      formula.final <- as.formula(paste0("cur.assay[,feature] ~ -1 + class  + ", formula))
+      
+      # Now estimate the class ofssets, keeping the well into account
+      m        <- lmerTest::lmer(formula.final, data=covar, control=control)
+      res.tmp  <- lmerTest::contest(m, L=contrast, joint=F)
+      res.cur  <- data.frame(feature,
+                             class=rownames(res.tmp),
+                             res.tmp,
+                             check.names = F,
+                             singular_reff = lme4::isSingular(m))
+    } else {
+      stop("Supplied method not valid, must be one of 'lm' or 'lmm'")
+    }
+
+    #---------------------------------------------------------------------------
+
+    # Add the stats on the means
+    res.cur$`mean.diff`  <- class.means[res.cur$class] - class.refmeans[res.cur$class]
+    res.cur$`mean.se`    <- NA
+    res.cur$`mean.ref`   <- class.refmeans[res.cur$class]
+    res.cur$`mean.class` <- class.means[res.cur$class]
+    
+    res <- rbind(res, res.cur)
+  }
+  
+  if (!is.null(return.top)) {
+    subsets <- list()
+    for (class in classes) {
+      tmp <- res[res$class == class, ]
+      tmp <- tmp[order(abs(tmp$`t-stat`), decreasing = F), ]
+      subsets[[class]] <- tmp[1:return.top, ]
+    }
+    res <- do.call(rbind, subsets)
+  }
+  
+  class(res) <- c(class(res), "tglow_markers")
+  
+  return(res)
+}
+
+
+
 
 
 #-------------------------------------------------------------------------------

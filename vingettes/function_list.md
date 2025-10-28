@@ -22,6 +22,7 @@
 * apply_image_filters
 * boxcox_transform
 * calculate_clustering
+* calculate_feature_clustering
 * calculate_feature_filters
 * calculate_lm
 * calculate_lmm
@@ -66,6 +67,7 @@
 * filter_vec_mod_z_perc
 * filter_vec_mod_z_sum
 * find_markers
+* find_markers_lmm
 * find_outliers_pca
 * geometric_mean
 * getDataByObject
@@ -106,6 +108,7 @@
 * plot_hist
 * plot_img
 * plot_img_set
+* plot_markers
 * plot_plate
 * plot_violin
 * plot_xy

@@ -895,6 +895,144 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 }
 
 
+#-------------------------------------------------------------------------------
+#' Plot marker analysis results as a bubble plot
+#'
+#' @description
+#' Creates a bubble plot visualization of marker analysis results, where dot size 
+#' represents percentage of significant features and color represents effect size.
+#'
+#' @param markers A tglow.markers object from find_markers() or find_markers_lmm()
+#' @param grouping.x Column name in markers or character vector for x-axis grouping
+#' @param grouping.x2 Optional second grouping level for faceting
+#' @param feature.clust Column name for feature clustering, features in same cluster are averaged first
+#' @param annot Optional annotation data.frame with rownames matching features
+#' @param size.total If TRUE, calculate percentages using total features, if FALSE use significant only
+#' @param ylab Label for y-axis
+#' @param xlab Label for x-axis  
+#' @param return.data If TRUE returns list with plot data and plot, if FALSE returns only plot
+#' @param flip.axes If TRUE flips x and y axes
+#'
+#' @details
+#' The plot shows markers as points where:
+#' - Size represents percentage of significant features in each group
+#' - Color represents effect size (estimate) from statistical test
+#' - Y-axis shows marker classes
+#' - X-axis shows groups defined by grouping.x
+#' - Optional faceting by grouping.x2
+#'
+#' @return A ggplot2 object or if return.data=TRUE, a list with:
+#' \itemize{
+#'   \item data: Data frame with plotting data
+#'   \item plot: ggplot2 object
+#' }
+#'
+#' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip
+#' @export
+plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F) {
+  
+  if (!is(markers, "tglow_markers")) {
+    stop("markers must be a find_markers results table")
+  }
+  
+  # Add annotations
+  if (!is.null(annot)) {
+    if (is.null(rownames(annot))) {
+      stop("annot must have rownames set")
+    }
+    markers <- cbind(markers, annot[markers$feature,])
+  }
+  
+  # Grouping
+  markers$groups.x <- check_df_vector(markers, grouping.x)
+  markers$groups.x2 <- check_df_vector(markers, grouping.x2)
+  
+  # Feature.clust
+  markers$feature.clust <- check_df_vector(markers, feature.clust)
+  
+  if (!is.null(grouping.x2)) {
+    # Paste them together with something silly and unique
+    markers$groups.x <- paste0(markers$groups.x, ';-;', markers$groups.x2)
+  }
+  
+  # Filter significance
+  markers$padj     <- p.adjust(markers$` Pr(>|t|)`, method=adjust)
+  markers.sig      <- markers[markers$padj < alpha,]
+
+  if (is.null(feature.clust)) {
+    df.plot      <- markers.sig
+  } else {
+    # Average the feature groups
+    df.plot         <- aggregate_metadata(markers.sig, paste0(markers.sig$class, "__", markers.sig$groups.x, "__", markers.sig$feature.clust), "mean")
+    df.plot$feature <- df.plot$feature.clust
+  }
+  
+  #---------------------
+  # Determine the total size per group.
+  total   <- c()
+  names   <- c()
+  if (size.total) {
+    for (group in unique(markers$groups.x)) {
+      names   <- c(names, group)
+      total   <- c(total, length(unique(markers[markers$groups.x == group, "feature"])))
+    }
+  } else {
+    for (group in unique(df.plot$groups.x)) {
+      names   <- c(names, group)
+      total   <- c(total, length(unique(df.plot[df.plot$groups.x == group, "feature"])))
+    }
+  }
+
+  names(total) <- names
+  #---------------------
+  # Count the number of features per class
+  tmp           <- table(df.plot$class, df.plot$groups.x)
+  
+  # Average
+  df.plot       <- aggregate_metadata(df.plot, paste0(df.plot$class, "__", df.plot$groups.x), "mean")
+  
+  # Calculate the size of the dots
+  df.plot$nsig  <- mapply(function(cl, gr) tmp[cl, gr], df.plot$class, df.plot$groups.x)    
+  df.plot$total <- total[df.plot$groups.x]
+  df.plot$size  <- (df.plot$nsig / df.plot$total)*100
+  
+  if (!is.null(df.plot$groups.x2)) {
+    df.plot$groups.x <- gsub("(.*);-;.*", "\\1", df.plot$groups.x)
+  }
+  
+  #---------------------
+  p1  <- ggplot(df.plot, aes(y=class, x=groups.x, size=size, col=Estimate)) +
+    geom_point() +
+    scale_color_gradient2(low="navy", mid="white", high="red") +
+    xlab(xlab) +
+    ylab(ylab)
+  
+  
+  if (flip.axes) {
+    p1 <- p1 + coord_flip()
+  }
+  
+  if (!is.null(df.plot$groups.x2)) {
+    p1 <- p1 + facet_wrap(~groups.x2,
+                          scales="free_x",
+                          nrow=1) 
+  }
+
+  p1 <- p1 +
+    theme_linedraw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x=element_text(angle=45, hjust=1))
+  
+  if (return.data) {
+    return(list(data=df.plot, plot=p1))
+  } else {
+    return(p1)
+  }
+}
+
+
+
 #------------------------------------------------------------------------------
 #' Simple heatmap with auto labels
 #'

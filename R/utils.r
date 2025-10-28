@@ -345,7 +345,7 @@ well_to_index <- function(well) {
 
 
 
-##-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #' Match two objects together based on shared images and nearest neighbour in XY
 #'
 #' @description Adds features to an existing assay
@@ -630,4 +630,42 @@ log_state <- function(vars, file, max_rows = 20) {
   }
   
   cat(sep_line, "\n", file = con)
+}
+
+#-------------------------------------------------------------------------------
+#' Check and validate grouping vector against a data frame
+#'
+#' @description
+#' Validates a grouping parameter that can be either a column name in a data frame
+#' or a character vector matching the number of rows in the data frame.
+#'
+#' @param df A data frame to check against
+#' @param grouping Either a single column name in df or a character vector of length nrow(df)
+#'
+#' @details
+#' The function handles three cases:
+#' 1. grouping is NULL (returns NULL)
+#' 2. grouping is a single string matching a column name in df (returns that column)
+#' 3. grouping is a character vector of length nrow(df) (returns the vector)
+#'
+#' @return The grouping vector if valid, NULL if grouping was NULL
+#'
+#' @keywords internal
+check_df_vector <- function(df, grouping) {
+  # Set the facet
+  if (!is.null(grouping)) {
+    if (length(grouping) == 1 && is.character(grouping)) {
+      if (!grouping %in% colnames(df)) {
+        stop("grouping is length 1 but is not a column name on df or annot")
+      }
+      groups <- df[,grouping]
+    } else if (is.character(grouping) && length(grouping) == nrow(df)) {
+      groups <- grouping
+    } else {
+      stop("grouping must be a column name on df or annot, or a character of length nrow(df)")
+    }
+  } else {
+    groups <- NULL
+  }
+  return(groups)
 }
