@@ -12,6 +12,7 @@ lmm_matrix(
   residuals.only = FALSE,
   return.residuals = FALSE,
   refit = FALSE,
+  control = lme4::lmerControl(check.conv.singular = list(action = "ignore", tol = 1e-04)),
   ...
 )
 }
@@ -30,6 +31,8 @@ lmm_matrix(
 
 \item{refit}{Refit the models using MLE during the LRT (anova)}
 
+\item{control}{Control parameters passed to lmerTest::lmerControl(). Set to ignore singularity by default.}
+
 \item{...}{Remaining parameters passed to \code{\link[lmerTest:lmer]{lmerTest::lmer()}}}
 }
 \value{
@@ -37,4 +40,9 @@ A list with regression results
 }
 \description{
 Fit a linear mixed model using REML / MLE (lme4) and find coefficients
+}
+\details{
+By default, singularity warnings are ignored in the lmer fitting as these are common with complex designs and some HCI features.
+Please check the singularity status in the output model.stats 'singular_reff' and 'singular_reff_null'. If you have many singular fits,
+its advised to simplify your model as your random effect sructure might be too complex for the data at hand.
 }

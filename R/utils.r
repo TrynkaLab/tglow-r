@@ -671,3 +671,49 @@ check_df_vector <- function(df, grouping) {
   }
   return(groups)
 }
+
+#----------------------------------------------------------------------------------------
+#' Select top markers per class from regression results
+#' @description
+#' Selects the top markers per class based on absolute t-statistic from regression results
+#' @param res A data.frame of regression results with columns 'class' and 't_stat'
+#' @param return.top Number of top markers to return per class
+#' @param sort.by Criterion to sort markers by: 'abs_t_stat' (default), 't_stat', or 'p_val'
+#' @param force.n If TRUE, returns exactly return.top markers per class even if features overlap
+#' @returns A tglow_markers data frame of top markers per class
+#' @export
+select_top_markers <- function(markers, return.top, sort.by="abs_t_stat", force.n=FALSE){
+
+    if (!is(markers, "tglow_markers")) {
+      stop("markers must be of class tglow_markers")
+    }
+  
+    subsets <- list()
+    features <- c()
+    for (class in unique(markers$class)) {
+      tmp <- markers[markers$class == class, ]
+      
+      if (sort.by == "abs_t_stat") {
+        tmp <- tmp[order(abs(tmp$`t_stat`), decreasing = T), ]
+      } else if (sort.by == "t_stat") {
+        tmp <- tmp[order(tmp$`t_stat`, decreasing = T), ]
+      } else if (sort.by == "p_val") {
+        tmp <- tmp[order(tmp$`pval`, decreasing = F), ]
+      } else {
+        stop("sort.by must be 'abs_t_stat', 't_stat' or 'p_val'")
+      }
+      subsets[[class]] <- tmp[1:return.top, ]
+      features         <- c(features, as.character(subsets[[class]]$feature))
+    }
+    
+    if (!force.n) {
+      # Select all marker features for all classes
+      features <- unique(features)
+      res <- markers[markers$feature %in% features, ]
+    } else {
+      # Select only the top marker features for all classes
+      res         <- do.call(rbind, subsets)
+    }
+    class(res) <- c(class(res), "tglow_markers")
+    return(res)
+}

@@ -903,7 +903,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #' represents percentage of significant features and color represents effect size.
 #'
 #' @param markers A tglow.markers object from find_markers() or find_markers_lmm()
-#' @param grouping.x Column name in markers or character vector for x-axis grouping
+#' @param grouping.x Column name in markers or character vector for x-axis grouping. Defualts to "feature" (plot each marker)
 #' @param grouping.x2 Optional second grouping level for faceting
 #' @param feature.clust Column name for feature clustering, features in same cluster are averaged first
 #' @param annot Optional annotation data.frame with rownames matching features
@@ -914,6 +914,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #' @param flip.axes If TRUE flips x and y axes
 #' @param adjust Method for p-value adjustment, see ?p.adjust
 #' @param alpha Significance threshold for adjusted p-values
+#' @param topn If not NULL, only plot the top n markers per class based on effect size, ignores significance and grouping.x, grouping.x2
 #'
 #' @details
 #' The plot shows markers as points where:
@@ -931,7 +932,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #'
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip
 #' @export
-plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05) {
+plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05, topn=NULL) {
   
   if (!is(markers, "tglow_markers")) {
     stop("markers must be a find_markers results table")
@@ -958,17 +959,26 @@ plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NU
   }
   
   # Filter significance
-  markers$padj     <- p.adjust(markers$pval, method=adjust)
-  markers.sig      <- markers[markers$padj < alpha,]
-
-  if (is.null(feature.clust)) {
-    df.plot         <- markers.sig
+  if (!is.null(topn)) {
+    # For each class get the top n based on abs(test statistic)
+    df.plot          <- select_top_markers(markers, topn) 
   } else {
-    # Average the feature groups
-    df.plot         <- aggregate_metadata(markers.sig, paste0(markers.sig$class, "__", markers.sig$groups.x, "__", markers.sig$feature.clust), "mean")
-    df.plot$feature <- df.plot$feature.clust
+    markers$padj     <- p.adjust(markers$pval, method=adjust)
+    markers.sig      <- markers[markers$padj < alpha,]
+    
+    if (nrow(markers.sig) == 0) {
+        stop("No significant markers found with the given alpha and adjustment method")
+    }
+
+    if (is.null(feature.clust)) {
+        df.plot         <- markers.sig
+    } else {
+        # Average the feature groups
+        df.plot         <- aggregate_metadata(markers.sig, paste0(markers.sig$class, "__", markers.sig$groups.x, "__", markers.sig$feature.clust), "mean")
+        df.plot$feature <- df.plot$feature.clust
+    }
   }
-  
+
   #---------------------
   # Determine the total size per group.
   total   <- c()
@@ -990,8 +1000,10 @@ plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NU
   # Count the number of features per class
   tmp           <- table(df.plot$class, df.plot$groups.x)
   
-  # Average
-  df.plot       <- aggregate_metadata(df.plot, paste0(df.plot$class, "__", df.plot$groups.x), "mean")
+  # Average if grouping > 1
+  if (max(table(df.plot$groups.x, df.plot$class)) > 1) {
+      df.plot       <- aggregate_metadata(df.plot, paste0(df.plot$class, "__", df.plot$groups.x), "mean")
+  }
   
   # Calculate the size of the dots
   df.plot$nsig  <- mapply(function(cl, gr) tmp[cl, gr], df.plot$class, df.plot$groups.x)    

@@ -119,6 +119,7 @@
 * scale_assay
 * scale_assay_min_max
 * scale_dataset
+* select_top_markers
 * skewness
 * tglow_dimplot
 * tglow_dimplot_interactive

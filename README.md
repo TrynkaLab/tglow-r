@@ -52,15 +52,22 @@ tglow_dimplot(tglow, "UMAP.PCA.raw", ident="clusters_res_0.1")
 tglow_dimplot(tglow, "UMAP.PCA.raw", ident="drug")
 tglow_dimplot(tglow, "UMAP.PCA.raw", ident="donor")
 
-# Find markers
-markers <- find_markers(tglow, "clusters_res_0.1", assay="raw", slot="scale.data")
+# Find markers with a linear mixed model
+markers <- find_markers_lmm(tglow,
+                            "clusters_res_0.1", 
+                            assay="raw", 
+                            slot="scale.data",
+                            covariates=c("Metadata_plate", "Metadata_well"))
+
+# Plot top 5 markers
+plot_markers(markers, topn=5)
 
 # Calculate drug effects with a linear mixed model
 drug.effect <- calculate_lmm(tglow,
                              assay="raw",
                              slot="data",
-                             covariates=c("drug", "Metadata_well", "donor"),
-                             formula= ~ drug + (1|Metadata_well) + (1|donor))
+                             covariates=c("drug", "Metadata_plate", "Metadata_well", "donor"),
+                             formula= ~ drug + (1|Metadata_plate:Metadata_well) + (1|donor))
 ```
 
 

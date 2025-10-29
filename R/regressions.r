@@ -116,20 +116,11 @@ find_markers_ttest <- function(dataset, ident, assay, slot, assay.image = NULL, 
         }
     }
 
-    if (!is.null(return.top)) {
-        subsets <- list()
-        for (class in classes) {
-            tmp <- res[res$class == class, ]
-            #tmp <- tmp[order(tmp$pval, decreasing = F), ]
-            tmp <- tmp[order(abs(tmp$`t_stat`), decreasing = T), ]
-            subsets[[class]] <- tmp[1:return.top, ]
-        }
-
-        res <- do.call(rbind, subsets)
-    }
-
     class(res) <- c(class(res), "tglow_markers")
 
+    if (!is.null(return.top)) {
+      res <- select_top_markers(res, return.top, "abs_t_stat")
+    }
     return(res)
 }
 
@@ -355,18 +346,11 @@ find_markers_lmm <- function(
     
     res <- rbind(res, res.cur)
   }
-  
-  if (!is.null(return.top)) {
-    subsets <- list()
-    for (class in classes) {
-      tmp <- res[res$class == class, ]
-      tmp <- tmp[order(abs(tmp$`t_stat`), decreasing = F), ]
-      subsets[[class]] <- tmp[1:return.top, ]
-    }
-    res <- do.call(rbind, subsets)
-  }
-  
   class(res) <- c(class(res), "tglow_markers")
+
+  if (!is.null(return.top)) {
+    res <- select_top_markers(res, return.top, "abs_t_stat")
+  }
   
   return(res)
 }
@@ -1123,15 +1107,21 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param refit Refit the models using MLE during the LRT (anova)
+#' @param control Control parameters passed to lmerTest::lmerControl(). Set to ignore singularity by default.
 #' @param ... Remaining parameters passed to [lmerTest::lmer()]
 #'
+#' @details 
+#' By default, singularity warnings are ignored in the lmer fitting as these are common with complex designs and some HCI features.
+#' Please check the singularity status in the output model.stats 'singular_reff' and 'singular_reff_null'. If you have many singular fits,
+#' its advised to simplify your model as your random effect sructure might be too complex for the data at hand.
+#' 
 #' @returns A list with regression results
 #' @importFrom progress progress_bar
 #' @importFrom lmerTest lmer
 #' @importFrom performance model_performance
 #' @importFrom lme4 lFormula
 #' @export
-lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = FALSE, ...) {
+lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = FALSE, control=lme4::lmerControl(check.conv.singular=list(action='ignore', tol=1e-4)), ...) {
     
     if (is(formula, "formula")) {
         formula <- paste0(as.character(formula), collapse=" ")
@@ -1178,15 +1168,14 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
         df <- coef
 
         if (!is.null(formula.null)) {
-            model.stats <- matrix(NA, nrow = ncol(response), 7)
+            model.stats <- matrix(NA, nrow = ncol(response), 9)
             rownames(model.stats) <- colnames(response)
-            colnames(model.stats) <- c("r2_cond", "r2_marg","r2_cond_null", "r2_marg_null", "lrt_chisqr", "lrt_p-value", "lrt_df")
+            colnames(model.stats) <- c("r2_cond", "r2_marg", "singular_reff", "r2_cond_null", "r2_marg_null", "singular_reff_null", "lrt_chisqr", "lrt_p-value", "lrt_df")
         } else {
-            model.stats <- matrix(NA, nrow = ncol(response), 2)
+            model.stats <- matrix(NA, nrow = ncol(response), 3)
             rownames(model.stats) <- colnames(response)
-            colnames(model.stats) <- c("r2_cond", "r2_marg")
+            colnames(model.stats) <- c("r2_cond", "r2_marg", "singular_reff")
         }
-
     }
 
     # Matrix to save residuals
@@ -1210,11 +1199,11 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
             next()
         }
         
-        m <- lmerTest::lmer(form.cur, data = data.cur, ...)
+        m <- lmerTest::lmer(form.cur, data = data.cur, control=control, ...)
 
         if (!is.null(formula.null)) {
             form.null.cur <- as.formula(paste(colnames(data.cur)[1], formula.null))
-            m.null <- lmerTest::lmer(form.null.cur, data = data.cur, ...)
+            m.null <- lmerTest::lmer(form.null.cur, data = data.cur, control=control, ...)
         }
 
         if (return.residuals) {
@@ -1232,12 +1221,14 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
             perf <- performance::model_performance(m)
             model.stats[col, "r2_cond"] <- perf$R2_conditional
             model.stats[col, "r2_marg"] <- perf$R2_marginal
+            model.stats[col, "singular_reff"] <- lme4::isSingular(m)
 
             if (!is.null(formula.null)) {
                 lrt <- anova(m.null, m, refit = refit)
                 perf.null <- performance::model_performance(m.null)
                 model.stats[col, "r2_cond_null"] <- perf.null$R2_conditional
                 model.stats[col, "r2_marg_null"] <- perf.null$R2_marginal
+                model.stats[col, "singular_reff_null"] <- lme4::isSingular(m.null)
                 
                 model.stats[col, "lrt_chisqr"]   <- lrt$`Chisq`[2]
                 model.stats[col, "lrt_p-value"]  <- lrt$`Pr(>Chisq)`[2]

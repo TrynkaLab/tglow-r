@@ -12,7 +12,7 @@ check_df_vector(df, grouping)
 \item{grouping}{Either a single column name in df or a character vector of length nrow(df)}
 }
 \value{
-The grouping vector if valid, NULL if grouping was NULL
+The grouping vector as a character if valid, NULL if grouping was NULL
 }
 \description{
 Validates a grouping parameter that can be either a column name in a data frame

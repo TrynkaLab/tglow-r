@@ -6,7 +6,7 @@
 \usage{
 plot_markers(
   markers,
-  grouping.x,
+  grouping.x = "feature",
   grouping.x2 = NULL,
   feature.clust = NULL,
   annot = NULL,
@@ -16,13 +16,14 @@ plot_markers(
   return.data = F,
   flip.axes = F,
   adjust = "bonferroni",
-  alpha = 0.05
+  alpha = 0.05,
+  topn = NULL
 )
 }
 \arguments{
 \item{markers}{A tglow.markers object from find_markers() or find_markers_lmm()}
 
-\item{grouping.x}{Column name in markers or character vector for x-axis grouping}
+\item{grouping.x}{Column name in markers or character vector for x-axis grouping. Defualts to "feature" (plot each marker)}
 
 \item{grouping.x2}{Optional second grouping level for faceting}
 
@@ -43,6 +44,8 @@ plot_markers(
 \item{adjust}{Method for p-value adjustment, see ?p.adjust}
 
 \item{alpha}{Significance threshold for adjusted p-values}
+
+\item{topn}{If not NULL, only plot the top n markers per class based on effect size, ignores significance and grouping.x, grouping.x2}
 }
 \value{
 A ggplot2 object or if return.data=TRUE, a list with:
