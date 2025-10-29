@@ -912,6 +912,8 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #' @param xlab Label for x-axis  
 #' @param return.data If TRUE returns list with plot data and plot, if FALSE returns only plot
 #' @param flip.axes If TRUE flips x and y axes
+#' @param adjust Method for p-value adjustment, see ?p.adjust
+#' @param alpha Significance threshold for adjusted p-values
 #'
 #' @details
 #' The plot shows markers as points where:
@@ -929,7 +931,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #'
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip
 #' @export
-plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F) {
+plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05) {
   
   if (!is(markers, "tglow_markers")) {
     stop("markers must be a find_markers results table")
@@ -944,7 +946,7 @@ plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NU
   }
   
   # Grouping
-  markers$groups.x <- check_df_vector(markers, grouping.x)
+  markers$groups.x  <- check_df_vector(markers, grouping.x)
   markers$groups.x2 <- check_df_vector(markers, grouping.x2)
   
   # Feature.clust
@@ -956,11 +958,11 @@ plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NU
   }
   
   # Filter significance
-  markers$padj     <- p.adjust(markers$` Pr(>|t|)`, method=adjust)
+  markers$padj     <- p.adjust(markers$pval, method=adjust)
   markers.sig      <- markers[markers$padj < alpha,]
 
   if (is.null(feature.clust)) {
-    df.plot      <- markers.sig
+    df.plot         <- markers.sig
   } else {
     # Average the feature groups
     df.plot         <- aggregate_metadata(markers.sig, paste0(markers.sig$class, "__", markers.sig$groups.x, "__", markers.sig$feature.clust), "mean")
@@ -1001,13 +1003,12 @@ plot_markers <- function(markers, grouping.x, grouping.x2=NULL, feature.clust=NU
   }
   
   #---------------------
-  p1  <- ggplot(df.plot, aes(y=class, x=groups.x, size=size, col=Estimate)) +
+  p1  <- ggplot(df.plot, aes(y=class, x=groups.x, size=size, col=estimate)) +
     geom_point() +
     scale_color_gradient2(low="navy", mid="white", high="red") +
     xlab(xlab) +
     ylab(ylab)
-  
-  
+
   if (flip.axes) {
     p1 <- p1 + coord_flip()
   }

@@ -648,7 +648,7 @@ log_state <- function(vars, file, max_rows = 20) {
 #' 2. grouping is a single string matching a column name in df (returns that column)
 #' 3. grouping is a character vector of length nrow(df) (returns the vector)
 #'
-#' @return The grouping vector if valid, NULL if grouping was NULL
+#' @return The grouping vector as a character if valid, NULL if grouping was NULL
 #'
 #' @keywords internal
 check_df_vector <- function(df, grouping) {
@@ -664,6 +664,8 @@ check_df_vector <- function(df, grouping) {
     } else {
       stop("grouping must be a column name on df or annot, or a character of length nrow(df)")
     }
+    
+    groups <- as.character(groups)
   } else {
     groups <- NULL
   }

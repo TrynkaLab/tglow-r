@@ -14,7 +14,9 @@ plot_markers(
   ylab = "class",
   xlab = "group",
   return.data = F,
-  flip.axes = F
+  flip.axes = F,
+  adjust = "bonferroni",
+  alpha = 0.05
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ plot_markers(
 \item{return.data}{If TRUE returns list with plot data and plot, if FALSE returns only plot}
 
 \item{flip.axes}{If TRUE flips x and y axes}
+
+\item{adjust}{Method for p-value adjustment, see ?p.adjust}
+
+\item{alpha}{Significance threshold for adjusted p-values}
 }
 \value{
 A ggplot2 object or if return.data=TRUE, a list with:

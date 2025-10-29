@@ -17,7 +17,7 @@
 #' @returns A data.frame with t-test results
 #' @importFrom progress progress_bar
 #' @export
-find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = 10, ref.classes = NULL, na.rm = T) {
+find_markers_ttest <- function(dataset, ident, assay, slot, assay.image = NULL, return.top = NULL, ref.classes = NULL, na.rm = T) {
     # Check input
     check_dataset_assay_slot(dataset, assay, slot)
 
@@ -35,8 +35,9 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
         stop("Ident only has one class")
     }
 
-    res <- data.frame(matrix(NA, nrow = ncol(cur.assay) * length(classes), ncol = 9))
-    colnames(res) <- c("class", "feature", "t-stat", "df", "pval", "mean.diff", "mean.se", "mean.ref", "mean.class")
+    res <- data.frame(matrix(NA, nrow = ncol(cur.assay) * length(classes), ncol = 12))
+    colnames(res) <- c("class", "feature", "estimate", "se", "df", "t_stat", "lower", "upper",  "pval", "mean.se", "mean.ref", "mean.class")
+    
     i <- 1
 
     pb <- progress::progress_bar$new(format = "[INFO] Finding markers [:bar] :current/:total (:percent) eta :eta", total = ncol(cur.assay) * length(classes))
@@ -99,33 +100,35 @@ find_markers <- function(dataset, ident, assay, slot, assay.image = NULL, return
             }
 
             tmp <- t.test(x, y, na.rm = na.rm)
-
-            res[i, "class"] <- class
-            res[i, "feature"] <- col
-            res[i, "t-stat"] <- tmp$statistic
-            res[i, "df"] <- tmp$parameter
-            res[i, "pval"] <- tmp$p.value
-            res[i, "mean.diff"] <- tmp$estimate[1] - tmp$estimate[2]
-            res[i, "mean.se"] <- tmp$stderr
-            res[i, "mean.ref"] <- tmp$estimate[2]
+            res[i, "class"]      <- class
+            res[i, "feature"]    <- col
+            res[i, "estimate"]   <- tmp$estimate[1] - tmp$estimate[2]
+            res[i, "se"]         <- tmp$stderr
+            res[i, "df"]         <- tmp$parameter
+            res[i, "t_stat"]     <- tmp$statistic
+            res[i, "lower"]      <- tmp$conf.int[1]
+            res[i, "upper"]      <- tmp$conf.int[2]
+            res[i, "pval"]       <- tmp$p.value
+            res[i, "mean.ref"]   <- tmp$estimate[2]
             res[i, "mean.class"] <- tmp$estimate[1]
 
             i <- i + 1
         }
     }
 
-
     if (!is.null(return.top)) {
         subsets <- list()
         for (class in classes) {
             tmp <- res[res$class == class, ]
             #tmp <- tmp[order(tmp$pval, decreasing = F), ]
-            tmp <- tmp[order(abs(tmp$`t-stat`), decreasing = T), ]
+            tmp <- tmp[order(abs(tmp$`t_stat`), decreasing = T), ]
             subsets[[class]] <- tmp[1:return.top, ]
         }
 
         res <- do.call(rbind, subsets)
     }
+
+    class(res) <- c(class(res), "tglow_markers")
 
     return(res)
 }
@@ -314,13 +317,13 @@ find_markers_lmm <- function(
         upper   <- theta_hat + t_crit * sqrt(var_theta)
         
         res.tmp <- rbind(res.tmp,
-                         data.frame(Estimate = theta_hat,
-                                    `Std. Error`=sqrt(var_theta),
+                         data.frame(estimate = theta_hat,
+                                    se = sqrt(var_theta),
                                     df = df_res,
-                                    `t value` = t_stat,
-                                    lower=lower,
-                                    upper=upper,
-                                    ` Pr(>|t|)` = p_val,
+                                    t_stat = t_stat,
+                                    lower = lower,
+                                    upper = upper,
+                                    pval = p_val,
                                     check.names = F))
       }
       
@@ -335,6 +338,7 @@ find_markers_lmm <- function(
       # Now estimate the class ofssets, keeping the well into account
       m        <- lmerTest::lmer(formula.final, data=covar, control=control)
       res.tmp  <- lmerTest::contest(m, L=contrast, joint=F)
+      colnames(res.tmp) <- c("estimate", "se", "df", "t_stat", "lower", "upper", "pval")
       res.cur  <- data.frame(feature,
                              class=rownames(res.tmp),
                              res.tmp,
@@ -345,10 +349,7 @@ find_markers_lmm <- function(
     }
 
     #---------------------------------------------------------------------------
-
     # Add the stats on the means
-    res.cur$`mean.diff`  <- class.means[res.cur$class] - class.refmeans[res.cur$class]
-    res.cur$`mean.se`    <- NA
     res.cur$`mean.ref`   <- class.refmeans[res.cur$class]
     res.cur$`mean.class` <- class.means[res.cur$class]
     
@@ -359,7 +360,7 @@ find_markers_lmm <- function(
     subsets <- list()
     for (class in classes) {
       tmp <- res[res$class == class, ]
-      tmp <- tmp[order(abs(tmp$`t-stat`), decreasing = F), ]
+      tmp <- tmp[order(abs(tmp$`t_stat`), decreasing = F), ]
       subsets[[class]] <- tmp[1:return.top, ]
     }
     res <- do.call(rbind, subsets)

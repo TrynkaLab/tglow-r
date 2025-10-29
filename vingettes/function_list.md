@@ -66,8 +66,8 @@
 * filter_vec_mod_z
 * filter_vec_mod_z_perc
 * filter_vec_mod_z_sum
-* find_markers
 * find_markers_lmm
+* find_markers_ttest
 * find_outliers_pca
 * geometric_mean
 * getDataByObject
