@@ -1,7 +1,8 @@
 # Exported Functions for the tglow Package
  This is a full list of exported functions for the tglow package.
 
- * "objectIds<-"
+ * "imageIds<-"
+* "objectIds<-"
 * TglowAssayFromList
 * TglowAssayFromMatrix
 * TglowDatasetFromList
@@ -75,6 +76,7 @@
 * getImageDataByObject
 * get_feature_meta_from_names
 * hex_to_rgb
+* imageIds
 * img_apply_color
 * img_composite
 * img_max_per_channel

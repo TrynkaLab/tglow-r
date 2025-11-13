@@ -20,6 +20,29 @@ setGeneric("objectIds<-", function(object, value) {
 })
 
 #-------------------------------------------------------------------------------
+#' Get and set image Ids
+#'
+#' @description Get and set image Id's on TglowDataset
+#' @param object The object to get or set
+#' @param value If setting using <- the new object ids to assing
+#'
+#' @returns The object with the new Ids
+#'
+#' @rdname imageIds
+#' @export
+setGeneric("imageIds", function(object) {
+    standardGeneric("imageIds")
+})
+
+#' @rdname imageIds
+#' @export
+setGeneric("imageIds<-", function(object, value) {
+    standardGeneric("imageIds<-")
+})
+
+
+
+#-------------------------------------------------------------------------------
 #' Fetch image data or meta data from a tglow object
 #'
 #' @description Select columns from assay.image, image.meta and return them

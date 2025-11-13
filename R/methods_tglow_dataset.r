@@ -172,6 +172,54 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 setMethod(
+  "imageIds", signature("TglowDataset"),
+  function(object) {
+    return(rownames(object@image.meta))
+  }
+)
+
+setMethod(
+  "imageIds<-", signature("TglowDataset"),
+  function(object, value) {
+    if (length(value) != nrow(object@image.meta)) {
+      stop("New id's must have same length as object@image.meta")
+    }
+
+    if (length(unique(value)) != length(value)) {
+      stop("Names of new id's must be unique")
+    }
+    
+    # Set names to the previous
+    names(value)             <- imageIds(object)
+    
+    # Update to new
+    img.id.names             <- names(object@image.ids)
+    object@image.ids         <- value[object@image.ids]
+    names(object@image.ids)  <- img.id.names
+    
+    # Update rownames of image meta
+    rownames(object@image.meta) <- value
+
+    # For the image assays, can directly update the rownames through objectIds
+    if (!is.null(object@image.data)) {
+      objectIds(object@image.data) <- value
+    }
+    
+    if (!is.null(object@image.data.norm)) {
+      objectIds(object@image.data.norm) <- value
+    }
+    
+    if (!is.null(object@image.data.trans)) {
+      objectIds(object@image.data.trans) <- value
+    }
+
+    object
+  }
+)
+
+
+#-------------------------------------------------------------------------------
+setMethod(
   "isAvailable", signature("TglowDataset"),
   function(object, j, assay, assay.image, slot, return.names) {
     # Check the inputs

@@ -17,7 +17,9 @@ plot_markers(
   flip.axes = F,
   adjust = "bonferroni",
   alpha = 0.05,
-  topn = NULL
+  abs.effect = 0,
+  topn = NULL,
+  grid.space = "free"
 )
 }
 \arguments{
@@ -45,7 +47,11 @@ plot_markers(
 
 \item{alpha}{Significance threshold for adjusted p-values}
 
+\item{abs.effect}{Minimum absolute effect size to consider a marker significant}
+
 \item{topn}{If not NULL, only plot the top n markers per class based on effect size, ignores significance and grouping.x, grouping.x2}
+
+\item{grid.space}{Grid space parameter for faceting, see \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}}
 }
 \value{
 A ggplot2 object or if return.data=TRUE, a list with:
@@ -56,7 +62,8 @@ A ggplot2 object or if return.data=TRUE, a list with:
 }
 \description{
 Creates a bubble plot visualization of marker analysis results, where dot size
-represents percentage of significant features and color represents effect size.
+represents percentage of total (or significant) features (or feature groups)
+and color represents effect size (or average effect size).
 }
 \details{
 The plot shows markers as points where:

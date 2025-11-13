@@ -900,7 +900,8 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #'
 #' @description
 #' Creates a bubble plot visualization of marker analysis results, where dot size 
-#' represents percentage of significant features and color represents effect size.
+#' represents percentage of total (or significant) features (or feature groups) 
+#' and color represents effect size (or average effect size).
 #'
 #' @param markers A tglow.markers object from find_markers() or find_markers_lmm()
 #' @param grouping.x Column name in markers or character vector for x-axis grouping. Defualts to "feature" (plot each marker)
@@ -914,7 +915,9 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #' @param flip.axes If TRUE flips x and y axes
 #' @param adjust Method for p-value adjustment, see ?p.adjust
 #' @param alpha Significance threshold for adjusted p-values
+#' @param abs.effect Minimum absolute effect size to consider a marker significant
 #' @param topn If not NULL, only plot the top n markers per class based on effect size, ignores significance and grouping.x, grouping.x2
+#' @param grid.space Grid space parameter for faceting, see [ggplot2::facet_grid()]
 #'
 #' @details
 #' The plot shows markers as points where:
@@ -932,7 +935,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #'
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip
 #' @export
-plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05, topn=NULL) {
+plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05, abs.effect=0, topn=NULL, grid.space="free") {
   
   if (!is(markers, "tglow_markers")) {
     stop("markers must be a find_markers results table")
@@ -958,6 +961,9 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
     markers$groups.x <- paste0(markers$groups.x, ';-;', markers$groups.x2)
   }
   
+  
+  color.label <- "Effect size"
+  
   # Filter significance
   if (!is.null(topn)) {
     # For each class get the top n based on abs(test statistic)
@@ -966,8 +972,12 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
     markers$padj     <- p.adjust(markers$pval, method=adjust)
     markers.sig      <- markers[markers$padj < alpha,]
     
+    if (abs.effect > 0) {
+        markers.sig  <- markers.sig[abs(markers.sig$estimate) >= abs.effect, ]
+    }
+    
     if (nrow(markers.sig) == 0) {
-        stop("No significant markers found with the given alpha and adjustment method")
+        stop("No significant markers found with the given alpha, abs.effect and adjustment method")
     }
 
     if (is.null(feature.clust)) {
@@ -976,6 +986,8 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
         # Average the feature groups
         df.plot         <- aggregate_metadata(markers.sig, paste0(markers.sig$class, "__", markers.sig$groups.x, "__", markers.sig$feature.clust), "mean")
         df.plot$feature <- df.plot$feature.clust
+        
+        color.label <- "Avg. effect size"
     }
   }
 
@@ -983,15 +995,27 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
   # Determine the total size per group.
   total   <- c()
   names   <- c()
+  size.label <- ""
   if (size.total) {
     for (group in unique(markers$groups.x)) {
       names   <- c(names, group)
       total   <- c(total, length(unique(markers[markers$groups.x == group, "feature"])))
     }
+    if (is.null(feature.clust)) {
+        size.label <- "% of features"
+    } else {
+        size.label <- "% of feature clusters"
+    }
+    
   } else {
     for (group in unique(df.plot$groups.x)) {
       names   <- c(names, group)
       total   <- c(total, length(unique(df.plot[df.plot$groups.x == group, "feature"])))
+    }
+    if (is.null(feature.clust)) {
+        size.label <- "% of sig. features"
+    } else {
+        size.label <- "% of sig. feature clusters"
     }
   }
 
@@ -1003,6 +1027,7 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
   # Average if grouping > 1
   if (max(table(df.plot$groups.x, df.plot$class)) > 1) {
       df.plot       <- aggregate_metadata(df.plot, paste0(df.plot$class, "__", df.plot$groups.x), "mean")
+        color.label <- "Avg. effect size"
   }
   
   # Calculate the size of the dots
@@ -1017,18 +1042,19 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
   #---------------------
   p1  <- ggplot(df.plot, aes(y=class, x=groups.x, size=size, col=estimate)) +
     geom_point() +
-    scale_color_gradient2(low="navy", mid="white", high="red") +
+    scale_color_gradient2(name=color.label, low="navy", mid="white", high="red") +
     xlab(xlab) +
-    ylab(ylab)
+    ylab(ylab) +
+    scale_size_continuous(name=size.label)
 
   if (flip.axes) {
     p1 <- p1 + coord_flip()
   }
   
   if (!is.null(df.plot$groups.x2)) {
-    p1 <- p1 + facet_wrap(~groups.x2,
+    p1 <- p1 + facet_grid(~groups.x2,
                           scales="free_x",
-                          nrow=1) 
+                          space=grid.space) 
   }
 
   p1 <- p1 +
