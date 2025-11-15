@@ -79,12 +79,12 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' @param feature The feature to find a representative cell for
 #' @param name Prefix to add to the names of the names vector
 #' @param n How many objects either side of the representitative cell should be returend
-#' @param q A vector of quantiles [0-100]
+#' @param q A vector of quantiles [0-1]
 #' @param add.extremes Should the top and bottom n values be added
 #'
 #' @returns A list with row ids and labels for the objects
 #' @export
-fetch_representative_object_quantiles <- function(dataset, assay, slot, feature, name = NULL, n = 1, q=c(10, 25, 50, 75, 90), add.extremes=TRUE) {
+fetch_representative_object_quantiles <- function(dataset, assay, slot, feature, name = NULL, n = 1, q=c(0.1, 0.25, 0.5, 0.75, 0.9), add.extremes=TRUE) {
   check_dataset_assay_slot(dataset, assay, slot)
 
   if (length(feature) > 1) {
@@ -93,6 +93,14 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
 
   if (is.null(name)) {
     name <- feature
+  }
+  
+  if (any(q < 0)) {
+    stop("Provided quantiles q must be >=0")
+  }
+  
+  if (any(q > 1)) {
+    stop("Provided quantiles q must be <=1")
   }
   
   f   <- getDataByObject(dataset, feature, assay=assay, slot=slot)
@@ -113,11 +121,11 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
   for (cur.q in q) {
     l <- fetch_representative_object(dataset, assay, slot, feature,
       metric = "lower.q",
-      q = cur.q/100,
+      q = cur.q,
       n = n
     )
-    ids  <- c(l, ids)
-    cn   <- c(cn, rep(paste0("q", cur.q, " - ", name), (n * 2) + 1)) 
+    ids  <- c(ids, l)
+    cn   <- c(cn, rep(paste0("q", (cur.q*100), " - ", name), (n * 2) + 1)) 
   }
   
   if (add.extremes) {

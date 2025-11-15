@@ -11,7 +11,7 @@ fetch_representative_object_quantiles(
   feature,
   name = NULL,
   n = 1,
-  q = c(10, 25, 50, 75, 90),
+  q = c(0.1, 0.25, 0.5, 0.75, 0.9),
   add.extremes = TRUE
 )
 }
@@ -28,7 +28,7 @@ fetch_representative_object_quantiles(
 
 \item{n}{How many objects either side of the representitative cell should be returend}
 
-\item{q}{A vector of quantiles \link{0-100}}
+\item{q}{A vector of quantiles \link{0-1}}
 
 \item{add.extremes}{Should the top and bottom n values be added}
 }
