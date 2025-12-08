@@ -212,7 +212,7 @@ find_markers_lmm <- function(
   
   # Fetch covariates into a df
   if (!is.null(covariates)) {
-    covar <- getDataByObject(dataset, covariates, assay=assay.covar, slot=slot.covar)
+    covar <- getDataByObject(dataset, covariates, assay=assay.covar, slot=slot.covar, drop=F)
     
     if (is.null(formula)) {
       formula <- paste0("(1|", paste0(colnames(covar), collapse=":"), ")")
