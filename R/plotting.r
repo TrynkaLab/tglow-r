@@ -830,7 +830,7 @@ plot_box <- function(x, y, xlab = "x", ylab = "y", main = "", facet = NULL, face
 }
 
 #-------------------------------------------------------------------------------
-#' Plot boxplot with a numerically ordered x and a loess line
+#' Plot violin plot with a density histogram to the right
 #'
 #' @param x x
 #' @param y y
@@ -839,11 +839,14 @@ plot_box <- function(x, y, xlab = "x", ylab = "y", main = "", facet = NULL, face
 #' @param main title
 #' @param xlab xlab
 #' @param ylab ylab
+#' @param stat.size Size of the statistics points/lines
 #' @param facet Vector with facet variable
+#' @param plot.density Should a density plot be added to the right of the violin/boxplot
+#' @param density.widths Widths of the violin/boxplot and density plot when plot.density=TRUE
 #' 
 #' @returns A ggplot2 object
 #' @export
-plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main=NULL, xlab="x", ylab="y"){
+plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main=NULL, xlab="x", ylab="y", stat.size=4, plot.density=FALSE, density.widths=c(3,1)) {
   
   df <- data.frame(x=x, y=y)
   
@@ -862,7 +865,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
   
   p1 <- p1 + stat_summary(fun = "median", 
                           colour = "blue", 
-                          size = 4, 
+                          size = stat.size, 
                           geom = "point") + 
     stat_summary(fun = median, 
                  fun.min = function(z) { quantile(z,0.25) }, 
@@ -874,12 +877,6 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
     xlab(xlab) +
     ylab(ylab)
 
-  
-  p2 <- ggplot(df, aes(y=y)) +
-    geom_density() +
-    geom_hline(yintercept = qs, linetype = "dashed") +
-    cowplot::theme_nothing()
-  
   if(!is.null(facet)){
     p1 <- p1 + facet_wrap(~facet)
   }
@@ -887,8 +884,17 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
   if (!is.null(main)) {
     p1 <- p1 + ggtitle(main)
   }
-
-  p <- patchwork::wrap_plots(p1, p2, widths = c(3, 1))
+  
+  if (plot.density == FALSE) {
+    return(p1)
+  }
+  
+  p2 <- ggplot(df, aes(y=y)) +
+    geom_density() +
+    geom_hline(yintercept = qs, linetype = "dashed") +
+    cowplot::theme_nothing()
+  
+  p <- patchwork::wrap_plots(p1, p2, widths = density.widths)
   
   return(p)
   
