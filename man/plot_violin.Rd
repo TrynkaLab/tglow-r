@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.r
 \name{plot_violin}
 \alias{plot_violin}
-\title{Plot boxplot with a numerically ordered x and a loess line}
+\title{Plot violin plot with a density histogram to the right}
 \usage{
 plot_violin(
   x,
@@ -12,7 +12,10 @@ plot_violin(
   q = c(0.05, 0.5, 0.95),
   main = NULL,
   xlab = "x",
-  ylab = "y"
+  ylab = "y",
+  stat.size = 4,
+  plot.density = FALSE,
+  density.widths = c(3, 1)
 )
 }
 \arguments{
@@ -31,10 +34,16 @@ plot_violin(
 \item{xlab}{xlab}
 
 \item{ylab}{ylab}
+
+\item{stat.size}{Size of the statistics points/lines}
+
+\item{plot.density}{Should a density plot be added to the right of the violin/boxplot}
+
+\item{density.widths}{Widths of the violin/boxplot and density plot when plot.density=TRUE}
 }
 \value{
 A ggplot2 object
 }
 \description{
-Plot boxplot with a numerically ordered x and a loess line
+Plot violin plot with a density histogram to the right
 }
