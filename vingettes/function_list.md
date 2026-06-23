@@ -23,6 +23,7 @@
 * apply_image_filters
 * boxcox_transform
 * calculate_clustering
+* calculate_eigenfeatures
 * calculate_feature_clustering
 * calculate_feature_filters
 * calculate_lm
@@ -67,6 +68,7 @@
 * filter_vec_mod_z
 * filter_vec_mod_z_perc
 * filter_vec_mod_z_sum
+* find_eigenmarkers
 * find_markers_lmm
 * find_markers_ttest
 * find_outliers_pca
@@ -105,6 +107,7 @@
 * objectIds
 * plot_box
 * plot_boxline
+* plot_eigenmarkers
 * plot_heatmap
 * plot_hex
 * plot_hist

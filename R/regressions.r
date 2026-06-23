@@ -1250,3 +1250,133 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
     }
     return(out.list)
 }
+
+
+#-------------------------------------------------------------------------------
+#' Find eigenmarkers from feature-clustered data
+#'
+#' @description
+#' Identifies differential eigenfeatures between groups by first clustering
+#' similar features together, computing per-cluster eigenfeatures (first
+#' principal components), and then running marker tests on those eigenfeatures.
+#' This reduces redundancy among correlated features and improves
+#' interpretability of marker results.
+#'
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param ident Column name in the dataset metadata specifying cell identities
+#'   to compare.
+#' @param assay Name of the assay to use for feature clustering and eigenfeature
+#'   calculation.
+#' @param slot Slot within the assay to use (e.g. \code{"data"},
+#'   \code{"scale.data"}).
+#' @param fcl.col Column name in feature metadata containing a pre-computed
+#'   feature clustering result. If \code{NULL} (default), feature clustering is
+#'   recalculated using \code{fcl.resolution}, \code{fcl.method}, and
+#'   \code{fcl.feature.group}.
+#' @param fcl.resolution Numeric resolution parameter passed to
+#'   \code{calculate_feature_clustering()}. Higher values produce more clusters.
+#'   Defaults to \code{0.1}.
+#' @param fcl.method Hierarchical clustering linkage method passed to
+#'   \code{calculate_feature_clustering()} and used to name the clustering
+#'   column when \code{fcl.col} is \code{NULL}. Defaults to \code{"complete"}.
+#' @param fcl.feature.group Optional grouping variable restricting which
+#'   features are clustered together, passed to
+#'   \code{calculate_feature_clustering()}.
+#' @param method Statistical method used to find markers on eigenfeatures.
+#'   Either \code{"lmm"} (linear mixed model via \code{find_markers_lmm()},
+#'   default) or \code{"ttest"} (via \code{find_markers_ttest()}).
+#' @param return.object If \code{TRUE}, returns the modified dataset object
+#'   (with feature clustering and eigenfeatures added) instead of the marker
+#'   results. Useful for inspecting intermediate results or reusing the
+#'   eigenfeatures downstream. Defaults to \code{FALSE}.
+#' @param ... Additional arguments forwarded to \code{find_markers_lmm()} or
+#'   \code{find_markers_ttest()}.
+#'
+#' @details
+#' The function proceeds in up to three steps:
+#' \enumerate{
+#'   \item \strong{Feature clustering} (skipped if \code{fcl.col} is supplied):
+#'     Groups features with correlated expression profiles using
+#'     \code{calculate_feature_clustering()}.
+#'   \item \strong{Eigenfeature calculation}: Computes one eigenfeature per
+#'     feature cluster via \code{calculate_eigenfeatures()}, storing results in
+#'     a new assay named \code{<assay>_eigenfeatures}.
+#'   \item \strong{Marker testing}: Runs differential testing on the
+#'     eigenfeatures using the selected \code{method}.
+#' }
+#'
+#' The returned \code{eigenmarkers} object bundles marker statistics with the
+#' feature-to-cluster mapping, making it straightforward to pass directly to
+#' \code{plot_eigenmarkers()}.
+#'
+#' @return If \code{return.object = TRUE}, returns the updated dataset object.
+#'   Otherwise returns an object of class \code{"eigenmarkers"}, which is a
+#'   list with the following elements:
+#' \describe{
+#'   \item{eigenmarkers}{Data frame of marker statistics for each eigenfeature,
+#'     as returned by \code{find_markers_lmm()} or \code{find_markers_ttest()}.}
+#'   \item{eigenfeatures}{Feature metadata for the eigenfeatures assay
+#'     (\code{<assay>_eigenfeatures}).}
+#'   \item{features}{Feature metadata for the original assay.}
+#'   \item{clustering.col}{Name of the column in feature metadata that holds
+#'     the cluster assignments used.}
+#' }
+#'
+#' @seealso
+#' \code{\link{plot_eigenmarkers}} for visualising the results,
+#' \code{\link{calculate_feature_clustering}},
+#' \code{\link{calculate_eigenfeatures}},
+#' \code{\link{find_markers_lmm}},
+#' \code{\link{find_markers_ttest}}
+#'
+#' @examples
+#' # Examples to be added
+#'
+#' @export
+find_eigenmarkers <- function(dataset, ident, assay, slot, fcl.col=NULL, fcl.resolution=0.1, fcl.method="complete", fcl.feature.group=NULL, method="lmm", return.object=F, ...) {
+  
+  if (is.null(fcl.col)) {
+    fcl.col <- paste0("fcl_", fcl.method, "_res_", fcl.resolution)
+    
+    dataset <- calculate_feature_clustering(dataset,
+                                            assay=assay,
+                                            slot=slot,
+                                            resolution=fcl.resolution,
+                                            method=fcl.method,
+                                            feature.group=fcl.feature.group)
+  }
+  
+  dataset <- calculate_eigenfeatures(dataset,
+                                     assay=assay,
+                                     slot=slot,
+                                     cluster.col=fcl.col)
+  
+  if (return.object) {
+    return(dataset)
+  } else {
+    if (method == "ttest") {
+      eigenmarkers <- find_markers_ttest(dataset,
+                                         ident,
+                                         assay=paste0(assay, "_eigenfeatures"),
+                                         slot="data",
+                                         ...)
+    } else {
+      eigenmarkers <- find_markers_lmm(dataset,
+                                       ident,
+                                       assay=paste0(assay, "_eigenfeatures"),
+                                       slot="data",
+                                       method=method,
+                                       ...)
+    }
+    
+    output <- list(eigenmarkers=eigenmarkers,
+                   eigenfeatures=dataset@assays[[paste0(assay, "_eigenfeatures")]]@features,
+                   features=dataset@assays[[paste0(assay)]]@features,
+                   clustering.col=fcl.col)
+    
+    class(output) <- "eigenmarkers"
+    
+    return(output)
+  }
+}
+

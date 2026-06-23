@@ -278,3 +278,65 @@ calculate_feature_clustering <- function(
         return(dataset)
     }
 }
+
+#-------------------------------------------------------------------------------
+#' Calculate the eigenfeature (first PC) for a cluster of features
+#'
+#' @description
+#' Calculates eigenfeatures for a set of features defined by a column (see calculate_feature_clustering).
+#' The eigenfeature is the first principal component of the features in the cluster.
+#' This assay can be used for more fair testing of how well a featureset is associated to a trait.
+#' 
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param assay The assay to use for clustering
+#' @param slot The data slot to use ("data", "scale.data", etc.)
+#' @param cluster.col Column in features slot containing cluster assignments to calculate eigenfeatures for
+#' 
+#' @return Returns the \linkS4class{TglowDataset} with a new assay named "<assay>_eigenfeatures"
+#'  containing the eigenfeature for each cluster. The features slot contains the variance explained by the eigenfeature.
+#' @export 
+calculate_eigenfeatures <- function(dataset, assay, slot, cluster.col) {
+    check_dataset_assay_slot(dataset, assay, slot)
+    
+    data <- slot(dataset@assays[[assay]], slot)
+    
+    clusters <- unique(dataset@assays[[assay]]@features[, cluster.col])
+    nclust <- length(clusters)
+    
+    matrix <- matrix(NA, nrow = nrow(dataset@assays[[assay]]), ncol = nclust)
+    colnames(matrix) <- clusters
+    rownames(matrix) <- rownames(dataset@assays[[assay]])
+    
+    meta <- data.frame(id=clusters, var=NA, var_tot=NA, var_exp=NA)
+    rownames(meta) <- clusters
+    
+    for (cluster in clusters) {
+        selector <- dataset@assays[[assay]]@features[, cluster.col] == cluster
+        meta[cluster, "n_feature"] <- sum(selector)
+        meta[cluster, "features"]  <- paste0(rownames(dataset@assays[[assay]]@features)[selector], collapse=",")
+        
+        if (sum(selector) == 1) {
+            matrix[, cluster] <- data[, selector]
+            meta[cluster, "var"] <- 1
+            meta[cluster, "var_tot"] <- 1
+            meta[cluster, "var_exp"] <- 1
+            next
+        }
+        
+        # Calculate the first principal component for the features in this cluster
+        #pca <- prcomp(t(data[, selector, drop=F]), center = TRUE, scale. = TRUE)
+        pca    <- irlba::prcomp_irlba(data[,selector,drop=F], n=1, center=F, scale=F)
+    
+        # Store the first principal component as the eigenfeature for this cluster
+        matrix[, cluster] <- pca$x[, 1]
+        
+        meta[cluster, "var"] <- pca$sdev[1]^2
+        meta[cluster, "var_tot"] <- pca$totalvar
+        meta[cluster, "var_exp"] <- pca$sdev[1]^2 / pca$totalvar
+    }
+    
+    dataset@assays[[paste0(assay, "_eigenfeatures")]] <- TglowAssayFromMatrix(matrix, features = meta) 
+    
+    return(dataset)
+}
+

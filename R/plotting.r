@@ -1393,3 +1393,139 @@ tglow_dimplot_interactive <- function(dataset, ident,  reduction=NULL, images=NU
   return(p1)
   
 }
+
+
+#-------------------------------------------------------------------------------
+#' Plot eigenmarker results as a heatmap tile plot
+#'
+#' @description
+#' Visualises the output of \code{\link{find_eigenmarkers}} as a heatmap where
+#' each tile represents the mean effect size of the underlying features
+#' belonging to an eigenfeature cluster, for each cell identity class. Rows
+#' and/or columns can be hierarchically clustered for easier interpretation.
+#'
+#' @param markers A marker data frame (e.g. from \code{find_markers()} or
+#'   \code{find_markers_lmm()}) containing at minimum columns \code{feature},
+#'   \code{class}, and \code{estimate}.
+#' @param eigenmarkers An object of class \code{"eigenmarkers"} as returned by
+#'   \code{\link{find_eigenmarkers}}.
+#' @param flip.axes If \code{TRUE}, flips x and y axes via
+#'   \code{\link[ggplot2]{coord_flip}}. Defaults to \code{FALSE}.
+#' @param return.data If \code{TRUE}, returns a list containing both the plot
+#'   data frame and the ggplot2 object. If \code{FALSE} (default), returns only
+#'   the plot.
+#' @param xlab Label for the x-axis. Defaults to \code{"Eigenfeature"}.
+#' @param ylab Label for the y-axis. Defaults to \code{"Ident"}.
+#' @param cluster.x If \code{TRUE} (default), hierarchically clusters
+#'   eigenfeature columns using \code{dist.method} and \code{hclust.method}.
+#' @param cluster.y If \code{TRUE} (default), hierarchically clusters identity
+#'   rows using \code{dist.method} and \code{hclust.method}.
+#' @param dist.method Distance metric passed to \code{\link[stats]{dist}}.
+#'   Defaults to \code{"euclidean"}.
+#' @param hclust.method Linkage method passed to \code{\link[stats]{hclust}}.
+#'   Defaults to \code{"complete"}.
+#' @param grid.space Space argument passed to \code{\link[ggplot2]{facet_grid}}
+#'   when a second grouping level is present (i.e. when \code{groups.x2} is
+#'   non-null in the plot data). Defaults to \code{"free"}.
+#' @param ... Additional arguments forwarded to \code{plot_markers()}.
+#'
+#' @details
+#' The function maps each feature in \code{markers} to its feature cluster via
+#' the clustering column stored in \code{eigenmarkers}, then averages effect
+#' sizes within each cluster–class combination. These averaged effect sizes are
+#' displayed as tile colours, while the significance values (\code{-log10(padj)})
+#' from the eigenfeature-level test are used for point sizing (forwarded
+#' internally via \code{plot_markers()}).
+#'
+#' Row and column ordering is determined by hierarchical clustering of the
+#' mean-effect-size matrix when \code{cluster.y} or \code{cluster.x} are
+#' \code{TRUE}, respectively.
+#'
+#' @return A \code{\link[ggplot2]{ggplot}} object, or if \code{return.data =
+#'   TRUE}, a list with:
+#' \describe{
+#'   \item{data}{Data frame used for plotting.}
+#'   \item{plot}{The ggplot2 object.}
+#' }
+#'
+#' @seealso \code{\link{find_eigenmarkers}}, \code{\link{plot_markers}}
+#'
+#' @examples
+#' # Examples to be added
+#'
+#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 xlab ylab
+#'   coord_flip facet_grid theme_linedraw theme element_blank element_text
+#' @importFrom stats dist hclust aggregate
+#' @export
+plot_eigenmarkers <- function(markers, eigenmarkers, flip.axes = FALSE, return.data = FALSE,
+                              xlab = "Eigenfeature", ylab = "Ident", cluster.x = TRUE,
+                              cluster.y = TRUE, dist.method = "euclidean",
+                              hclust.method = "complete", grid.space = "free", ...) {
+  
+  # NOTE: using inherits() is more robust than class() == "..." for S4/R5
+  # objects, where class() can return a vector.
+  if (!inherits(eigenmarkers, "eigenmarkers")) {
+    stop("Variable 'eigenmarkers' is not of class 'eigenmarkers'")
+  }
+  
+  markers$clust <- eigenmarkers$features[markers$feature, eigenmarkers$clustering.col]
+  
+  marker.means <- aggregate(markers[, c("estimate")],
+                            by = list(feature = markers$clust, class = markers$class),
+                            FUN = mean)
+  rownames(marker.means) <- paste0(marker.means$feature, "__", marker.means$class)
+  
+  markers.eigen <- eigenmarkers$eigenmarkers
+  rownames(markers.eigen) <- paste0(markers.eigen$feature, "__", markers.eigen$class)
+  markers.eigen$estimate_eigen <- markers.eigen$estimate
+  markers.eigen$estimate <- marker.means[rownames(markers.eigen), 3]
+  
+  df.plot <- plot_markers(markers.eigen, return.data = TRUE, ...)$data
+  
+  df.plot$groups.x <- df.plot$feature
+  df.plot$size <- -log10(df.plot$padj)
+  size.label <- "-log10(padj)"
+  color.label <- "Mean effectsize of group"
+  
+  mat <- with(df.plot, tapply(estimate, list(class, groups.x), mean))
+  
+  if (cluster.y) {
+    mat[is.na(mat)] <- 0
+    hc_y <- hclust(dist(mat, method = dist.method), method = hclust.method)
+    y_levels <- rownames(mat)[hc_y$order]
+    df.plot$class <- factor(df.plot$class, levels = y_levels)
+  }
+  
+  if (cluster.x) {
+    mat[is.na(mat)] <- 0
+    hc_x <- hclust(dist(t(mat), method = dist.method), method = hclust.method)
+    x_levels <- colnames(mat)[hc_x$order]
+    df.plot$groups.x <- factor(df.plot$groups.x, levels = x_levels)
+  }
+  
+  p1 <- ggplot(df.plot, aes(y = class, x = groups.x, fill = estimate)) +
+    geom_tile() +
+    scale_fill_gradient2(name = color.label, low = "navy", mid = "white", high = "red") +
+    xlab(xlab) +
+    ylab(ylab)
+  
+  if (flip.axes) {
+    p1 <- p1 + coord_flip()
+  }
+  
+  if (!is.null(df.plot$groups.x2)) {
+    p1 <- p1 + facet_grid(~groups.x2, scales = "free_x", space = grid.space)
+  }
+  
+  p1 <- p1 +
+    theme_linedraw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  if (return.data) {
+    return(list(data = df.plot, plot = p1))
+  } else {
+    return(p1)
+  }
+}
