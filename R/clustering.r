@@ -153,7 +153,7 @@ calculate_feature_clustering <- function(
     correlation = NULL,
     col.out = "fcl_",
     method = "complete",
-    return.object=T
+    return.object=TRUE
 ) {
         
     check_dataset_assay_slot(dataset, assay, slot)
@@ -256,7 +256,7 @@ calculate_feature_clustering <- function(
             } else if (method == "leiden") {
                 cl <- igraph::cluster_leiden(graph, resolution = res)
                 clusters <- as.character(igraph::membership(cl))
-            } else if (method %in% c("complete", "ward", "ward.D2")) {
+            } else if (method %in% c("complete", "ward.D", "ward.D2")) {
                 clusters <- cutree(hc, h=res)
             } else {
                 stop("No valid cluster method")
@@ -292,20 +292,33 @@ calculate_feature_clustering <- function(
 #' @param slot The data slot to use ("data", "scale.data", etc.)
 #' @param cluster.col Column in features slot containing cluster assignments to calculate eigenfeatures for
 #' 
+#' @details
+#' NOTE: Eigenfeatures have arbitrary sign, so the direction of the eigenfeature may not be consistent across clusters.
+#' NOTE: No scaling is applied prior to eigenfeature calculation, and it is assumed you use the scale-data slot.
+#'
 #' @return Returns the \linkS4class{TglowDataset} with a new assay named "<assay>_eigenfeatures"
 #'  containing the eigenfeature for each cluster. The features slot contains the variance explained by the eigenfeature.
 #' @export 
-calculate_eigenfeatures <- function(dataset, assay, slot, cluster.col) {
+calculate_eigenfeatures <- function(dataset, assay, slot="scale.data", cluster.col) {
     check_dataset_assay_slot(dataset, assay, slot)
     
     data <- slot(dataset@assays[[assay]], slot)
     
+    if (!cluster.col %in% colnames(dataset@assays[[assay]]@features)) {
+        stop(paste0("cluster.col: ", cluster.col, " not found in features slot"))
+    }
+    
     clusters <- unique(dataset@assays[[assay]]@features[, cluster.col])
+    
+    if (any(is.na(clusters))) {
+        stop(paste0("NA values found in cluster.col: ", cluster.col, ". All features must be assigned to a cluster."))
+    }
+    
     nclust <- length(clusters)
     
-    matrix <- matrix(NA, nrow = nrow(dataset@assays[[assay]]), ncol = nclust)
-    colnames(matrix) <- clusters
-    rownames(matrix) <- rownames(dataset@assays[[assay]])
+    result.mat <- matrix(NA, nrow = nrow(dataset@assays[[assay]]), ncol = nclust)
+    colnames(result.mat) <- clusters
+    rownames(result.mat) <- rownames(dataset@assays[[assay]])
     
     meta <- data.frame(id=clusters, var=NA, var_tot=NA, var_exp=NA)
     rownames(meta) <- clusters
@@ -316,7 +329,7 @@ calculate_eigenfeatures <- function(dataset, assay, slot, cluster.col) {
         meta[cluster, "features"]  <- paste0(rownames(dataset@assays[[assay]]@features)[selector], collapse=",")
         
         if (sum(selector) == 1) {
-            matrix[, cluster] <- data[, selector]
+            result.mat[, cluster] <- data[, selector]
             meta[cluster, "var"] <- 1
             meta[cluster, "var_tot"] <- 1
             meta[cluster, "var_exp"] <- 1
@@ -324,18 +337,22 @@ calculate_eigenfeatures <- function(dataset, assay, slot, cluster.col) {
         }
         
         # Calculate the first principal component for the features in this cluster
-        #pca <- prcomp(t(data[, selector, drop=F]), center = TRUE, scale. = TRUE)
-        pca    <- irlba::prcomp_irlba(data[,selector,drop=F], n=1, center=F, scale=F)
+        pca    <- irlba::prcomp_irlba(data[,selector,drop=F], n=1, center=T, scale=F)
     
         # Store the first principal component as the eigenfeature for this cluster
-        matrix[, cluster] <- pca$x[, 1]
+        result.mat[, cluster] <- pca$x[, 1]
         
         meta[cluster, "var"] <- pca$sdev[1]^2
         meta[cluster, "var_tot"] <- pca$totalvar
-        meta[cluster, "var_exp"] <- pca$sdev[1]^2 / pca$totalvar
+        
+        if (pca$totalvar == 0) {
+            meta[cluster, "var_exp"] <- NA
+        } else {
+            meta[cluster, "var_exp"] <- pca$sdev[1]^2 / pca$totalvar
+        }
     }
     
-    dataset@assays[[paste0(assay, "_eigenfeatures")]] <- TglowAssayFromMatrix(matrix, features = meta) 
+    dataset@assays[[paste0(assay, "_eigenfeatures")]] <- TglowAssayFromMatrix(result.mat, features = meta) 
     
     return(dataset)
 }

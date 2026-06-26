@@ -1333,7 +1333,7 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
 #' # Examples to be added
 #'
 #' @export
-find_eigenmarkers <- function(dataset, ident, assay, slot, fcl.col=NULL, fcl.resolution=0.1, fcl.method="complete", fcl.feature.group=NULL, method="lmm", return.object=F, ...) {
+find_eigenmarkers <- function(dataset, ident, assay, slot, fcl.col=NULL, fcl.resolution=0.1, fcl.method="complete", fcl.feature.group=NULL, method="lmm", return.object=FALSE, ...) {
   
   if (is.null(fcl.col)) {
     fcl.col <- paste0("fcl_", fcl.method, "_res_", fcl.resolution)

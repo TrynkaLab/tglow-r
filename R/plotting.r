@@ -1433,13 +1433,13 @@ tglow_dimplot_interactive <- function(dataset, ident,  reduction=NULL, images=NU
 #' The function maps each feature in \code{markers} to its feature cluster via
 #' the clustering column stored in \code{eigenmarkers}, then averages effect
 #' sizes within each cluster–class combination. These averaged effect sizes are
-#' displayed as tile colours, while the significance values (\code{-log10(padj)})
-#' from the eigenfeature-level test are used for point sizing (forwarded
-#' internally via \code{plot_markers()}).
+#' displayed as tile colours
 #'
 #' Row and column ordering is determined by hierarchical clustering of the
 #' mean-effect-size matrix when \code{cluster.y} or \code{cluster.x} are
 #' \code{TRUE}, respectively.
+#' 
+#' The grouping passed to plot_markers() is ignored as eigenfeatures should not be grouped.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object, or if \code{return.data =
 #'   TRUE}, a list with:
@@ -1450,8 +1450,6 @@ tglow_dimplot_interactive <- function(dataset, ident,  reduction=NULL, images=NU
 #'
 #' @seealso \code{\link{find_eigenmarkers}}, \code{\link{plot_markers}}
 #'
-#' @examples
-#' # Examples to be added
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 xlab ylab
 #'   coord_flip facet_grid theme_linedraw theme element_blank element_text
@@ -1478,13 +1476,13 @@ plot_eigenmarkers <- function(markers, eigenmarkers, flip.axes = FALSE, return.d
   markers.eigen <- eigenmarkers$eigenmarkers
   rownames(markers.eigen) <- paste0(markers.eigen$feature, "__", markers.eigen$class)
   markers.eigen$estimate_eigen <- markers.eigen$estimate
-  markers.eigen$estimate <- marker.means[rownames(markers.eigen), 3]
+  markers.eigen$estimate <- marker.means[rownames(markers.eigen), "x"]
   
   df.plot <- plot_markers(markers.eigen, return.data = TRUE, ...)$data
   
   df.plot$groups.x <- df.plot$feature
-  df.plot$size <- -log10(df.plot$padj)
-  size.label <- "-log10(padj)"
+  #df.plot$size <- -log10(df.plot$padj)
+  #size.label <- "-log10(padj)"
   color.label <- "Mean effectsize of group"
   
   mat <- with(df.plot, tapply(estimate, list(class, groups.x), mean))
