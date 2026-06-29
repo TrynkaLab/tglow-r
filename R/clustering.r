@@ -1,8 +1,10 @@
 #-------------------------------------------------------------------------------
-#' Cluster using a a K nearest neighbor graph in the PCA space
+#' Cluster using a K nearest neighbor graph in the PCA space
 #'
 #' @description
-#' Cluster using a a K nearest neighbor graph in the PCA space
+#' Builds a k-nearest neighbor graph from the supplied PCA reduction and clusters
+#' it using Louvain or Leiden community detection. Clusters are stored as new
+#' columns in the meta slot of the returned dataset.
 #'
 #'
 #' @param dataset A tglow dataset
@@ -18,7 +20,7 @@
 #' Here I use the Seurat implementation of the kNN, which is NOT and exact
 #' kNN graph, but it is very fast. Practically it should perform pretty well
 #' The parameter k controls how many nearest neighbors to find
-#' The distance matrix is built from the prinicpal components
+#' The distance matrix is built from the principal components
 #'
 #'
 #' Alternatively:

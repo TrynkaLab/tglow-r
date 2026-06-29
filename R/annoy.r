@@ -4,11 +4,11 @@
 #' This code is directly lifted from seurat's annoy implementation here:
 #' https://github.com/satijalab/seurat/blob/master/R/clustering.R
 #'
-#' More detaills on knn implementations in this paper:
+#' More details on knn implementations in this paper:
 #' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11014608/
 #'
 #' The reason for using this over exact NN is the speed,
-#' but other flavours of approximimate NN are available
+#' but other flavours of approximate NN are available
 #' Run annoy
 #'
 #' @param data Data to build the index with
@@ -88,7 +88,7 @@ AnnoyBuildIndex <- function(data, metric = "euclidean", n.trees = 50) {
 #' This code is directly lifted from seurat's annoy implementation here:
 #' https://github.com/satijalab/seurat/blob/master/R/clustering.R
 #'
-#' @param Annoy index, built with AnnoyBuildIndex
+#' @param index Annoy index, built with AnnoyBuildIndex
 #' @param query A set of data to be queried against the index
 #' @param k Number of neighbors
 #' @param search.k During the query it will inspect up to search_k nodes which

@@ -6,15 +6,14 @@
 #' structure
 #'
 #' @param path path to tglow output dir
-#' @param pattern The pattern that uniquely identfies a fileset. Use '.zip' for type 'B'
+#' @param pattern The pattern that uniquely identifies a fileset. Use '.zip' for type 'B'
 #' and the '_Image.txt' or '_Experiment.txt'(or however you exported the image data) for type 'A'
-#' for type A
 #' @param type Must be 'A' or 'B'. See details
 #' @param n Read a subset of filesets. If integer, only that fileset is read, otherwise specify indices to read
 #' @param skip.orl Skip reading of object relationships, as this can get quite large with many children and is not used
 #' @param verbose Should I be chatty?
-#' @param col.object The collumn name in the features which contains the per object object identifier. See details
-#' @param col.meta.img.id The collumn name in the image level data which contains the image id. See details
+#' @param col.object The column name in the features which contains the per object object identifier. See details
+#' @param col.meta.img.id The column name in the image level data which contains the image id. See details
 #' @param max.per.well Maximumn number of objects in a well to consider. Set to NULL to ignore
 #' @param ... Remaining parameters passed to \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #'
@@ -22,10 +21,10 @@
 #'
 #' `type`
 #' Type A: _cell.txt, _Image.txt, _Experiment.txt and _Object relationships.txt
-#' See \code{\link{read_cellprofiler_fileset_a}} for detaills
+#' See \code{\link{read_cellprofiler_fileset_a}} for details
 #'
 #' Type B: <plate>_<well>.zip with individual files for each child object. Main object is assumed to be _cells
-#' See \code{\link{read_cellprofiler_fileset_b}} for detaills
+#' See \code{\link{read_cellprofiler_fileset_b}} for details
 #'
 #'
 #' `col.object` and `col.meta.img.id`
@@ -292,7 +291,7 @@ read_cellprofiler_fileset_a <- function(prefix,
 #' @param return.feature.meta Should the dataframe with feature metadata be added
 #' @param add.global.id Should extra id columns be added that are globally unique
 #' @param merging.strategy How to consolidate 1:many relationships between cell: children. Accepted values: 'mean', 'none'
-#' @param pat.exp The suffix pattern to identify the exeperiment file
+#' @param pat.exp The suffix pattern to identify the experiment file
 #' @param pat.img The suffix pattern to identify the image level data
 #' @param pat.cells The suffix pattern to identify the cell level data
 #' @param pat.orl The suffix pattern to identify object relationships

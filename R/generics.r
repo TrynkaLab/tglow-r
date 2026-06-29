@@ -3,7 +3,7 @@
 #'
 #' @description Get and set object Id's on TglowDataset, TglowAssay and TglowReduction
 #' @param object The object to get or set
-#' @param value If setting using <- the new object ids to assing
+#' @param value If setting using <- the new object ids to assign
 #'
 #' @returns The object with the new Ids
 #'
@@ -24,7 +24,7 @@ setGeneric("objectIds<-", function(object, value) {
 #'
 #' @description Get and set image Id's on TglowDataset
 #' @param object The object to get or set
-#' @param value If setting using <- the new object ids to assing
+#' @param value If setting using <- the new object ids to assign
 #'
 #' @returns The object with the new Ids
 #'
@@ -50,7 +50,7 @@ setGeneric("imageIds<-", function(object, value) {
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j character with column names from image.meta or assay.image to select
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
 #' @param slot slot to fetch features fromdata or scale.data
 #' @param drop should cols be dropped or not
 #' @returns A data frame with the corresponding columns
@@ -68,7 +68,7 @@ setGeneric("getImageData", function(object, j, assay.image = NULL, slot = "data"
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from image.meta or assay.image to select
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
 #' @param slot Slot to fetch features from data or scale.data
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
@@ -86,8 +86,8 @@ setGeneric("getImageDataByObject", function(object, j, assay.image = NULL, slot 
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from assay, assay.image, image.meta to select
-#' @param assay The assay to select from. If not fetcing assay columns, leave at NULL
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL
+#' @param assay The assay to select from. If not fetching assay columns, leave at NULL
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
 #' @param slot Slot to fetch features from: "data" or "scale.data"
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
@@ -99,16 +99,16 @@ setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NU
 #-------------------------------------------------------------------------------
 #' Check if column names are available on a dataset
 #'
-#' @description Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
-#' and return them as a data.frame
+#' @description Check whether column names are available on the dataset
 #'
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from assay, assay.image, image.meta to select
-#' @param assay The assay to select from. If not fetcing assay columns, leave at NULL
-#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL
+#' @param assay The assay to select from. If not fetching assay columns, leave at NULL
+#' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
 #' @param slot Slot to fetch features from: "data" or "scale.data"
 #' @param drop Should cols be dropped or not
-#' @returns A data frame with the corresponding columns
+#' @param return.names If TRUE, return a character vector of available names instead of a logical
+#' @returns A logical (or named logical vector if return.names=TRUE) indicating column availability
 #' @export
 setGeneric("isAvailable", function(object, j, assay, assay.image = NULL, slot, return.names = FALSE) {
     standardGeneric("isAvailable")
@@ -123,7 +123,7 @@ setGeneric("isAvailable", function(object, j, assay, assay.image = NULL, slot, r
 #'
 #' @details
 #' Checks are peformed greedily, so as soon as an issue if found, FALSE is returned
-#' and a warning for that issue is raised with more detaills. I.e. finding one issue
+#' and a warning for that issue is raised with more details. I.e. finding one issue
 #' does not mean there are not other issues!
 #'
 #' For TglowDataset, object.names can be left at NULL, as it uses @object.ids slot to compare against.
@@ -133,7 +133,7 @@ setGeneric("isAvailable", function(object, j, assay, assay.image = NULL, slot, r
 #' is thrown.
 #'
 #' @param object A \linkS4class{TglowDataset}
-#' @param object.names A \linkS4class{TglowDataset}
+#' @param object.names A character vector of object names to validate against. If NULL, uses object@object.ids
 #' @returns A logical indicating validitiy
 #' @export
 setGeneric("isValid", function(object, object.names = NULL) {

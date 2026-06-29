@@ -25,7 +25,7 @@ TglowMatrix <- function(matrix) {
 #'
 #' @param objects The object level data matrix, must be a matrix, and be numeric
 #' @param image The image level data matrix, must be a matrix, and be numeric
-#' @param image.ids The of nrow(objects) de which rownames of image corresponds to which object
+#' @param image.ids A character vector of length nrow(objects) indicating which row of the image matrix corresponds to each object
 #' @param object.meta A data.frame with metadata, one row per object. Defaults to data.frame(id=rownames(objects))
 #' @param image.meta A data.frame with metadata, one row per image. Defaults to data.frame(id=rownames(images))
 #' @param assay.out The assay name to store objects under
@@ -78,6 +78,9 @@ TglowDatasetFromMatrices <- function(objects, images, image.ids, object.meta = N
   return(dataset)
 }
 
+#' @param objects The object level data matrix, must be a matrix with row and column names set
+#' @param object.meta Optional data.frame with object level metadata. Defaults to a minimal data.frame with row ids
+#' @param assay.out The assay name to store objects under
 #' @rdname tglow_constructor
 #' @export
 TglowDatasetFromObjectMatrix <- function(objects, object.meta=NULL, assay.out="raw") {
@@ -124,7 +127,7 @@ TglowDatasetFromObjectMatrix <- function(objects, object.meta=NULL, assay.out="r
 #-------------------------------------------------------------------------------
 #' Create a new TglowDataset
 #' @param objects The object level matrix
-#' @param objects The scaled object level matrix (optional)
+#' @param scaled.objects The scaled object level matrix (optional)
 #' @param features The data frame with features
 #' 
 #' @returns A TglowAssay
@@ -160,8 +163,8 @@ TglowAssayFromMatrix <- function(objects, scaled.objects = NULL, features = NULL
 #'
 #' @param output Tglow list object obtained from [tglowr::read_cellprofiler_dir()]
 #' @param assay Which assay to convert
-#' @param meta.cols Which object level collumns in the features to consider as metadata
-#' @param col.object Which collumn to use as the identifier. Must be in meta.cols
+#' @param meta.cols Which object level columns in the features to consider as metadata
+#' @param col.object Which column to use as the identifier. Must be in meta.cols
 #'
 #' @export
 TglowAssayFromList <- function(output, assay, meta.cols, col.object) {
@@ -200,7 +203,7 @@ TglowFeatureMap <- function() {
 #' Create a new empty TglowFeatureLocation
 #'
 #' @param feature Character with the feature position
-#' @param assay asssay to grab feature from, or NULL if metadata feature
+#' @param assay Assay to grab feature from, or NULL if metadata feature
 #' @param slot slot to grab feature from, or NULL if metadata feature
 #' @export
 TglowFeatureLocation <- function(feature, assay=NULL, slot=NULL) {
@@ -227,11 +230,11 @@ TglowFeatureLocation <- function(feature, assay=NULL, slot=NULL) {
 #'
 #' @param output Tglow list object obtained from [read_cellprofiler_dir()]
 #' @param assay Which assay to convert (name of the list item)
-#' @param meta.patterns Grep patterns in collumn names asspciated with object level metadata items
-#' @param img.feature.patterns Grep patterns in image column names assocated with image level features to analyze
-#' @param col.object The collumn name in the features which contains the per object object identifier
-#' @param col.img.id The collumn name in the features which contains the per object image identifier
-#' @param col.meta.img.id The collumn name in the image level data which contains the image id
+#' @param meta.patterns Grep patterns in column names associated with object level metadata items
+#' @param img.feature.patterns Grep patterns in image column names associated with image level features to analyze
+#' @param col.object The column name in the features which contains the per object object identifier
+#' @param col.img.id The column name in the features which contains the per object image identifier
+#' @param col.meta.img.id The column name in the image level data which contains the image id
 #'
 #' @returns A populated TglowDataset
 #'

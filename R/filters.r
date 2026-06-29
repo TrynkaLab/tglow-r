@@ -16,7 +16,7 @@
 #'
 #' @details
 #' Filters can be easily configured based on a filter table, making it easy to template sets of operations.
-#' Filters are NOT applied seqeuntially, but run independently. If you do want to run filters in seqeuntially,
+#' Filters are NOT applied sequentially, but run independently. If you do want to run filters sequentially,
 #'  you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters
 #' and edit them is to store them in a google sheet and load them into R. Then using the function `tglow_filters_from_table`
 #' to create the filter objects.
@@ -109,15 +109,15 @@ filter_agg_na_multicol <- function(...) {
 }
 
 #-------------------------------------------------------------------------------
-#' Caret near zero variance filter
-#' rdname tglow_filters
-#' importFrom caret nearZeroVar
-#' export
+# Caret near zero variance filter (commented out — requires caret package)
+# rdname tglow_filters
+# importFrom caret nearZeroVar
+# export
 #filter_agg_near_zero_var <- function(vec, thresh = NULL, grouping = NULL) {
 #    return(length(caret::nearZeroVar(vec)) == 0)
 #}
-#' rdname tglow_filters
-#' export
+# rdname tglow_filters
+# export
 #filter_agg_near_zero_var_multicol <- function(...) {
 #    filter_multicol(..., func = filter_agg_near_zero_var)
 #}
@@ -169,7 +169,7 @@ filter_agg_skewness_multicol <- function(...) {
 }
 
 #-------------------------------------------------------------------------------
-#' Absolute kurotsis filter
+#' Absolute kurtosis filter
 #' @rdname tglow_filters
 #' @export
 filter_agg_kurtosis <- function(vec, thresh) {
@@ -233,7 +233,7 @@ filter_agg_blacklist <- function(vec, thresh, grouping = NULL) {
 }
 
 #-------------------------------------------------------------------------------
-#' If data is multicolumn, take the sum over all collumns, if one is false, exclude
+#' If data is multicolumn, take the sum over all columns, if one is false, exclude
 #' @rdname tglow_filters
 #' @export
 filter_sum <- function(vec, thresh, grouping, func) {

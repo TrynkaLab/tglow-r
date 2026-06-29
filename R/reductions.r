@@ -8,9 +8,9 @@
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param slot The slot to use, defaults to "scale.data". Can be "data" or "scale.data"
 #' @param pc.n How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{prcomp()}}
-#' @param reduction.name The name to save the PCA results under. Defualts to PCA-<assay>
+#' @param reduction.name The name to save the PCA results under. Defaults to PCA-<assay>
 #' @param ret.prcomp Instead of returning just the PCs and variances, return the whole prcomp object
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @param recenter Logical if matrix will be recentered. This is advisable if using modified z-score
@@ -90,7 +90,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param pc.n How many PC's to calculate
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
-#' @param reduction.name The name to save the UMAP results under. Defualts to UMAP-<assay>
+#' @param reduction.name The name to save the UMAP results under. Defaults to UMAP-<assay>
 #' @param downsample Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids
 #' @param ... Arguments passed to \code{\link{uwot::umap()}}
 #'

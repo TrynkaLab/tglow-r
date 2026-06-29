@@ -3,7 +3,7 @@
 #'
 #' @description
 #' Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
-#' Yields a 10-20 percent speedup and adds modfied z-score scaling
+#' Yields a 10-20 percent speedup and adds modified z-score scaling
 #'
 #' @param x A matrix
 #' @param center Should data be centered
@@ -130,8 +130,8 @@ fast_colscale <- function(x,
 #-------------------------------------------------------------------------------
 #' Modified z-score
 #'
-#' @param x A numeric vectors
-#' @return The vector as a modfied z-score
+#' @param x A numeric vector
+#' @returns The vector as a modified z-score
 #'
 #' @export
 mod_zscore <- function(x) {
@@ -140,10 +140,14 @@ mod_zscore <- function(x) {
 
 
 #-------------------------------------------------------------------------------
+#' Modulus transformation
 #'
-#' As trafo's implementation
+#' @description As trafo's implementation of the modulus (signed power) transform.
 #' https://github.com/cran/trafo/blob/master/R/trafos.R
-#' 
+#'
+#' @param y Numeric vector to transform
+#' @param lambda Transformation parameter lambda
+#' @returns The transformed numeric vector
 #' @rdname modul
 #' @export
 modul <- function(y, lambda = lambda) {
@@ -178,15 +182,22 @@ modul_std <- function(y, lambda) {
 #'
 #' Modelled after MASS:boxcox() and shares the same basic signature
 #' So see [MASS:boxcox()] for help
-#' 
-#' 
-#' @details 
+#'
+#' @param object A fitted lm object or formula passed to lm()
+#' @param lambda Sequence of lambda values to evaluate (default seq(-2, 2, 1/10))
+#' @param plotit Should a plot of log-likelihood vs lambda be produced?
+#' @param interp Should spline interpolation be used for the plot curve?
+#' @param eps Tolerance for treating lambda as zero
+#' @param xlab X-axis label for the lambda plot
+#' @param ylab Y-axis label for the lambda plot
+#'
+#' @details
 #' Implements modulus transformation described here:
 #' https://scales.r-lib.org/reference/boxcox_trans.html
 #' John, J. A., & Draper, N. R. (1980). An alternative family of transformations. Applied Statistics, 190-197. http://www.jstor.org/stable/2986305
-#' 
-#' 
-#' @export 
+#'
+#' @returns The optimal lambda and, if plotit=TRUE, a plot of log-likelihood vs lambda
+#' @export
 modulus <- function(object, lambda = seq(-2, 2, 1/10), plotit =  TRUE,
          interp = (plotit && (m < 100)), eps = 1/50,
          xlab = expression(lambda), ylab = "log-Likelihood", ...) {
@@ -460,8 +471,8 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' @param assay \linkS4class{TglowAssay}
 #' @param grouping Vector with a grouping variable of length nrow(assay)
 #' @param reference.group Scale not to the vector mean/median, sd/mad but to the objects indiciated here
-#' @param ... Arguments passed to \code{\link{fast_colscale}}. Strongly reccomend looking at these!
-#' @returns The asssay with the scale.data slot populated
+#' @param ... Arguments passed to \code{\link{fast_colscale}}. Strongly recommend looking at these!
+#' @returns The assay with the scale.data slot populated
 #'
 #' @details
 #'

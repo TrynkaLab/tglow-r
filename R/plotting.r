@@ -39,7 +39,7 @@ theme_plain <- function(p, base_size = 11, base_family = "sans", legend = TRUE) 
 #' Plot the execution time of CellProfiler modules
 #'
 #' @param object A TglowDataset
-#' @param object As percentage, logical. Should values be returned as a percentage
+#' @param as.percentage Logical. Should values be returned as a percentage of total execution time?
 
 #' @returns ggplot object containing the plot
 #'
@@ -565,17 +565,17 @@ plot_img_set <- function(imgs, ncol, main = "", main.sub = NULL, text.col = "whi
 #------------------------------------------------------------------------------
 #' Scatterplot using ggplot
 #'
-#' @param x x
-#' @param y y
-#' @param xlab xlab
-#' @param ylab ylab
+#' @param x Numeric vector for the x-axis
+#' @param y Numeric vector for the y-axis
+#' @param xlab Label for the x-axis
+#' @param ylab Label for the y-axis
 #' @param main Main plot title, overrides default correlation
 #' @param main.prefix Text to add to plot title before correlation
-#' @param size size
-#' @param col col
+#' @param size Point size
+#' @param col Color for points
 #' @param fixed Should axes be fixed to the same x and y
-#' @param alpha alpha
-#' @param shape shape
+#' @param alpha Point transparency
+#' @param shape Point shape (integer code passed to ggplot2)
 #' @param lm.col Color of the line
 #' @param do.lm Should a linear fit be rendered
 #' @param method Method for fitting the line. Anything supported by \code{\link{ggplot2::geom_smooth()}}
@@ -910,7 +910,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #' and color represents effect size (or average effect size).
 #'
 #' @param markers A tglow.markers object from find_markers() or find_markers_lmm()
-#' @param grouping.x Column name in markers or character vector for x-axis grouping. Defualts to "feature" (plot each marker)
+#' @param grouping.x Column name in markers or character vector for x-axis grouping. Defaults to "feature" (plot each marker)
 #' @param grouping.x2 Optional second grouping level for faceting
 #' @param feature.clust Column name for feature clustering, features in same cluster are averaged first
 #' @param annot Optional annotation data.frame with rownames matching features

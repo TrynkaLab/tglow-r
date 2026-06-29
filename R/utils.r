@@ -5,7 +5,7 @@
 #' Constructs a table extracting attributes from the names in the from
 #' <object>_<category>_<feature-name>
 #'
-#' @param featue.names Character vector of feature names
+#' @param feature.names Character vector of feature names
 #'
 #' @returns A data.frame with feature attributes
 #' @export
@@ -38,9 +38,9 @@ get_feature_meta_from_names <- function(feature.names) {
 #' Data must be a list of lists with outputs from tglow.read.fileset.a/b
 #' or have the items, cells, meta, orl,  [children], [features], [cells_norm]
 #'
-#' @param data List output from \code{\link{tglow.read.fileset}}
+#' @param data List output from \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #' @param skip.orl Should object relationships be skipped
-#' @returns The mered output from \code{\link{tglow.read.fileset}}
+#' @returns The merged output from \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 #' @export
 merge_filesets <- function(data, skip.orl = FALSE) {
   if (!is(data, "list")) {
@@ -316,6 +316,13 @@ list_has_overlap <- function(list) {
 
 #-------------------------------------------------------------------------------
 #' Utilities for making plate overviews
+#'
+#' @description Helper functions for constructing and indexing 96- and 384-well plates.
+#' `new_384_plate` and `new_96_plate` return an empty NA-filled matrix with row and
+#' column names matching standard plate layouts. `well_to_index` converts a well
+#' identifier (e.g. "B03") to a row/column index pair.
+#'
+#' @returns (`new_384_plate`, `new_96_plate`) A matrix of NA values with plate-layout row and column names
 #' @rdname plate_utils
 #' @export
 new_384_plate <- function() {
@@ -334,6 +341,8 @@ new_96_plate <- function() {
   return(plate)
 }
 
+#' @param well A well identifier string, e.g. "B03" (first character is row letter, remainder is column number)
+#' @returns (`well_to_index`) A list with elements `row` (integer), `col` (integer), and `row_letter` (character)
 #' @rdname plate_utils
 #' @export
 well_to_index <- function(well) {
@@ -348,7 +357,7 @@ well_to_index <- function(well) {
 #-------------------------------------------------------------------------------
 #' Match two objects together based on shared images and nearest neighbour in XY
 #'
-#' @description Adds features to an existing assay
+#' @description Match objects between two TglowDatasets based on nearest-neighbour in XY coordinate space within shared plate/well/field groups
 #'
 #' @param a A \linkS4class{TglowDataset} used as reference
 #' @param b A \linkS4class{TglowDataset} used as query (added to reference)

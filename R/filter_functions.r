@@ -1,11 +1,11 @@
 #-------------------------------------------------------------------------------
 #' Create TglowFilters from a filter table
 #'
-#' @description See  \linkS4class{TglowFilter} for detaills
+#' @description See \linkS4class{TglowFilter} for details
 #'
 #' @param filter.table The table with filters
 #' @param name.col Column id with filter name
-#' @param col.col Column id with collumn pattern to apply filter too
+#' @param col.col Column id with column pattern to apply filter to
 #' @param func.col Column id with name of filter functions
 #' @param thresh.col Column id with col with threshold
 #' @param trans.col Column id with col indicating if transpose is applied before running func
@@ -32,7 +32,7 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 
 
 #-------------------------------------------------------------------------------
-#' Find which feature filters to a tglow dataset
+#' Calculate feature filter results for a TglowDataset
 #'
 #' @description
 #' Calculate a feature filter table on a \linkS4class{TglowDataset}
@@ -211,14 +211,14 @@ calculate_object_filters <- function(dataset, filters, assay, slot = "data", gro
 #'
 #' @description
 #' Apply a logical matrix or a logical array with filters on the columns and features on the rows
-#' to a tglow dataset. Each assay is seperately subsetted to remove features
+#' to a tglow dataset. Each assay is separately subsetted to remove features
 #' which are not selected
 #'
 #' If filter.res is a matrix, all rows must be true
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param filter.res The matrix of filter output from \code{\link{calculate_feature_filters}} or a named logical vector
-#' @param assays Only apply filteres to these assays
+#' @param assays Only apply filters to these assays
 #'
 #' @returns The filtered \linkS4class{TglowDataset}
 #' @export

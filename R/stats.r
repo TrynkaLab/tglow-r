@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
-#' Caclulate the effective dimensionality of a dataset
+#' Calculate the effective dimensionality of a dataset
 #'
 #' @description Calculates the effective dimensionality of a multidimensional dataset.
 #'
 #' @param data A matrix with data
-#' @param method 'all', 'li_ji', 'pc_var', 'chevrud', 'galwey' . See details
+#' @param method 'all', 'li_ji', 'pc_var', 'cheverud', 'galwey' . See details
 #' @param var.test Percentage of variance cutoff
 #' @details
 #' `method`
@@ -13,7 +13,7 @@
 #'
 #' `m` are the number of eigenvalues
 #' 
-#' Formulas derrived from : https://www.nature.com/articles/jhg201134#Sec2
+#' Formulas derived from: https://www.nature.com/articles/jhg201134#Sec2
 #' 
 #' - `li_ji` Use Li and Ji's method
 #'
@@ -23,7 +23,7 @@
 #'
 #'     `eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)`
 #'
-#' - `chevrud`:
+#' - `cheverud`:
 #'
 #'     `eff.tests <- 1 +(m - 1) * (1-(var(eigenval) / m))`
 #'
@@ -109,7 +109,7 @@ mode_distribution <- function(x, na.rm=TRUE) {
 #' Calculate summary stats on features
 #'
 #' @description
-#' Calculate the mean, median, mode, skewness, kurtosus, geometric mean, min, max
+#' Calculate the mean, median, mode, skewness, kurtosis, geometric mean, min, max
 #' Removes NA's for each feature individually.
 #' Stats are put on the assay@features slot under the name 'slot'_'stat'
 #' 

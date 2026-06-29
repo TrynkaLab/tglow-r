@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 #' Find outliers in PCA space
 #'
-#' @description Find outliers in the PCA space of a TglowAssay. Works for both
+#' @description Find outliers in the PCA space of a TglowDataset. Works for both
 #' assays and image.data
 #'
 #' @details
@@ -27,9 +27,9 @@
 #' from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
 #' Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
 #' 
-#' Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
-#' records FDR < 0.05 considered outliers. If the `thresh` parameter is supplied, it applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
-#' Note, the pvalue adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
+#' Once the distances are calculated, a p-value is derived using the chi-squared distribution. This p-value is by default FDR adjusted and any
+#' records FDR < 0.05 considered outliers. If the `thresh` parameter is supplied, it applies to the RAW p-values, not the FDR. FDR is only applied if thresh='auto'
+#' Note, the p-value adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
 #' 
 #' @param dataset A tglow dataset
 #' @param assay The assay to use
@@ -38,11 +38,12 @@
 #' @param pc.thresh The percentage of variance of PC's to select for outlier detection
 #' @param pc.max The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}
 #' @param pc.n The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max
+#' @param slot The slot to use for data extraction, defaults to "data". Can be "data" or "scale.data"
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @param features Features to include in PCA. By default uses all (NULL)
-#' @param padj.method Adjustment to apply to outlier pvalues. Any accepted by [stats::p.adjust()]
+#' @param padj.method Adjustment to apply to outlier p-values. Any accepted by [stats::p.adjust()]
 #' @returns A list with:
 #' - outliers: Boolean indicating outlier status
 #' - dist: Distance metric, in case of 'z' or 'mod.z' the number of components that the object is an outlier in

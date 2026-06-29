@@ -51,7 +51,7 @@ img_apply_color <- function(image, rgb) {
 #'
 #' @returns A single RGB images representing the average color values
 #'
-#' importFrom EBImage channel
+#' @importFrom EBImage channel
 #' @importFrom gplots col2hex
 #' @export
 img_composite <- function(images, colors) {
@@ -98,7 +98,7 @@ img_composite <- function(images, colors) {
 #'
 #' @returns A vector with the max values in each channel
 #'
-#' importFrom EBImage imageData
+#' @importFrom EBImage imageData
 #' @export
 img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
     check_package("EBImage")
@@ -135,7 +135,8 @@ img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
 #' Defaults to NULL in which case tglow.max.per.channel is called
 #' @param q Quantile to normalize for, passed to \code{\link{img_max_per_channel}}
 #'
-#' importFrom EBImage imageData
+#' @returns A list of normalized EBImage objects
+#' @importFrom EBImage imageData
 #' @export
 img_norm <- function(images, norm.factors = NULL, q = 1) {
     check_package("EBImage")
@@ -173,7 +174,11 @@ img_norm <- function(images, norm.factors = NULL, q = 1) {
 #-------------------------------------------------------------------------------
 #' Max project a EBImage along the 4th axis
 #'
-#' @param img EBImage
+#' @description Collapse the 4th dimension (z-stack or time) of an EBImage by
+#' taking the maximum value at each pixel position across all planes.
+#'
+#' @param img EBImage with 4 dimensions
+#' @returns An EBImage with the 4th dimension collapsed by taking the maximum value
 #' @export
 img_max_project <- function(img) {
     check_package("EBImage")

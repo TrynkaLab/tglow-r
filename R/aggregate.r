@@ -10,15 +10,15 @@
 #'
 #' Both assays and image.data, image.data.trans and image.data.norm are aggregated
 #'
-#' @param input Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset
+#' @param matrix Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset
 #' @param grouping Grouping variable of nrow input. For aggregate_by_imagecol, grouping must be a column name on image.meta
 #' @param method Aggregation method: "mean", "median", "sum"
 #' @param group.order The row order of output
 #' @param na.rm Should NA's be removed
-#' @param drop.multival.string When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets
+#' @param drop.multival.string When concatenating character metadata, should strings with multiple values be set to NA. This is recommended for large datasets
 #' @param drop.na.col If after aggregating, a column is fully NA, should it be dropped?
 #' @param sep Seperator string when concatenating multiple strings
-#' @returns A logical where TRUE should be kept and FALSE values should be removed
+#' @returns An aggregated matrix with the same columns as the input
 #'
 #' @rdname tglow_aggregate
 #' @importFrom data.table as.data.table := data.table
@@ -86,7 +86,7 @@ aggregate_assay <- function(assay, grouping, method, group.order = NULL, na.rm =
 }
 
 #-------------------------------------------------------------------------------
-#' Aggregate a a dataframe with metadata
+#' Aggregate a dataframe with metadata
 #' @rdname tglow_aggregate
 #' @export
 aggregate_metadata <- function(data, grouping, method, group.order = NULL, na.rm = TRUE, drop.multival.string = TRUE, drop.na.col = TRUE, sep = "; ") {
@@ -220,7 +220,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 
 
 #-------------------------------------------------------------------------------
-#' Convert a feature to a 96/384 plate layout by aggreation function
+#' Convert a feature to a 96/384 plate layout by aggregation function
 #' 
 #' @param object A \linkS4class{TglowDataset}
 #' @param assay The assay to grab the feature from, passed to \code{\link{getDataByObject}}
@@ -230,12 +230,12 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #' @param feature.plate  \linkS4class{TglowFeatureLocation} describing the plate feature or NULL (takes it from datasets@feature.map),
 #' @param na.rm Should NA's be removed. Passed to method
 #' @param format Output plate format, character either '384' or '96'
-#' @param method A callable to use as aggeration function, mean, median, unique etc
+#' @param method A callable to use as aggregation function, mean, median, unique etc
 #' 
 #' @details 
 #' If feature is a string, method=[base::unique()], which will work if the well only has unique values
 #' 
-#' @returns A list of plates with features aggeregates
+#' @returns A list of plates with features aggregated
 #' @export
 #'
 aggregate_to_plate <- function(object, assay, slot, feature, feature.well=NULL, feature.plate=NULL, na.rm=T, format="384", method=base::mean) {

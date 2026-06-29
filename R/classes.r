@@ -5,7 +5,7 @@ setClassUnion(name = "CharacterOrNull", members = c("character", "NULL"))
 #-------------------------------------------------------------------------------
 #' TglowMatrix
 #'
-#' Wrapper arround matrix to enable the use of $
+#' Wrapper around matrix to enable the use of $
 setClass("TglowMatrix", contains = "matrix")
 setClassUnion(name = "TglowMatrixOrNull", members = c("matrix", "NULL"))
 
@@ -32,7 +32,7 @@ setClassUnion(name = "TglowAssayOrNull", members = c("TglowAssay", "NULL"))
 
 
 #-------------------------------------------------------------------------------
-#' TglowFeatureMap
+#' TglowFeatureLocation
 #'
 #' @slot feature Character with the feature position
 #' @slot assay to grab feature from, or NULL if metadata feature
@@ -99,8 +99,8 @@ setClass("TglowFilter",
 #' TglowReduction
 #'
 #' @slot x Slot to store PCA / UMAP coordinates
-#' @slot sdev optional standard deviations
-#' @slot sdev_total optional sum of sdev
+#' @slot var optional variances (squared standard deviations)
+#' @slot var_total optional total variance (sum of var)
 #' @slot object Optional PCA / UMAP object
 #'
 setClass("TglowReduction",

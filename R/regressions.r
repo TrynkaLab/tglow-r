@@ -10,7 +10,7 @@
 #' @param assay The assay to use
 #' @param assay.image The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param slot The slot to use for finding markers. Can be "data" or "scale.data"
-#' @param return.top Return the top x values by pvalue. Defaults to 10, set to NULL to return all
+#' @param return.top Return the top x values by p-value. Defaults to 10, set to NULL to return all
 #' @param ref.classes A vector of values to compare class mean against. Default NULL uses all other classes as reference
 #' @param na.rm Should NA's be removed during t-test
 #'
@@ -373,16 +373,16 @@ find_markers_lmm <- function(
 #' @param formula The formula to use for regression. Defaults to additive model. See details
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
-#' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
+#' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See details
 #' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
 #' @param ... Remaining arguments passed to [lm_matrix()]. Use with caution.
 #' @details
 #'
 #' `grouping`
 #'
-#' This fits a model and calculates residuals per group seperately. 
+#' This fits a model and calculates residuals per group separately. 
 #' This can introduce a bias which can make groups uncomparable depending on the covariate structure. 
-#' Generally we do not reccomend using this unless you understand the implications.
+#' Generally we do not recommend using this unless you understand the implications.
 #' If this is provided, scaling for populating scale.data slot is done over ALL residuals, 
 #' not per group to ensure the mean and sd of the whole vector is as expected
 #'
@@ -475,13 +475,13 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @param object A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
-#' @param covariates.group List with specific covariates for groups of features. See detaills
+#' @param covariates.group List with specific covariates for groups of features. See details
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
-#' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See detaills
+#' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See details
 #' @param rescale.group When grouping is active, should the group be re-centered and scaled prior to regressing
 #' @param na.rm Remove NA's from the design matrix prior to regressing (does not remove NAs in the response)
 #' 
@@ -638,7 +638,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
-#' @param covariates.dont.use Only use if you understand the implications. See detaills
+#' @param covariates.dont.use Only use if you understand the implications. See details
 #' @param rescale.group When grouping is active, should the group be re-centered and scaled prior to regressing
 #' @param ... Remaining arguments passed to [lm_matrix()]. Use with caution.
 #'
@@ -783,10 +783,10 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
 #' @param rescale.group When grouping is active, should the subset be re-centered and scaled prior to regressing
-#' @param ... Remaining arguments passed to [tglowr::lmm_matrix()] and then to [lmerTest::lmer()]. See detaills
+#' @param ... Remaining arguments passed to [tglowr::lmm_matrix()] and then to [lmerTest::lmer()]. See details
 #' @details
 #'
-#' Strongly reccomend reading extra parameters available in [tglowr::lmm_matrix()]
+#' Strongly recommend reading extra parameters available in [tglowr::lmm_matrix()]
 #'
 #' `grouping`
 #'
@@ -797,7 +797,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #'  Should be a string interpretable by [stats::formula()] and [lmerTest::lmer()] but should NOT
 #'  have response in the forumla. E.g. when regressing `y ~ x + (1|donor)` forumula should be `~ x + (1|donor)`
 #'  Defaults to a regular additive linear model.
-#'  To specify derrived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
+#'  To specify derived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
@@ -862,7 +862,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' @description Fit a linear mixed model using OLS and find coefficients
 #' @param response A matrix with response variables
 #' @param design The common design matrix to regress response againsts
-#' @param covariates.dont.use Only use if you understand the implications. See detaills
+#' @param covariates.dont.use Only use if you understand the implications. See details
 #' @param residuals.only Only return the residual matrix
 #' @param return.residuals Return residual matrix in the output list. Defaults to T if residual.only = TRUE
 #' @param keep.zerocol Keep columns in design matrix that sum to zero
@@ -877,7 +877,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
 #' `use.qr`
 #' If TRUE, the qr decomposition is used to calculate the effectsizes. This avoids a matrix inversion that can be unstable with highly correlated designs.
 #' Singularites are removed based on the provided tol and the absolute diagonal of the QR decomp.
-#' It uses the same basic implementation as [lm()]. This is the reccomended way
+#' It uses the same basic implementation as [lm()]. This is the recommended way
 #' 
 #' If FALSE, the following is computed. In most cases, it procudes identical results, but there are cases where this is unstable.
 #' Singularities are removed based on the eigenvalue of crossprod(design) and the provided tol.

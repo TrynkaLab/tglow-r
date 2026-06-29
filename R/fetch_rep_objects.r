@@ -12,7 +12,7 @@
 #' @param feature The feature to find a representative objects for
 #' @param metric Can be 'mean', 'median', 'upper.q', 'lower.q'
 #' @param na.rm Should NA's be removed
-#' @param n How many objects either side of the representitative objects should be returend
+#' @param n How many objects either side of the representative object should be returned
 #' @param subset Look only in a subset of objects. Must be a selection vector
 #' @param q Override the quantile when using upper.q (0.75) or lower.q (0.25)
 #'
@@ -71,14 +71,14 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' Retrieve a set of objects (and its neighbours) based on a feature sumstat
 #'
 #' @description
-#' Fetches (n*2)+1 objects arround the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
+#' Fetches (n*2)+1 objects around the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param feature The feature to find a representative cell for
 #' @param name Prefix to add to the names of the names vector
-#' @param n How many objects either side of the representitative cell should be returend
+#' @param n How many objects either side of the representative cell should be returned
 #' @param q A vector of quantiles [0-1]
 #' @param add.extremes Should the top and bottom n values be added
 #'
@@ -142,17 +142,15 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
 #' Retrieve a cell (and its neighbours) based on a feature sumstat
 #'
 #' @description
-#' Gets a objects and its closes neighbours based on a reduction and a feature.
-#' Feature should be catagorical, can be used to find the object that is closest to the centroid
+#' Gets an object and its closest neighbours based on a reduction and a feature.
+#' Feature should be categorical, can be used to find the object that is closest to the centroid
 #' of a group in reduction space. To get more than one object per group, specify n.
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay to use
 #' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
 #' @param feature The feature to find a representative objects for, used as a grouping variable
-#' @param reduction The reduction to use to calculate distance. Reccomend a PCA.
-#' @param assay if feature is on an assay, the assay to use
-#' @param slot if feature is on an assay, which slot to use
+#' @param reduction The reduction to use to calculate distance. Recommend a PCA.
 #' @param n How many nearest neighbours to the central most object should be fetched
 #'
 #' @returns vector of indices in objects matrix
