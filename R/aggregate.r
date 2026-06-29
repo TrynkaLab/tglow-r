@@ -222,7 +222,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #-------------------------------------------------------------------------------
 #' Convert a feature to a 96/384 plate layout by aggregation function
 #' 
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE
 #' @param feature A single feature accessible by getDataByObject
@@ -238,19 +238,19 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #' @returns A list of plates with features aggregated
 #' @export
 #'
-aggregate_to_plate <- function(object, assay, slot, feature, feature.well=NULL, feature.plate=NULL, na.rm=T, format="384", method=base::mean) {
+aggregate_to_plate <- function(dataset, assay, slot, feature, feature.well=NULL, feature.plate=NULL, na.rm=T, format="384", method=base::mean) {
 
     # Grab features from the feature map
     if (is.null(feature.well) || is.null(feature.plate)) {
-        if (is.null(object@feature.map)) {
-            stop("Must either set object@feature.map or provide feature.well and feature.plate")
+        if (is.null(dataset@feature.map)) {
+            stop("Must either set dataset@feature.map or provide feature.well and feature.plate")
         }
         
         if (is.null(feature.well)) {
-            feature.well <- object@feature.map@well
+            feature.well <- dataset@feature.map@well
         }
         if (is.null(feature.plate)) {
-            feature.plate <- object@feature.map@plate
+            feature.plate <- dataset@feature.map@plate
         }   
     } 
 
@@ -260,19 +260,19 @@ aggregate_to_plate <- function(object, assay, slot, feature, feature.well=NULL, 
 
     if (assay %in% c("image.data", "image.meta", "image.data.norm", "image.data.norm")) {
         # Build the plot df
-        data <- cbind(getImageData(object, feature, assay=assay, slot=slot, drop=F),
-                    getImageData(object, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
-                    getImageData(object, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
+        data <- cbind(getImageData(dataset, feature, assay=assay, slot=slot, drop=F),
+                    getImageData(dataset, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
+                    getImageData(dataset, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
     } else {
         # Build the plot df
-        check_dataset_assay_slot(object, assay=assay, slot=slot)
+        check_dataset_assay_slot(dataset, assay=assay, slot=slot)
         
-        data <- cbind(getDataByObject(object, feature, assay=assay, slot=slot, drop=F),
-                    getDataByObject(object, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
-                    getDataByObject(object, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
+        data <- cbind(getDataByObject(dataset, feature, assay=assay, slot=slot, drop=F),
+                    getDataByObject(dataset, feature.well@feature, assay=feature.well@assay, slot=feature.well@slot, drop=F),
+                    getDataByObject(dataset, feature.plate@feature, assay=feature.plate@assay, slot=feature.plate@slot, drop=F))
     }
 
-    #data <- getDataByObject(object,j=c(feature.well, feature.plate, feature), assay=assay, slot=slot)
+    #data <- getDataByObject(dataset,j=c(feature.well, feature.plate, feature), assay=assay, slot=slot)
 
     if (class(data[, feature]) == "character") {
     warning("[WARN] Supplied feature is character, setting unique as default method but this might not work in case wells have multiple values")

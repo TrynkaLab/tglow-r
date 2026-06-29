@@ -363,7 +363,7 @@ find_markers_lmm <- function(
 #' Linearly correct for a set of covariates
 #'
 #' @description Fit a linear model using OLS and correct an assay for specified covariates
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of covariates to correct for
@@ -399,8 +399,8 @@ find_markers_lmm <- function(
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
-    check_dataset_assay_slot(object, assay, slot)
+correct_lm <- function(dataset, assay, slot, covariates, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, formula = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
@@ -411,13 +411,13 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
     }
     
     if (!is.null(grouping)) {
-        if (length(grouping) != nrow(object)) {
-        stop("grouping must be a vector of nrow(object)")
+        if (length(grouping) != nrow(dataset)) {
+        stop("grouping must be a vector of nrow(dataset)")
         }
     }
 
 
-    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
+    data <- getDataByObject(dataset, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
     covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
 
@@ -427,13 +427,13 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
         
         if (is.character(formula)) {
             formula <- as.formula(formula)
-            warning(paste0("Formula is character, converting to formula object: ", paste0(as.character(formula), collapse=" ")))
+            warning(paste0("Formula is character, converting to formula dataset: ", paste0(as.character(formula), collapse=" ")))
         }
         design <- model.matrix(formula, data = data)
     }
 
-    #response <- slot(object@assays[[assay]], slot)@.Data
-    response  <- slot(object@assays[[assay]], slot)
+    #response <- slot(dataset@assays[[assay]], slot)@.Data
+    response  <- slot(dataset@assays[[assay]], slot)
     residuals <- matrix(NA, nrow = nrow(response), ncol = ncol(response), dimnames = dimnames(response))
 
     if (is.null(grouping)) {
@@ -459,20 +459,20 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 
     cat("[INFO] Regressions done. Scaling residuals\n")
 
-    object@assays[[assay.out]] <- new("TglowAssay",
+    dataset@assays[[assay.out]] <- new("TglowAssay",
         data = TglowMatrix(residuals),
         scale.data = TglowMatrix(fast_colscale(residuals)),
-        features = object@assays[[assay]]@features
+        features = dataset@assays[[assay]]@features
     )
 
-    return(object)
+    return(dataset)
 }
 
 #-------------------------------------------------------------------------------
 #' Linearly correct for a set of covariates
 #'
 #' @description Fit a linear model using OLS and correct an assay for specified covariates
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates.group List with specific covariates for groups of features. See details
@@ -504,8 +504,8 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #' @returns The \linkS4class{TglowDataset} with a corrected assay
 #' @importFrom progress progress_bar
 #' @export
-correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, na.rm=F) {
-    check_dataset_assay_slot(object, assay, slot)
+correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, slot.covar = NULL, assay.covar = NULL, assay.image = NULL, assay.out = NULL, grouping = NULL, covariates.dont.use = NULL, rescale.group = FALSE, na.rm=F) {
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (!is.list(covariates.group)) {
         stop("grouping.features must be a list")
@@ -517,8 +517,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
     
     if (!is.null(grouping)) {
-        if (length(grouping) != nrow(object)) {
-        stop("grouping must be a vector of nrow(object)")
+        if (length(grouping) != nrow(dataset)) {
+        stop("grouping must be a vector of nrow(dataset)")
         }
     }
 
@@ -530,7 +530,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
     feature.colnames <- list()
     for (fgroup in names(covariates.group)) {
-        feature.colnames[[fgroup]] <- grep(fgroup, colnames(object@assays[[assay]]), value = TRUE)
+        feature.colnames[[fgroup]] <- grep(fgroup, colnames(dataset@assays[[assay]]), value = TRUE)
     }
 
     if (list_has_overlap(feature.colnames)) {
@@ -546,8 +546,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
     }
 
 
-    #response <- slot(object@assays[[assay]], slot)@.Data
-    response <- slot(object@assays[[assay]], slot)
+    #response <- slot(dataset@assays[[assay]], slot)@.Data
+    response <- slot(dataset@assays[[assay]], slot)
     residuals <- matrix(as.numeric(NA), nrow = nrow(response), ncol = ncol(response))
     rownames(residuals) <- rownames(response)
     colnames(residuals) <- colnames(response)
@@ -567,7 +567,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
         }
 
         for (fgroup in names(covariates.group)) {
-            data <- getDataByObject(object, covariates.group[[fgroup]], assay.covar, assay.image, slot.covar, drop = F)
+            data <- getDataByObject(dataset, covariates.group[[fgroup]], assay.covar, assay.image, slot.covar, drop = F)
 
             has.na <- rowSums(is.na(data)) != 0
 
@@ -597,7 +597,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
                 next()
             }
             
-            cat("[INFO] Running object group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
+            cat("[INFO] Running dataset group: ", group, " for ", fgroup, " and selected ", length(group.features), " features\n")
 
             res <- lm_matrix(response.cur[selector.final, group.features],
                 design,
@@ -615,13 +615,13 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 
     cat("[INFO] Regressions done. Scaling residuals\n")
 
-    object@assays[[assay.out]] <- new("TglowAssay",
+    dataset@assays[[assay.out]] <- new("TglowAssay",
         data = TglowMatrix(residuals),
         scale.data = TglowMatrix(fast_colscale(residuals)),
-        features = object@assays[[assay]]@features
+        features = dataset@assays[[assay]]@features
     )
 
-    return(object)
+    return(dataset)
 }
 
 
@@ -629,7 +629,7 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #' Calculate linear coefficients
 #'
 #' @description Fit a linear model using OLS and find coefficients
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of independent variables to use in the model
@@ -660,8 +660,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
-    check_dataset_assay_slot(object, assay, slot)
+calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
@@ -672,12 +672,12 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
     }
 
     if (!is.null(grouping)) {
-        if (length(grouping) != nrow(object)) {
-        stop("grouping must be a vector of nrow(object)")
+        if (length(grouping) != nrow(dataset)) {
+        stop("grouping must be a vector of nrow(dataset)")
         }
     }
 
-    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
+    data <- getDataByObject(dataset, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
     if (ncol(data) <= 0) {
         stop("data (covariates) cannot be empty. Are your collumn names correct?")
@@ -691,12 +691,12 @@ calculate_lm <- function(object, assay, slot, covariates, formula = NULL, groupi
         
         if (is.character(formula)) {
             formula <- as.formula(formula)
-            warning(paste0("Formula is character, converting to formula object: ", paste0(as.character(formula), collapse=" ")))
+            warning(paste0("Formula is character, converting to formula dataset: ", paste0(as.character(formula), collapse=" ")))
         }
         
         design <- model.matrix(formula, data = data)
     }
-    response <- slot(object@assays[[assay]], slot)
+    response <- slot(dataset@assays[[assay]], slot)
 
     # Remove NA's from the design matrix
     rows.to.keep <- rowSums(is.na(data))==0
@@ -773,7 +773,7 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #' Calculate linear coefficients using a linear mixed model
 #'
 #' @description Fit a linear mixed model using REML / MLE (lme4) and find coefficients
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of independent variables to use in the model
@@ -801,8 +801,8 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, rescale.group = TRUE, ...) {
-    check_dataset_assay_slot(object, assay, slot)
+calculate_lmm <- function(dataset, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, rescale.group = TRUE, ...) {
+    check_dataset_assay_slot(dataset, assay, slot)
 
     if (is.null(slot.covar)) {
         slot.covar <- slot
@@ -812,7 +812,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
         assay.covar <- assay
     }
 
-    data <- getDataByObject(object, covariates, assay.covar, assay.image, slot.covar, drop = F)
+    data <- getDataByObject(dataset, covariates, assay.covar, assay.image, slot.covar, drop = F)
 
     if (ncol(data) <= 0) {
         stop("data (covariates) cannot be empty. Are your collumn names correct?")
@@ -822,7 +822,7 @@ calculate_lmm <- function(object, assay, slot, covariates, formula = NULL, group
         formula <- paste("~", paste(colnames(data), collapse = " + "))
     }
     
-    response <- slot(object@assays[[assay]], slot)
+    response <- slot(dataset@assays[[assay]], slot)
 
 
     #response <- response[rows.to.keep,]

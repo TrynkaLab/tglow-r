@@ -87,7 +87,7 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #'
 #' @description Plot a reduction on a \linkS4class{TglowDataset}
 #'
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param reduction A name of a reduction on dataset.
 #' @param ident The item to use for coloring points, passed to \code{\link{getDataByObject}}
 #' @param assay The assay on dataset to use
@@ -109,9 +109,9 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #'
 #' @importFrom ggrepel geom_text_repel
 #' @export
-tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, facet=NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", ...) {
-    if (!reduction %in% names(object@reduction)) {
-        stop("Reduction not found on object")
+tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot = NULL, downsample = NULL, facet=NULL, log.ident = FALSE, axis.x = 1, axis.y = 2, xlab = NULL, ylab = NULL, no.colscale = FALSE, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", ...) {
+    if (!reduction %in% names(dataset@reduction)) {
+        stop("Reduction not found on dataset")
     }
 
     if (!is.null(downsample)) {
@@ -120,14 +120,14 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
         }
     }
 
-    dim <- object@reduction[[reduction]]@x[, c(axis.x, axis.y)]
+    dim <- dataset@reduction[[reduction]]@x[, c(axis.x, axis.y)]
 
     na.filter <- rowSums(is.na(dim)) != ncol(dim)
 
     if (is.null(ident)) {
         col <- "blue"
     } else {
-        col <- getDataByObject(object, ident, assay = assay, slot = slot)
+        col <- getDataByObject(dataset, ident, assay = assay, slot = slot)
         col <- col[na.filter]
     }
 
@@ -160,7 +160,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
     }
     
     if (length(facet) == 1 && is.character(facet)) {
-        facet <- getDataByObject(object, facet, assay = assay, slot = slot)
+        facet <- getDataByObject(dataset, facet, assay = assay, slot = slot)
         facet <- facet[na.filter]
         if (!is.null(downsample)) {
             facet <- facet[downsample]
@@ -212,7 +212,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #-------------------------------------------------------------------------------
 #' Plot a hexbin colored on a 3rd variable
 #'
-#' @param object A \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature.z feature to aggregate and color on,
@@ -238,7 +238,7 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' @returns A ggplot2 object
 #' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
 #' @export
-tglow_plot_location_hex <- function(object,
+tglow_plot_location_hex <- function(dataset,
                                     assay,
                                     slot,
                                     feature.c,
@@ -262,20 +262,20 @@ tglow_plot_location_hex <- function(object,
                                     side.lwd=1,
                                     side.lty=2,
                                     ...) {
-    #check_dataset_assay_slot(object, assay, slot)
+    #check_dataset_assay_slot(dataset, assay, slot)
 
 
     # Grab features from the feature map
     if (is.null(feature.x) || is.null(feature.y)) {
-        if (is.null(object@feature.map)) {
-            stop("Must either set object@feature.map or provide feature.x and feature.y")
+        if (is.null(dataset@feature.map)) {
+            stop("Must either set dataset@feature.map or provide feature.x and feature.y")
         }
         
         if (is.null(feature.x)) {
-            feature.x <- object@feature.map@x
+            feature.x <- dataset@feature.map@x
         }
         if (is.null(feature.y)) {
-            feature.y <- object@feature.map@y
+            feature.y <- dataset@feature.map@y
         }   
     } 
     
@@ -284,10 +284,10 @@ tglow_plot_location_hex <- function(object,
     }
 
     # Build the plot df
-    df.plot <- cbind(getDataByObject(object, feature.c, assay=assay, slot=slot, drop=F),
-                     getDataByObject(object, feature.x@feature, assay=feature.x@assay, slot=feature.x@slot, drop=F),
-                     getDataByObject(object, feature.y@feature, assay=feature.y@assay, slot=feature.y@slot, drop=F))
-    #df.plot <- getDataByObject(object, c(feature.z, feature.x, feature.y), assay = assay, slot = slot)
+    df.plot <- cbind(getDataByObject(dataset, feature.c, assay=assay, slot=slot, drop=F),
+                     getDataByObject(dataset, feature.x@feature, assay=feature.x@assay, slot=feature.x@slot, drop=F),
+                     getDataByObject(dataset, feature.y@feature, assay=feature.y@assay, slot=feature.y@slot, drop=F))
+    #df.plot <- getDataByObject(dataset, c(feature.z, feature.x, feature.y), assay = assay, slot = slot)
 
     colnames(df.plot) <- c("z", "x", "y")
     
