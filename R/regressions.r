@@ -7,9 +7,9 @@
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param ident A column in meta, image.meta, assay, assay.image to use as class labels
-#' @param assay The assay to use
+#' @param assay The assay on dataset to use
 #' @param assay.image The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"
-#' @param slot The slot to use for finding markers. Can be "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param return.top Return the top x values by p-value. Defaults to 10, set to NULL to return all
 #' @param ref.classes A vector of values to compare class mean against. Default NULL uses all other classes as reference
 #' @param na.rm Should NA's be removed during t-test
@@ -129,8 +129,8 @@ find_markers_ttest <- function(dataset, ident, assay, slot, assay.image = NULL, 
 #'
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param ident A column in meta, image.meta, assay, assay.image to use as class labels
-#' @param assay The assay to use
-#' @param slot The slot to use for finding markers
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of covariates to use in model
 #' @param assay.covar The assay to grab covariates from
 #' @param slot.covar The slot to grab covariates from
@@ -364,8 +364,8 @@ find_markers_lmm <- function(
 #'
 #' @description Fit a linear model using OLS and correct an assay for specified covariates
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of covariates to correct for
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
@@ -473,8 +473,8 @@ correct_lm <- function(object, assay, slot, covariates, slot.covar = NULL, assay
 #'
 #' @description Fit a linear model using OLS and correct an assay for specified covariates
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates.group List with specific covariates for groups of features. See details
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
@@ -630,8 +630,8 @@ correct_lm_per_featuregroup <- function(object, assay, slot, covariates.group, s
 #'
 #' @description Fit a linear model using OLS and find coefficients
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of independent variables to use in the model
 #' @param formula The formula to use for regression, string or formula. Defaults to additive model. See details
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
@@ -774,8 +774,8 @@ check_unused_covar <- function(data, covariates.dont.use) {
 #'
 #' @description Fit a linear mixed model using REML / MLE (lme4) and find coefficients
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for regressing against. Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of independent variables to use in the model
 #' @param formula The formula to use for regression. Defaults to additive model. See details
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
@@ -1265,10 +1265,8 @@ lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param ident Column name in the dataset metadata specifying cell identities
 #'   to compare.
-#' @param assay Name of the assay to use for feature clustering and eigenfeature
-#'   calculation.
-#' @param slot Slot within the assay to use (e.g. \code{"data"},
-#'   \code{"scale.data"}).
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param fcl.col Column name in feature metadata containing a pre-computed
 #'   feature clustering result. If \code{NULL} (default), feature clustering is
 #'   recalculated using \code{fcl.resolution}, \code{fcl.method}, and

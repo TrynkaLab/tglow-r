@@ -114,8 +114,8 @@ mode_distribution <- function(x, na.rm=TRUE) {
 #' Stats are put on the assay@features slot under the name 'slot'_'stat'
 #' 
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #'
 #' @returns The \linkS4class{TglowDataset}
 #' @export

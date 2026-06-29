@@ -51,7 +51,7 @@ setGeneric("imageIds<-", function(object, value) {
 #' @param object A \linkS4class{TglowDataset}
 #' @param j character with column names from image.meta or assay.image to select
 #' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
-#' @param slot slot to fetch features fromdata or scale.data
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param drop should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
@@ -69,7 +69,7 @@ setGeneric("getImageData", function(object, j, assay.image = NULL, slot = "data"
 #' @param object A \linkS4class{TglowDataset}
 #' @param j Character with column names from image.meta or assay.image to select
 #' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
-#' @param slot Slot to fetch features from data or scale.data
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
@@ -88,7 +88,7 @@ setGeneric("getImageDataByObject", function(object, j, assay.image = NULL, slot 
 #' @param j Character with column names from assay, assay.image, image.meta to select
 #' @param assay The assay to select from. If not fetching assay columns, leave at NULL
 #' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
-#' @param slot Slot to fetch features from: "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param drop Should cols be dropped or not
 #' @returns A data frame with the corresponding columns
 #' @export
@@ -105,7 +105,7 @@ setGeneric("getDataByObject", function(object, j, assay = NULL, assay.image = NU
 #' @param j Character with column names from assay, assay.image, image.meta to select
 #' @param assay The assay to select from. If not fetching assay columns, leave at NULL
 #' @param assay.image Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL
-#' @param slot Slot to fetch features from: "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param drop Should cols be dropped or not
 #' @param return.names If TRUE, return a character vector of available names instead of a logical
 #' @returns A logical (or named logical vector if return.names=TRUE) indicating column availability

@@ -90,8 +90,8 @@ tglow_plot_execution_time <- function(object, as.percentage = FALSE) {
 #' @param object A \linkS4class{TglowDataset}
 #' @param reduction A name of a reduction on dataset.
 #' @param ident The item to use for coloring points, passed to \code{\link{getDataByObject}}
-#' @param assay The assay to use for coloring, passed to \code{\link{getDataByObject}}
-#' @param slot The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param downsample Should downsampling be applied prior to plot. NA's are removed first
 #' @param facet A vector or name of item to facet on
 #' @param log.ident Should color vector be log2 transformed
@@ -213,8 +213,8 @@ tglow_dimplot <- function(object, reduction, ident = NULL, assay = NULL, slot = 
 #' Plot a hexbin colored on a 3rd variable
 #'
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature.z feature to aggregate and color on,
 #' @param feature.x \linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)
 #' @param feature.y \linkS4class{TglowFeatureLocation} describing the y feature or NULL (takes it from datasets@feature.map)

@@ -7,8 +7,8 @@
 #' is scaled has mean 0 variance 1, which is not true if using modified zscore
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use, defaults to "scale.data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param pc.n How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{prcomp()}}
 #' @param reduction.name The name to save the PCA results under. Defaults to PCA-<assay>
 #' @param ret.prcomp Instead of returning just the PCs and variances, return the whole prcomp object
@@ -87,7 +87,7 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param reduction The reduction to use for calculating UMAPs. If NULL and 'PCA.<assay>' is not available it is re-calculated
 #' @param assay The assay to use to calculate PCA with, or to grab from reduction 'PCA.<assay>'
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param pc.n How many PC's to calculate
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA
 #' @param reduction.name The name to save the UMAP results under. Defaults to UMAP-<assay>

@@ -31,14 +31,14 @@
 #' records FDR < 0.05 considered outliers. If the `thresh` parameter is supplied, it applies to the RAW p-values, not the FDR. FDR is only applied if thresh='auto'
 #' Note, the p-value adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
 #' 
-#' @param dataset A tglow dataset
-#' @param assay The assay to use
+#' @param dataset A \linkS4class{TglowDataset}
+#' @param assay The assay on dataset to use
 #' @param qc.group A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once
 #' @param thresh Threshold in absolute PC to consider an outlier. "auto" defaults to 3.5 for zscore/mad modes, and to bonferoni for mahalanobis 
 #' @param pc.thresh The percentage of variance of PC's to select for outlier detection
 #' @param pc.max The maximum number of components to calculate using \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}}
 #' @param pc.n The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max
-#' @param slot The slot to use for data extraction, defaults to "data". Can be "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param method Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.
 #' @param return.pcs Should the grouped PC's be returned?
 #' @param use_irlba Logical if \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} or \code{\link[=prcomp]{prcomp()}} should be used for PCA

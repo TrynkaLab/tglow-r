@@ -7,8 +7,8 @@
 #' specify q.
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature The feature to find a representative objects for
 #' @param metric Can be 'mean', 'median', 'upper.q', 'lower.q'
 #' @param na.rm Should NA's be removed
@@ -74,8 +74,8 @@ fetch_representative_object <- function(dataset, assay, slot, feature, metric = 
 #' Fetches (n*2)+1 objects around the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature The feature to find a representative cell for
 #' @param name Prefix to add to the names of the names vector
 #' @param n How many objects either side of the representative cell should be returned
@@ -147,8 +147,8 @@ fetch_representative_object_quantiles <- function(dataset, assay, slot, feature,
 #' of a group in reduction space. To get more than one object per group, specify n.
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature The feature to find a representative objects for, used as a grouping variable
 #' @param reduction The reduction to use to calculate distance. Recommend a PCA.
 #' @param n How many nearest neighbours to the central most object should be fetched

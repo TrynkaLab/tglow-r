@@ -388,10 +388,10 @@ boxcox_transform <- function(x, return.lambda = FALSE, mode="boxcox", limit = 5,
 #' Lambda values are added to the features data.frame: 0=log, 1=no transformation
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use
+#' @param assay The assay on dataset to use
 #' @param assay.out The name of the output assay. Defaults to paste0(assay, "-trans")
 #' @param trim Logical indicating to trim zero variance columns and NA's after applying boxcox transform
-#' @param slot The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param verbose Raise a warning if columns are trimmed
 #' @param filter.iqr Remove values outside +- 2x IQR to reduce impact of outliers
 #' @param ... Arguments passed to \code{\link{boxcox_transform}}
@@ -468,7 +468,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' @description Scale the data slot in a tglow assay and override the scale.data slot
 #' Defaults to z-score, but can also return modified z-score when providing scale.method
 #'
-#' @param assay \linkS4class{TglowAssay}
+#' @param assay A \linkS4class{TglowAssay}
 #' @param grouping Vector with a grouping variable of length nrow(assay)
 #' @param reference.group Scale not to the vector mean/median, sd/mad but to the objects indiciated here
 #' @param ... Arguments passed to \code{\link{fast_colscale}}. Strongly recommend looking at these!
@@ -542,7 +542,7 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
 #' Scale a tglow dataset
 #'
 #' @description  For TglowDataset, scales the provided assay, or all assays when assay is null
-#' @param dataset \linkS4class{TglowDataset}
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param assay Character string indicating assay, if NULL all assays are scaled.
 #' @param grouping Colname on dataset or Vector with a grouping variable of length nrow(assay)
 #' @param ... Remaining options passed to [scale_assay()]
@@ -578,8 +578,8 @@ scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
 #'
 #' @description Scale the data slot between min and max and return a new assay
 #'
-#' @param assay \linkS4class{TglowAssay}
-#' @param slot The slot on assay to draw from. Should be 'data' in most cases.
+#' @param assay A \linkS4class{TglowAssay}
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param min The minimal value for each feature in output
 #' @param max The maximum value for each feature in output
 #' @param scale.by.var Multiply the result by the orignal variance

@@ -7,7 +7,7 @@
 #' columns in the meta slot of the returned dataset.
 #'
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param reduction The reduction to use for calculating clustering. If NULL re-calculated
 #' @param pc.n How many PC's to use
 #' @param k How many NN to calculate
@@ -108,8 +108,8 @@ calculate_clustering <- function(dataset, reduction, pc.n = NULL, k = 10, method
 #' community detection or hierarchical clustering methods.
 #'
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use for clustering
-#' @param slot The data slot to use ("data", "scale.data", etc.)
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param feature.group Column name in features slot or vector of length ncol(assay) 
 #'        defining feature groups to cluster separately
 #' @param resolution Resolution parameter for clustering. Controls cluster granularity.
@@ -290,8 +290,8 @@ calculate_feature_clustering <- function(
 #' This assay can be used for more fair testing of how well a featureset is associated to a trait.
 #' 
 #' @param dataset A \linkS4class{TglowDataset}
-#' @param assay The assay to use for clustering
-#' @param slot The data slot to use ("data", "scale.data", etc.)
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param cluster.col Column in features slot containing cluster assignments to calculate eigenfeatures for
 #' 
 #' @details

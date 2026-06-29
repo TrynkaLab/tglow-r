@@ -38,10 +38,10 @@ tglow_filters_from_table <- function(filter.table, name.col = 1, col.col = 2, fu
 #' Calculate a feature filter table on a \linkS4class{TglowDataset}
 #' All filters are inclusive
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param filters A list with TglowFilter objects to apply
-#' @param assay The assay to use for calculating filters
-#' @param slot The slot to use for calculating filters: "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param features An optional subset of features to use for calculation
 #' @param na.fail Should NA be treated as fail, defaults to yes
 #'
@@ -120,10 +120,10 @@ calculate_feature_filters <- function(dataset, filters, assay, slot, features = 
 #' Calculate an object filter table on a \linkS4class{TglowDataset}
 #' All filters are inclusive
 #'
-#' @param dataset A tglow dataset
+#' @param dataset A \linkS4class{TglowDataset}
 #' @param filters A list with TglowFilter objects to apply
-#' @param assay The assay to use for calculating filters
-#' @param slot The slot to use for calculating filters: "data" or "scale.data"
+#' @param assay The assay on dataset to use
+#' @param slot The assay slot to use ("data", "scale.data")
 #' @param grouping A vector specifying the grouping for some filters
 #' @param features An optional subset of features to use for calculation
 #' @param na.fail Should NA be treated as fail, defaults to yes

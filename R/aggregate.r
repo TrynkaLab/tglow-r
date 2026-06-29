@@ -223,7 +223,7 @@ aggregate_by_imagecol <- function(object, grouping, method, group.order = NULL, 
 #' Convert a feature to a 96/384 plate layout by aggregation function
 #' 
 #' @param object A \linkS4class{TglowDataset}
-#' @param assay The assay to grab the feature from, passed to \code{\link{getDataByObject}}
+#' @param assay The assay on dataset to use
 #' @param slot The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE
 #' @param feature A single feature accessible by getDataByObject
 #' @param feature.well  \linkS4class{TglowFeatureLocation} describing the well feature or NULL (takes it from datasets@feature.map),
