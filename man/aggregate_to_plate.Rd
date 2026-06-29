@@ -2,10 +2,10 @@
 % Please edit documentation in R/aggregate.r
 \name{aggregate_to_plate}
 \alias{aggregate_to_plate}
-\title{Convert a feature to a 96/384 plate layout by aggreation function}
+\title{Convert a feature to a 96/384 plate layout by aggregation function}
 \usage{
 aggregate_to_plate(
-  object,
+  dataset,
   assay,
   slot,
   feature,
@@ -17,9 +17,9 @@ aggregate_to_plate(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to grab the feature from, passed to \code{\link{getDataByObject}}}
+\item{assay}{The assay on dataset to use}
 
 \item{slot}{The slot to add features to. The features are set to NA in the other slot unless preserve.other=TRUE}
 
@@ -33,13 +33,13 @@ aggregate_to_plate(
 
 \item{format}{Output plate format, character either '384' or '96'}
 
-\item{method}{A callable to use as aggeration function, mean, median, unique etc}
+\item{method}{A callable to use as aggregation function, mean, median, unique etc}
 }
 \value{
-A list of plates with features aggeregates
+A list of plates with features aggregated
 }
 \description{
-Convert a feature to a 96/384 plate layout by aggreation function
+Convert a feature to a 96/384 plate layout by aggregation function
 }
 \details{
 If feature is a string, method=\code{\link[base:unique]{base::unique()}}, which will work if the well only has unique values

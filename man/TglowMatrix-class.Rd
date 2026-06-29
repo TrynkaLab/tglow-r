@@ -5,5 +5,5 @@
 \alias{TglowMatrix-class}
 \title{TglowMatrix}
 \description{
-Wrapper arround matrix to enable the use of $
+Wrapper around matrix to enable the use of $
 }

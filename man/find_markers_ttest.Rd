@@ -20,13 +20,13 @@ find_markers_ttest(
 
 \item{ident}{A column in meta, image.meta, assay, assay.image to use as class labels}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for finding markers. Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{assay.image}{The image assay to use for grabbing ident, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
-\item{return.top}{Return the top x values by pvalue. Defaults to 10, set to NULL to return all}
+\item{return.top}{Return the top x values by p-value. Defaults to 10, set to NULL to return all}
 
 \item{ref.classes}{A vector of values to compare class mean against. Default NULL uses all other classes as reference}
 

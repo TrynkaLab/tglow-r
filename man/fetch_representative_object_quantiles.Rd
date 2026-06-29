@@ -18,15 +18,15 @@ fetch_representative_object_quantiles(
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{feature}{The feature to find a representative cell for}
 
 \item{name}{Prefix to add to the names of the names vector}
 
-\item{n}{How many objects either side of the representitative cell should be returend}
+\item{n}{How many objects either side of the representative cell should be returned}
 
 \item{q}{A vector of quantiles \link{0-1}}
 
@@ -36,5 +36,5 @@ fetch_representative_object_quantiles(
 A list with row ids and labels for the objects
 }
 \description{
-Fetches (n*2)+1 objects arround the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
+Fetches (n*2)+1 objects around the 0th, 10th, 25th, 50th, 75th, 90th and 100th quantiles
 }

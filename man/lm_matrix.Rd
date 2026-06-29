@@ -21,7 +21,7 @@ lm_matrix(
 
 \item{design}{The common design matrix to regress response againsts}
 
-\item{covariates.dont.use}{Only use if you understand the implications. See detaills}
+\item{covariates.dont.use}{Only use if you understand the implications. See details}
 
 \item{residuals.only}{Only return the residual matrix}
 
@@ -48,7 +48,7 @@ It also has extra options such as ignoring covariates when calculating residuals
 \code{use.qr}
 If TRUE, the qr decomposition is used to calculate the effectsizes. This avoids a matrix inversion that can be unstable with highly correlated designs.
 Singularites are removed based on the provided tol and the absolute diagonal of the QR decomp.
-It uses the same basic implementation as \code{\link[=lm]{lm()}}. This is the reccomended way
+It uses the same basic implementation as \code{\link[=lm]{lm()}}. This is the recommended way
 
 If FALSE, the following is computed. In most cases, it procudes identical results, but there are cases where this is unstable.
 Singularities are removed based on the eigenvalue of crossprod(design) and the provided tol.

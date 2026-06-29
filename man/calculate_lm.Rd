@@ -5,7 +5,7 @@
 \title{Calculate linear coefficients}
 \usage{
 calculate_lm(
-  object,
+  dataset,
   assay,
   slot,
   covariates,
@@ -20,11 +20,11 @@ calculate_lm(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for regressing against. Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{covariates}{Character vector of independent variables to use in the model}
 
@@ -38,7 +38,7 @@ calculate_lm(
 
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
-\item{covariates.dont.use}{Only use if you understand the implications. See detaills}
+\item{covariates.dont.use}{Only use if you understand the implications. See details}
 
 \item{rescale.group}{When grouping is active, should the group be re-centered and scaled prior to regressing}
 

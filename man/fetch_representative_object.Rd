@@ -19,9 +19,9 @@ fetch_representative_object(
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{feature}{The feature to find a representative objects for}
 
@@ -29,7 +29,7 @@ fetch_representative_object(
 
 \item{na.rm}{Should NA's be removed}
 
-\item{n}{How many objects either side of the representitative objects should be returend}
+\item{n}{How many objects either side of the representative object should be returned}
 
 \item{subset}{Look only in a subset of objects. Must be a selection vector}
 

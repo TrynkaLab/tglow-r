@@ -7,7 +7,7 @@
 get_feature_meta_from_names(feature.names)
 }
 \arguments{
-\item{featue.names}{Character vector of feature names}
+\item{feature.names}{Character vector of feature names}
 }
 \value{
 A data.frame with feature attributes

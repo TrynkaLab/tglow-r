@@ -7,7 +7,9 @@
 tglow_plot_execution_time(object, as.percentage = FALSE)
 }
 \arguments{
-\item{object}{As percentage, logical. Should values be returned as a percentage}
+\item{object}{A TglowDataset}
+
+\item{as.percentage}{Logical. Should values be returned as a percentage of total execution time?}
 }
 \value{
 ggplot object containing the plot

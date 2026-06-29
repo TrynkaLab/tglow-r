@@ -4,16 +4,22 @@
 \alias{getImageDataByObject}
 \title{Fetch image data or meta data from a tglow object per object (cell)}
 \usage{
-getImageDataByObject(object, j, assay.image = NULL, slot = "data", drop = TRUE)
+getImageDataByObject(
+  dataset,
+  j,
+  assay.image = NULL,
+  slot = "data",
+  drop = TRUE
+)
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{j}{Character with column names from image.meta or assay.image to select}
 
-\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL}
+\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL}
 
-\item{slot}{Slot to fetch features from data or scale.data}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{drop}{Should cols be dropped or not}
 }

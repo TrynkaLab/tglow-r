@@ -7,8 +7,12 @@
 img_max_project(img)
 }
 \arguments{
-\item{img}{EBImage}
+\item{img}{EBImage with 4 dimensions}
+}
+\value{
+An EBImage with the 4th dimension collapsed by taking the maximum value
 }
 \description{
-Max project a EBImage along the 4th axis
+Collapse the 4th dimension (z-stack or time) of an EBImage by
+taking the maximum value at each pixel position across all planes.
 }

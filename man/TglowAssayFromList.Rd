@@ -11,9 +11,9 @@ TglowAssayFromList(output, assay, meta.cols, col.object)
 
 \item{assay}{Which assay to convert}
 
-\item{meta.cols}{Which object level collumns in the features to consider as metadata}
+\item{meta.cols}{Which object level columns in the features to consider as metadata}
 
-\item{col.object}{Which collumn to use as the identifier. Must be in meta.cols}
+\item{col.object}{Which column to use as the identifier. Must be in meta.cols}
 }
 \description{
 Convert a tglow list to a tglow assay

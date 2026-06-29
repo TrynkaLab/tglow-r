@@ -7,7 +7,9 @@
 TglowAssayFromMatrix(objects, scaled.objects = NULL, features = NULL)
 }
 \arguments{
-\item{objects}{The scaled object level matrix (optional)}
+\item{objects}{The object level matrix}
+
+\item{scaled.objects}{The scaled object level matrix (optional)}
 
 \item{features}{The data frame with features}
 }

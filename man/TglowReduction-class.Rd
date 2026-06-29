@@ -12,9 +12,9 @@ TglowReduction
 \describe{
 \item{\code{x}}{Slot to store PCA / UMAP coordinates}
 
-\item{\code{sdev}}{optional standard deviations}
+\item{\code{var}}{optional variances (squared standard deviations)}
 
-\item{\code{sdev_total}}{optional sum of sdev}
+\item{\code{var_total}}{optional total variance (sum of var)}
 
 \item{\code{object}}{Optional PCA / UMAP object}
 }}

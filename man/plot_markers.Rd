@@ -25,7 +25,7 @@ plot_markers(
 \arguments{
 \item{markers}{A tglow.markers object from find_markers() or find_markers_lmm()}
 
-\item{grouping.x}{Column name in markers or character vector for x-axis grouping. Defualts to "feature" (plot each marker)}
+\item{grouping.x}{Column name in markers or character vector for x-axis grouping. Defaults to "feature" (plot each marker)}
 
 \item{grouping.x2}{Optional second grouping level for faceting}
 

@@ -12,6 +12,17 @@ new_96_plate()
 
 well_to_index(well)
 }
+\arguments{
+\item{well}{A well identifier string, e.g. "B03" (first character is row letter, remainder is column number)}
+}
+\value{
+(\code{new_384_plate}, \code{new_96_plate}) A matrix of NA values with plate-layout row and column names
+
+(\code{well_to_index}) A list with elements \code{row} (integer), \code{col} (integer), and \code{row_letter} (character)
+}
 \description{
-Utilities for making plate overviews
+Helper functions for constructing and indexing 96- and 384-well plates.
+\code{new_384_plate} and \code{new_96_plate} return an empty NA-filled matrix with row and
+column names matching standard plate layouts. \code{well_to_index} converts a well
+identifier (e.g. "B03") to a row/column index pair.
 }

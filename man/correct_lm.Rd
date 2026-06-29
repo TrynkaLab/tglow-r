@@ -5,7 +5,7 @@
 \title{Linearly correct for a set of covariates}
 \usage{
 correct_lm(
-  object,
+  dataset,
   assay,
   slot,
   covariates,
@@ -21,11 +21,11 @@ correct_lm(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for regressing against. Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{covariates}{Character vector of covariates to correct for}
 
@@ -41,7 +41,7 @@ correct_lm(
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
-\item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See detaills}
+\item{covariates.dont.use}{Vector of covariate names to NOT use when calculating residuals. See details}
 
 \item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 
@@ -56,9 +56,9 @@ Fit a linear model using OLS and correct an assay for specified covariates
 \details{
 \code{grouping}
 
-This fits a model and calculates residuals per group seperately.
+This fits a model and calculates residuals per group separately.
 This can introduce a bias which can make groups uncomparable depending on the covariate structure.
-Generally we do not reccomend using this unless you understand the implications.
+Generally we do not recommend using this unless you understand the implications.
 If this is provided, scaling for populating scale.data slot is done over ALL residuals,
 not per group to ensure the mean and sd of the whole vector is as expected
 

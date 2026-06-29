@@ -23,11 +23,11 @@ calculate_umap(
 
 \item{assay}{The assay to use to calculate PCA with, or to grab from reduction 'PCA.\if{html}{\out{<assay>}}'}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{pc.n}{How many PC's to calculate}
 
-\item{reduction.name}{The name to save the UMAP results under. Defualts to UMAP-\if{html}{\out{<assay>}}}
+\item{reduction.name}{The name to save the UMAP results under. Defaults to UMAP-\if{html}{\out{<assay>}}}
 
 \item{downsample}{Downsample to a random subset of objects prior to running UMAP. Can be an integer or a selection vector of row ids}
 

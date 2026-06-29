@@ -5,7 +5,7 @@
 \title{Plot a hexbin colored on a 3rd variable}
 \usage{
 tglow_plot_location_hex(
-  object,
+  dataset,
   assay,
   slot,
   feature.c,
@@ -32,11 +32,11 @@ tglow_plot_location_hex(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{feature.x}{\linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)}
 

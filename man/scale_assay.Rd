@@ -7,16 +7,16 @@
 scale_assay(assay, grouping = NULL, reference.group = NULL, ...)
 }
 \arguments{
-\item{assay}{\linkS4class{TglowAssay}}
+\item{assay}{A \linkS4class{TglowAssay}}
 
 \item{grouping}{Vector with a grouping variable of length nrow(assay)}
 
 \item{reference.group}{Scale not to the vector mean/median, sd/mad but to the objects indiciated here}
 
-\item{...}{Arguments passed to \code{\link{fast_colscale}}. Strongly reccomend looking at these!}
+\item{...}{Arguments passed to \code{\link{fast_colscale}}. Strongly recommend looking at these!}
 }
 \value{
-The asssay with the scale.data slot populated
+The assay with the scale.data slot populated
 }
 \description{
 Scale the data slot in a tglow assay and override the scale.data slot

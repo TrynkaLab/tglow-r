@@ -3,9 +3,9 @@
 \docType{class}
 \name{TglowFeatureLocation-class}
 \alias{TglowFeatureLocation-class}
-\title{TglowFeatureMap}
+\title{TglowFeatureLocation}
 \description{
-TglowFeatureMap
+TglowFeatureLocation
 }
 \section{Slots}{
 

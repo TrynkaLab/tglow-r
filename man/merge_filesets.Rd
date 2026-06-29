@@ -7,12 +7,12 @@
 merge_filesets(data, skip.orl = FALSE)
 }
 \arguments{
-\item{data}{List output from \code{\link{tglow.read.fileset}}}
+\item{data}{List output from \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}}
 
 \item{skip.orl}{Should object relationships be skipped}
 }
 \value{
-The mered output from \code{\link{tglow.read.fileset}}
+The merged output from \code{\link{read_cellprofiler_fileset_a}} or \code{\link{read_cellprofiler_fileset_b}}
 }
 \description{
 Data must be a list of lists with outputs from tglow.read.fileset.a/b

@@ -20,9 +20,8 @@ read_cellprofiler_dir(
 \arguments{
 \item{path}{path to tglow output dir}
 
-\item{pattern}{The pattern that uniquely identfies a fileset. Use '.zip' for type 'B'
-and the '_Image.txt' or '_Experiment.txt'(or however you exported the image data) for type 'A'
-for type A}
+\item{pattern}{The pattern that uniquely identifies a fileset. Use '.zip' for type 'B'
+and the '_Image.txt' or '_Experiment.txt'(or however you exported the image data) for type 'A'}
 
 \item{type}{Must be 'A' or 'B'. See details}
 
@@ -32,9 +31,9 @@ for type A}
 
 \item{verbose}{Should I be chatty?}
 
-\item{col.object}{The collumn name in the features which contains the per object object identifier. See details}
+\item{col.object}{The column name in the features which contains the per object object identifier. See details}
 
-\item{col.meta.img.id}{The collumn name in the image level data which contains the image id. See details}
+\item{col.meta.img.id}{The column name in the image level data which contains the image id. See details}
 
 \item{max.per.well}{Maximumn number of objects in a well to consider. Set to NULL to ignore}
 
@@ -47,10 +46,10 @@ structure
 \details{
 \code{type}
 Type A: _cell.txt, _Image.txt, _Experiment.txt and _Object relationships.txt
-See \code{\link{read_cellprofiler_fileset_a}} for detaills
+See \code{\link{read_cellprofiler_fileset_a}} for details
 
 Type B: \if{html}{\out{<plate>}}_\if{html}{\out{<well>}}.zip with individual files for each child object. Main object is assumed to be _cells
-See \code{\link{read_cellprofiler_fileset_b}} for detaills
+See \code{\link{read_cellprofiler_fileset_b}} for details
 
 \code{col.object} and \code{col.meta.img.id}
 

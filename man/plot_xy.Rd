@@ -27,27 +27,27 @@ plot_xy(
 )
 }
 \arguments{
-\item{x}{x}
+\item{x}{Numeric vector for the x-axis}
 
-\item{y}{y}
+\item{y}{Numeric vector for the y-axis}
 
-\item{xlab}{xlab}
+\item{xlab}{Label for the x-axis}
 
-\item{ylab}{ylab}
+\item{ylab}{Label for the y-axis}
 
 \item{main}{Main plot title, overrides default correlation}
 
 \item{main.prefix}{Text to add to plot title before correlation}
 
-\item{size}{size}
+\item{size}{Point size}
 
-\item{col}{col}
+\item{col}{Color for points}
 
 \item{fixed}{Should axes be fixed to the same x and y}
 
-\item{alpha}{alpha}
+\item{alpha}{Point transparency}
 
-\item{shape}{shape}
+\item{shape}{Point shape (integer code passed to ggplot2)}
 
 \item{lm.col}{Color of the line}
 

@@ -3,16 +3,21 @@
 \name{modul}
 \alias{modul}
 \alias{modul_std}
-\title{As trafo's implementation
-https://github.com/cran/trafo/blob/master/R/trafos.R}
+\title{Modulus transformation}
 \usage{
 modul(y, lambda = lambda)
 
 modul_std(y, lambda)
 }
-\description{
-As trafo's implementation
-https://github.com/cran/trafo/blob/master/R/trafos.R
+\arguments{
+\item{y}{Numeric vector to transform}
 
-Standardized transformation: Modulus
+\item{lambda}{Transformation parameter lambda}
+}
+\value{
+The transformed numeric vector
+}
+\description{
+As trafo's implementation of the modulus (signed power) transform.
+https://github.com/cran/trafo/blob/master/R/trafos.R
 }

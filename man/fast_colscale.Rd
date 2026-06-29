@@ -37,7 +37,7 @@ The scaled matrix
 }
 \description{
 Adapted from https://www.r-bloggers.com/2016/02/a-faster-scale-function/
-Yields a 10-20 percent speedup and adds modfied z-score scaling
+Yields a 10-20 percent speedup and adds modified z-score scaling
 }
 \details{
 \code{scale.method - mean}

@@ -7,10 +7,10 @@
 mod_zscore(x)
 }
 \arguments{
-\item{x}{A numeric vectors}
+\item{x}{A numeric vector}
 }
 \value{
-The vector as a modfied z-score
+The vector as a modified z-score
 }
 \description{
 Modified z-score

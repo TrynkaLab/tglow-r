@@ -7,7 +7,7 @@
 scale_dataset(dataset, assay = NULL, grouping = NULL, ...)
 }
 \arguments{
-\item{dataset}{\linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{assay}{Character string indicating assay, if NULL all assays are scaled.}
 

@@ -14,9 +14,9 @@ scale_assay_min_max(
 )
 }
 \arguments{
-\item{assay}{\linkS4class{TglowAssay}}
+\item{assay}{A \linkS4class{TglowAssay}}
 
-\item{slot}{The slot on assay to draw from. Should be 'data' in most cases.}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{min}{The minimal value for each feature in output}
 

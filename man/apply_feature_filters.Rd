@@ -11,14 +11,14 @@ apply_feature_filters(dataset, filter.res, assays = NULL)
 
 \item{filter.res}{The matrix of filter output from \code{\link{calculate_feature_filters}} or a named logical vector}
 
-\item{assays}{Only apply filteres to these assays}
+\item{assays}{Only apply filters to these assays}
 }
 \value{
 The filtered \linkS4class{TglowDataset}
 }
 \description{
 Apply a logical matrix or a logical array with filters on the columns and features on the rows
-to a tglow dataset. Each assay is seperately subsetted to remove features
+to a tglow dataset. Each assay is separately subsetted to remove features
 which are not selected
 
 If filter.res is a matrix, all rows must be true

@@ -18,13 +18,13 @@ apply_boxcox(
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
 \item{assay.out}{The name of the output assay. Defaults to paste0(assay, "-trans")}
 
 \item{trim}{Logical indicating to trim zero variance columns and NA's after applying boxcox transform}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{verbose}{Raise a warning if columns are trimmed}
 

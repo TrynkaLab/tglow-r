@@ -4,25 +4,26 @@
 \alias{isAvailable}
 \title{Check if column names are available on a dataset}
 \usage{
-isAvailable(object, j, assay, assay.image = NULL, slot, return.names = FALSE)
+isAvailable(dataset, j, assay, assay.image = NULL, slot, return.names = FALSE)
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{j}{Character with column names from assay, assay.image, image.meta to select}
 
-\item{assay}{The assay to select from. If not fetcing assay columns, leave at NULL}
+\item{assay}{The assay to select from. If not fetching assay columns, leave at NULL}
 
-\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetcing image.data columns, leave at NULL}
+\item{assay.image}{Which image assay to use, "image.data", "image.data.trans" or "image.data.norm". If not fetching image.data columns, leave at NULL}
 
-\item{slot}{Slot to fetch features from: "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
+
+\item{return.names}{If TRUE, return a character vector of available names instead of a logical}
 
 \item{drop}{Should cols be dropped or not}
 }
 \value{
-A data frame with the corresponding columns
+A logical (or named logical vector if return.names=TRUE) indicating column availability
 }
 \description{
-Select columns from assay, assay.image, image.meta from 'data' or 'scale.data' slots
-and return them as a data.frame
+Check whether column names are available on the dataset
 }

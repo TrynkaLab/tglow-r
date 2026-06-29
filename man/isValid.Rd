@@ -7,9 +7,9 @@
 isValid(object, object.names = NULL)
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{object}{A \linkS4class{TglowDataset}, \linkS4class{TglowAssay}, \linkS4class{TglowReduction} or \linkS4class{TglowMatrix}}
 
-\item{object.names}{A \linkS4class{TglowDataset}}
+\item{object.names}{A character vector of object names to validate against. If NULL, uses object@object.ids}
 }
 \value{
 A logical indicating validitiy
@@ -20,7 +20,7 @@ Works on TglowDataset, TglowAssay, TglowReduction, TglowMatrix
 }
 \details{
 Checks are peformed greedily, so as soon as an issue if found, FALSE is returned
-and a warning for that issue is raised with more detaills. I.e. finding one issue
+and a warning for that issue is raised with more details. I.e. finding one issue
 does not mean there are not other issues!
 
 For TglowDataset, object.names can be left at NULL, as it uses @object.ids slot to compare against.

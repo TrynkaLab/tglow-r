@@ -14,15 +14,15 @@ calculate_feature_clustering(
   correlation = NULL,
   col.out = "fcl_",
   method = "complete",
-  return.object = T
+  return.object = TRUE
 )
 }
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use for clustering}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The data slot to use ("data", "scale.data", etc.)}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{feature.group}{Column name in features slot or vector of length ncol(assay)
 defining feature groups to cluster separately}

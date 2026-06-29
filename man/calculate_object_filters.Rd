@@ -15,13 +15,13 @@ calculate_object_filters(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{filters}{A list with TglowFilter objects to apply}
 
-\item{assay}{The assay to use for calculating filters}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters: "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{grouping}{A vector specifying the grouping for some filters}
 

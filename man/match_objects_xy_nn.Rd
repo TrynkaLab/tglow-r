@@ -30,7 +30,7 @@ match_objects_xy_nn(
 The object a with the extra data from b
 }
 \description{
-Adds features to an existing assay
+Match objects between two TglowDatasets based on nearest-neighbour in XY coordinate space within shared plate/well/field groups
 }
 \details{
 In mode add all assays from b are added to a as new assays. In mode merge, assays with the same name

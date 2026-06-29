@@ -17,11 +17,11 @@ TglowDatasetFromMatrices(
 TglowDatasetFromObjectMatrix(objects, object.meta = NULL, assay.out = "raw")
 }
 \arguments{
-\item{objects}{The object level data matrix, must be a matrix, and be numeric}
+\item{objects}{The object level data matrix, must be a matrix with row and column names set}
 
-\item{image.ids}{The of nrow(objects) de which rownames of image corresponds to which object}
+\item{image.ids}{A character vector of length nrow(objects) indicating which row of the image matrix corresponds to each object}
 
-\item{object.meta}{A data.frame with metadata, one row per object. Defaults to data.frame(id=rownames(objects))}
+\item{object.meta}{Optional data.frame with object level metadata. Defaults to a minimal data.frame with row ids}
 
 \item{image.meta}{A data.frame with metadata, one row per image. Defaults to data.frame(id=rownames(images))}
 

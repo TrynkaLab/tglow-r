@@ -74,17 +74,13 @@ and/or columns can be hierarchically clustered for easier interpretation.
 The function maps each feature in \code{markers} to its feature cluster via
 the clustering column stored in \code{eigenmarkers}, then averages effect
 sizes within each cluster–class combination. These averaged effect sizes are
-displayed as tile colours, while the significance values (\code{-log10(padj)})
-from the eigenfeature-level test are used for point sizing (forwarded
-internally via \code{plot_markers()}).
+displayed as tile colours
 
 Row and column ordering is determined by hierarchical clustering of the
 mean-effect-size matrix when \code{cluster.y} or \code{cluster.x} are
 \code{TRUE}, respectively.
-}
-\examples{
-# Examples to be added
 
+The grouping passed to plot_markers() is ignored as eigenfeatures should not be grouped.
 }
 \seealso{
 \code{\link{find_eigenmarkers}}, \code{\link{plot_markers}}

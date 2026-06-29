@@ -7,7 +7,7 @@
 tglow_read_binmat(path)
 }
 \arguments{
-\item{path}{to binary matrix}
+\item{path}{Path to the binary matrix file}
 }
 \description{
 Adapted from: https://www.r-bloggers.com/2012/06/getting-numpy-data-into-r/

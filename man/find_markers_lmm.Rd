@@ -26,9 +26,9 @@ find_markers_lmm(
 
 \item{ident}{A column in meta, image.meta, assay, assay.image to use as class labels}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for finding markers}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{covariates}{Character vector of covariates to use in model}
 

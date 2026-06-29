@@ -97,7 +97,7 @@ They respectively have modifiers _sum and _multicol which apply them over multic
 }
 \details{
 Filters can be easily configured based on a filter table, making it easy to template sets of operations.
-Filters are NOT applied seqeuntially, but run independently. If you do want to run filters in seqeuntially,
+Filters are NOT applied sequentially, but run independently. If you do want to run filters sequentially,
 you will have to run successive iterations, but this is easy enough to do. An easy way to maintain filters
 and edit them is to store them in a google sheet and load them into R. Then using the function \code{tglow_filters_from_table}
 to create the filter objects.

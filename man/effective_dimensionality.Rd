@@ -2,14 +2,14 @@
 % Please edit documentation in R/stats.r
 \name{effective_dimensionality}
 \alias{effective_dimensionality}
-\title{Caclulate the effective dimensionality of a dataset}
+\title{Calculate the effective dimensionality of a dataset}
 \usage{
 effective_dimensionality(data, method = "li_ji", var.thresh = 0.95)
 }
 \arguments{
 \item{data}{A matrix with data}
 
-\item{method}{'all', 'li_ji', 'pc_var', 'chevrud', 'galwey' . See details}
+\item{method}{'all', 'li_ji', 'pc_var', 'cheverud', 'galwey' . See details}
 
 \item{var.test}{Percentage of variance cutoff}
 }
@@ -26,7 +26,7 @@ Calculates the effective dimensionality of a multidimensional dataset.
 
 \code{m} are the number of eigenvalues
 
-Formulas derrived from : https://www.nature.com/articles/jhg201134#Sec2
+Formulas derived from: https://www.nature.com/articles/jhg201134#Sec2
 \itemize{
 \item \code{li_ji} Use Li and Ji's method
 
@@ -34,7 +34,7 @@ Formulas derrived from : https://www.nature.com/articles/jhg201134#Sec2
 \item \code{pc_var} Number of PC's needed to pass var.thresh
 
 \code{eff.tests <- which(cumsum(eigenval / sum(eigenval)) >= var.thresh)}
-\item \code{chevrud}:
+\item \code{cheverud}:
 
 \code{eff.tests <- 1 +(m - 1) * (1-(var(eigenval) / m))}
 \item \code{galwey}:

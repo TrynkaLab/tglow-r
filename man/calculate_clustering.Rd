@@ -2,7 +2,7 @@
 % Please edit documentation in R/clustering.r
 \name{calculate_clustering}
 \alias{calculate_clustering}
-\title{Cluster using a a K nearest neighbor graph in the PCA space}
+\title{Cluster using a K nearest neighbor graph in the PCA space}
 \usage{
 calculate_clustering(
   dataset,
@@ -16,7 +16,7 @@ calculate_clustering(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{reduction}{The reduction to use for calculating clustering. If NULL re-calculated}
 
@@ -36,13 +36,15 @@ calculate_clustering(
 The \linkS4class{TglowDataset} with clusters added to meta slot and the graph
 }
 \description{
-Cluster using a a K nearest neighbor graph in the PCA space
+Builds a k-nearest neighbor graph from the supplied PCA reduction and clusters
+it using Louvain or Leiden community detection. Clusters are stored as new
+columns in the meta slot of the returned dataset.
 }
 \details{
 Here I use the Seurat implementation of the kNN, which is NOT and exact
 kNN graph, but it is very fast. Practically it should perform pretty well
 The parameter k controls how many nearest neighbors to find
-The distance matrix is built from the prinicpal components
+The distance matrix is built from the principal components
 
 Alternatively:
 Build exact knn graph, better but MUCH slower

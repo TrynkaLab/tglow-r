@@ -4,14 +4,14 @@
 \alias{calculate_eigenfeatures}
 \title{Calculate the eigenfeature (first PC) for a cluster of features}
 \usage{
-calculate_eigenfeatures(dataset, assay, slot, cluster.col)
+calculate_eigenfeatures(dataset, assay, slot = "scale.data", cluster.col)
 }
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use for clustering}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The data slot to use ("data", "scale.data", etc.)}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{cluster.col}{Column in features slot containing cluster assignments to calculate eigenfeatures for}
 }
@@ -23,4 +23,8 @@ containing the eigenfeature for each cluster. The features slot contains the var
 Calculates eigenfeatures for a set of features defined by a column (see calculate_feature_clustering).
 The eigenfeature is the first principal component of the features in the cluster.
 This assay can be used for more fair testing of how well a featureset is associated to a trait.
+}
+\details{
+NOTE: Eigenfeatures have arbitrary sign, so the direction of the eigenfeature may not be consistent across clusters.
+NOTE: No scaling is applied prior to eigenfeature calculation, and it is assumed you use the scale-data slot.
 }

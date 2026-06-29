@@ -5,7 +5,7 @@
 \title{Plot a reduction}
 \usage{
 tglow_dimplot(
-  object,
+  dataset,
   reduction,
   ident = NULL,
   assay = NULL,
@@ -27,15 +27,15 @@ tglow_dimplot(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{reduction}{A name of a reduction on dataset.}
 
 \item{ident}{The item to use for coloring points, passed to \code{\link{getDataByObject}}}
 
-\item{assay}{The assay to use for coloring, passed to \code{\link{getDataByObject}}}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for coloring, passed to \code{\link{getDataByObject}} Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{downsample}{Should downsampling be applied prior to plot. NA's are removed first}
 

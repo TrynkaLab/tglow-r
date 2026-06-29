@@ -18,11 +18,11 @@ fetch_representative_object_nn(
 
 \item{feature}{The feature to find a representative objects for, used as a grouping variable}
 
-\item{reduction}{The reduction to use to calculate distance. Reccomend a PCA.}
+\item{reduction}{The reduction to use to calculate distance. Recommend a PCA.}
 
-\item{assay}{if feature is on an assay, the assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{if feature is on an assay, which slot to use}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{n}{How many nearest neighbours to the central most object should be fetched}
 }
@@ -30,7 +30,7 @@ fetch_representative_object_nn(
 vector of indices in objects matrix
 }
 \description{
-Gets a objects and its closes neighbours based on a reduction and a feature.
-Feature should be catagorical, can be used to find the object that is closest to the centroid
+Gets an object and its closest neighbours based on a reduction and a feature.
+Feature should be categorical, can be used to find the object that is closest to the centroid
 of a group in reduction space. To get more than one object per group, specify n.
 }

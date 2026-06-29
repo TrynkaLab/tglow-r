@@ -9,15 +9,15 @@ calculate_sumstats(dataset, assay, slot)
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 }
 \value{
 The \linkS4class{TglowDataset}
 }
 \description{
-Calculate the mean, median, mode, skewness, kurtosus, geometric mean, min, max
+Calculate the mean, median, mode, skewness, kurtosis, geometric mean, min, max
 Removes NA's for each feature individually.
 Stats are put on the assay@features slot under the name 'slot'_'stat'
 }

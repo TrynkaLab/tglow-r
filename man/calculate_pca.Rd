@@ -19,13 +19,13 @@ calculate_pca(
 \arguments{
 \item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters, defaults to "data". Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{pc.n}{How many PCs to calculate (if not NULL uses \code{\link[=prcomp_irlba]{irlba::prcomp_irlba()}} instead of \code{\link[=prcomp]{prcomp()}}}
 
-\item{reduction.name}{The name to save the PCA results under. Defualts to PCA-\if{html}{\out{<assay>}}}
+\item{reduction.name}{The name to save the PCA results under. Defaults to PCA-\if{html}{\out{<assay>}}}
 
 \item{ret.prcomp}{Instead of returning just the PCs and variances, return the whole prcomp object}
 

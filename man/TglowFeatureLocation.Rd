@@ -9,7 +9,7 @@ TglowFeatureLocation(feature, assay = NULL, slot = NULL)
 \arguments{
 \item{feature}{Character with the feature position}
 
-\item{assay}{asssay to grab feature from, or NULL if metadata feature}
+\item{assay}{Assay to grab feature from, or NULL if metadata feature}
 
 \item{slot}{slot to grab feature from, or NULL if metadata feature}
 }

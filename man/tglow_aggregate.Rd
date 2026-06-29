@@ -40,6 +40,8 @@ aggregate_by_imagecol(
 )
 }
 \arguments{
+\item{matrix}{Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset}
+
 \item{grouping}{Grouping variable of nrow input. For aggregate_by_imagecol, grouping must be a column name on image.meta}
 
 \item{method}{Aggregation method: "mean", "median", "sum"}
@@ -48,16 +50,14 @@ aggregate_by_imagecol(
 
 \item{na.rm}{Should NA's be removed}
 
-\item{drop.multival.string}{When concatenating character metadata, should strings with multiple values be set to NA. This is reccomended for large datasets}
+\item{drop.multival.string}{When concatenating character metadata, should strings with multiple values be set to NA. This is recommended for large datasets}
 
 \item{drop.na.col}{If after aggregating, a column is fully NA, should it be dropped?}
 
 \item{sep}{Seperator string when concatenating multiple strings}
-
-\item{input}{Input: either TglowMatrix, TglowAssay, data.frame or TglowDataset}
 }
 \value{
-A logical where TRUE should be kept and FALSE values should be removed
+An aggregated matrix with the same columns as the input
 }
 \description{
 Aggregate tglow objects using a grouping variable

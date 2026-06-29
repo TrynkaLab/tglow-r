@@ -39,11 +39,11 @@ This code is directly lifted from seurat's annoy implementation here:
 https://github.com/satijalab/seurat/blob/master/R/clustering.R
 }
 \details{
-More detaills on knn implementations in this paper:
+More details on knn implementations in this paper:
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11014608/
 
 The reason for using this over exact NN is the speed,
-but other flavours of approximimate NN are available
+but other flavours of approximate NN are available
 Run annoy
 }
 \keyword{internal}

@@ -7,6 +7,8 @@
 AnnoySearch(index, query, k, search.k = -1, include.distance = TRUE)
 }
 \arguments{
+\item{index}{Annoy index, built with AnnoyBuildIndex}
+
 \item{query}{A set of data to be queried against the index}
 
 \item{k}{Number of neighbors}
@@ -15,8 +17,6 @@ AnnoySearch(index, query, k, search.k = -1, include.distance = TRUE)
 gives you a run-time tradeoff between better accuracy and speed}
 
 \item{include.distance}{Include the corresponding distances in the result}
-
-\item{Annoy}{index, built with AnnoyBuildIndex}
 }
 \value{
 A list with 'nn.idx' (for each element in 'query', the index of the

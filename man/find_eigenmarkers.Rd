@@ -14,7 +14,7 @@ find_eigenmarkers(
   fcl.method = "complete",
   fcl.feature.group = NULL,
   method = "lmm",
-  return.object = F,
+  return.object = FALSE,
   ...
 )
 }
@@ -24,11 +24,9 @@ find_eigenmarkers(
 \item{ident}{Column name in the dataset metadata specifying cell identities
 to compare.}
 
-\item{assay}{Name of the assay to use for feature clustering and eigenfeature
-calculation.}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{Slot within the assay to use (e.g. \code{"data"},
-\code{"scale.data"}).}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{fcl.col}{Column name in feature metadata containing a pre-computed
 feature clustering result. If \code{NULL} (default), feature clustering is

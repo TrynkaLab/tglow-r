@@ -12,7 +12,7 @@ imageIds(object) <- value
 \arguments{
 \item{object}{The object to get or set}
 
-\item{value}{If setting using <- the new object ids to assing}
+\item{value}{If setting using <- the new object ids to assign}
 }
 \value{
 The object with the new Ids

@@ -20,15 +20,15 @@ TglowDatasetFromList(
 
 \item{assay}{Which assay to convert (name of the list item)}
 
-\item{meta.patterns}{Grep patterns in collumn names asspciated with object level metadata items}
+\item{meta.patterns}{Grep patterns in column names associated with object level metadata items}
 
-\item{img.feature.patterns}{Grep patterns in image column names assocated with image level features to analyze}
+\item{img.feature.patterns}{Grep patterns in image column names associated with image level features to analyze}
 
-\item{col.object}{The collumn name in the features which contains the per object object identifier}
+\item{col.object}{The column name in the features which contains the per object object identifier}
 
-\item{col.img.id}{The collumn name in the features which contains the per object image identifier}
+\item{col.img.id}{The column name in the features which contains the per object image identifier}
 
-\item{col.meta.img.id}{The collumn name in the image level data which contains the image id}
+\item{col.meta.img.id}{The column name in the image level data which contains the image id}
 }
 \value{
 A populated TglowDataset

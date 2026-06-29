@@ -19,7 +19,7 @@ tglow_filters_from_table(
 
 \item{name.col}{Column id with filter name}
 
-\item{col.col}{Column id with collumn pattern to apply filter too}
+\item{col.col}{Column id with column pattern to apply filter to}
 
 \item{func.col}{Column id with name of filter functions}
 
@@ -33,5 +33,5 @@ tglow_filters_from_table(
 A list of \linkS4class{TglowFilter}
 }
 \description{
-See  \linkS4class{TglowFilter} for detaills
+See \linkS4class{TglowFilter} for details
 }

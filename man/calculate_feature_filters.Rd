@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_functions.r
 \name{calculate_feature_filters}
 \alias{calculate_feature_filters}
-\title{Find which feature filters to a tglow dataset}
+\title{Calculate feature filter results for a TglowDataset}
 \usage{
 calculate_feature_filters(
   dataset,
@@ -14,13 +14,13 @@ calculate_feature_filters(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
 \item{filters}{A list with TglowFilter objects to apply}
 
-\item{assay}{The assay to use for calculating filters}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for calculating filters: "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{features}{An optional subset of features to use for calculation}
 

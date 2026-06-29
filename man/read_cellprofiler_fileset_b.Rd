@@ -31,7 +31,7 @@ read_cellprofiler_fileset_b(
 
 \item{merging.strategy}{How to consolidate 1:many relationships between cell: children. Accepted values: 'mean', 'none'}
 
-\item{pat.exp}{The suffix pattern to identify the exeperiment file}
+\item{pat.exp}{The suffix pattern to identify the experiment file}
 
 \item{pat.img}{The suffix pattern to identify the image level data}
 

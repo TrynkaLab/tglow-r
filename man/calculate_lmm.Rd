@@ -5,7 +5,7 @@
 \title{Calculate linear coefficients using a linear mixed model}
 \usage{
 calculate_lmm(
-  object,
+  dataset,
   assay,
   slot,
   covariates,
@@ -19,11 +19,11 @@ calculate_lmm(
 )
 }
 \arguments{
-\item{object}{A \linkS4class{TglowDataset}}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
-\item{slot}{The slot to use for regressing against. Can be "data" or "scale.data"}
+\item{slot}{The assay slot to use ("data", "scale.data")}
 
 \item{covariates}{Character vector of independent variables to use in the model}
 
@@ -39,7 +39,7 @@ calculate_lmm(
 
 \item{rescale.group}{When grouping is active, should the subset be re-centered and scaled prior to regressing}
 
-\item{...}{Remaining arguments passed to \code{\link[=lmm_matrix]{lmm_matrix()}} and then to \code{\link[lmerTest:lmer]{lmerTest::lmer()}}. See detaills}
+\item{...}{Remaining arguments passed to \code{\link[=lmm_matrix]{lmm_matrix()}} and then to \code{\link[lmerTest:lmer]{lmerTest::lmer()}}. See details}
 }
 \value{
 A list of regression results. If grouping != NULL, there is one list per group
@@ -48,7 +48,7 @@ A list of regression results. If grouping != NULL, there is one list per group
 Fit a linear mixed model using REML / MLE (lme4) and find coefficients
 }
 \details{
-Strongly reccomend reading extra parameters available in \code{\link[=lmm_matrix]{lmm_matrix()}}
+Strongly recommend reading extra parameters available in \code{\link[=lmm_matrix]{lmm_matrix()}}
 
 \code{grouping}
 
@@ -59,5 +59,5 @@ Runs seperate regressions per group in the indicated grouping variable. length(g
 Should be a string interpretable by \code{\link[stats:formula]{stats::formula()}} and \code{\link[lmerTest:lmer]{lmerTest::lmer()}} but should NOT
 have response in the forumla. E.g. when regressing \code{y ~ x + (1|donor)} forumula should be \code{~ x + (1|donor)}
 Defaults to a regular additive linear model.
-To specify derrived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
+To specify derived terms you might need to add I(), for polynomials for example use either poly() or I(x^2)
 }

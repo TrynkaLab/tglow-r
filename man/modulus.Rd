@@ -15,6 +15,24 @@ modulus(
   ...
 )
 }
+\arguments{
+\item{object}{A fitted lm object or formula passed to lm()}
+
+\item{lambda}{Sequence of lambda values to evaluate (default seq(-2, 2, 1/10))}
+
+\item{plotit}{Should a plot of log-likelihood vs lambda be produced?}
+
+\item{interp}{Should spline interpolation be used for the plot curve?}
+
+\item{eps}{Tolerance for treating lambda as zero}
+
+\item{xlab}{X-axis label for the lambda plot}
+
+\item{ylab}{Y-axis label for the lambda plot}
+}
+\value{
+The optimal lambda and, if plotit=TRUE, a plot of log-likelihood vs lambda
+}
 \description{
 Modelled after MASS:boxcox() and shares the same basic signature
 So see \code{\link[=MASS:boxcox]{MASS:boxcox()}} for help

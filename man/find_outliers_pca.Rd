@@ -21,9 +21,9 @@ find_outliers_pca(
 )
 }
 \arguments{
-\item{dataset}{A tglow dataset}
+\item{dataset}{A \linkS4class{TglowDataset}}
 
-\item{assay}{The assay to use}
+\item{assay}{The assay on dataset to use}
 
 \item{qc.group}{A vector indicating or column in dataset if PC's should be calculated in subgroups of the data. Default find outliers using all objects at once}
 
@@ -35,6 +35,8 @@ find_outliers_pca(
 
 \item{pc.n}{The number of PC's to use. Defaults to the number of PC's that reach pc.thresh or pc.max}
 
+\item{slot}{The assay slot to use ("data", "scale.data")}
+
 \item{method}{Method to scale PC's prior to selecting thresh. Value can be 'z' for z-score, 'mod.z' for modified zscore, 'mahalanobis' for Mahalanobis distance.}
 
 \item{return.pcs}{Should the grouped PC's be returned?}
@@ -43,7 +45,7 @@ find_outliers_pca(
 
 \item{features}{Features to include in PCA. By default uses all (NULL)}
 
-\item{padj.method}{Adjustment to apply to outlier pvalues. Any accepted by \code{\link[stats:p.adjust]{stats::p.adjust()}}}
+\item{padj.method}{Adjustment to apply to outlier p-values. Any accepted by \code{\link[stats:p.adjust]{stats::p.adjust()}}}
 }
 \value{
 A list with:
@@ -56,7 +58,7 @@ A list with:
 }
 }
 \description{
-Find outliers in the PCA space of a TglowAssay. Works for both
+Find outliers in the PCA space of a TglowDataset. Works for both
 assays and image.data
 }
 \details{
@@ -81,7 +83,7 @@ When method is 'mahalanobis' an "approximate mahalanobis distance" is calculated
 from each PC's center is calculated. Given cov(data) is positive definite, and all PC's are included, this is equivalent to mahalanobis distance on the data.
 Otherwise they should be highly correlated, but your milage may vary and this may be dataset specific!
 
-Once the distances are calculated, a p-value is derrived using the chi-sqr distiribution. This pvalue is by default FDR adjusted and any
-records FDR < 0.05 considered outliers. If the \code{thresh} parameter is supplied, it applies to the RAW pvalues, not the FDR. FDR is only applied if thresh='auto'
-Note, the pvalue adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
+Once the distances are calculated, a p-value is derived using the chi-squared distribution. This p-value is by default FDR adjusted and any
+records FDR < 0.05 considered outliers. If the \code{thresh} parameter is supplied, it applies to the RAW p-values, not the FDR. FDR is only applied if thresh='auto'
+Note, the p-value adjustment is done over all QC groups, not per QC group to ensure the overall FPR is maintained.
 }
