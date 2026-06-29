@@ -463,7 +463,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
         features.b <- setdiff(colnames(b@assays[[assay]]@data), colnames(a@assays[[assay]]@data))
         bb         <- b@assays[[assay]][nearest.n[,1],features.b, na.check=F]
         
-        a@assays[[assay]]@data       <- cbind(a@assays[[assay]]@data, b@assays[[assay]]@data)
+        a@assays[[assay]]@data       <- cbind(a@assays[[assay]]@data, bb@data)
         
         # Merge feature DF
         featcols <- unique(c(colnames(a@assays[[assay]]@features), colnames(b@assays[[assay]]@features)))
@@ -477,7 +477,7 @@ match_objects_xy_nn <- function(a, b, tol=2, mode="add", assay.prefix="b_", meta
         
         if (!is.null(a@assays[[assay]]@scale.data)) {
           if (!is.null(b@assays[[assay]]@scale.data)) {
-            a@assays[[assay]]@scale.data <- cbind(a@assays[[assay]]@scale.data, b@assays[[assay]]@scale.data)
+            a@assays[[assay]]@scale.data <- cbind(a@assays[[assay]]@scale.data, b@assays[[assay]]@scale.data[nearest.n[,1], features.b, drop=FALSE])
           } else {
             warning(paste0("@scale.data on object b and assay ", assay, " was null, dropping @scale.data on output"))
             a@assays[[assay]]@scale.data <- NULL
