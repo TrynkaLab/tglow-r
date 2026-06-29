@@ -351,7 +351,7 @@ setMethod(
     }
 
     data <- getImageData(dataset, j, assay.image, slot, drop = F)[dataset@image.ids, , drop = F]
-    rownames(data) <- dataset@dataset.ids
+    rownames(data) <- dataset@object.ids
     return(data[, j, drop = drop])
   }
 )
