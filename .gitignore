@@ -16,3 +16,5 @@ install.r
 add_imports.r
 DESCRIPTION copy
 create_function_list.r
+code_review.md
+doc_review.md
