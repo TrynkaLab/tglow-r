@@ -36,7 +36,7 @@ plot_xy_interactive(
 
 \item{main}{Plot title}
 
-\item{opts}{\code{\link[ggiraph:opts_tooltip]{ggiraph::opts_tooltip()}} opts object to control eastetics}
+\item{opts}{\code{\link[=opts_tooltip]{opts_tooltip()}} opts object to control eastetics}
 
 \item{add_func}{Function that updates the ggplot object, see details}
 
