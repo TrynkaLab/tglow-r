@@ -51,7 +51,6 @@ img_apply_color <- function(image, rgb) {
 #'
 #' @returns A single RGB images representing the average color values
 #'
-#' @importFrom EBImage channel
 #' @importFrom gplots col2hex
 #' @export
 img_composite <- function(images, colors) {
@@ -98,7 +97,6 @@ img_composite <- function(images, colors) {
 #'
 #' @returns A vector with the max values in each channel
 #'
-#' @importFrom EBImage imageData
 #' @export
 img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
     check_package("EBImage")
@@ -136,7 +134,6 @@ img_max_per_channel <- function(images, channel.dim = 3, q = 1) {
 #' @param q Quantile to normalize for, passed to \code{\link{img_max_per_channel}}
 #'
 #' @returns A list of normalized EBImage objects
-#' @importFrom EBImage imageData
 #' @export
 img_norm <- function(images, norm.factors = NULL, q = 1) {
     check_package("EBImage")

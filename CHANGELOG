@@ -1,10 +1,24 @@
 
 
-# v0.1.20 (release tbd)
+# v0.1.21 (release tbd)
 
+## Major updates
+
+## Minor changes
+- Several minor internal checks and bugfixes 
+- Removed deprecated functions
+- Documentation cleanups
+- Fixed install issues needing EBImage fixed by removing leftover roxygen tags
+
+
+# v0.1.20 (unreleased)
+
+## Major updates
 - Added calculate_eigenfeatures function to calculate the first principal component for each cluster as a way to summarize the cluster's features. The variance explained by the eigenfeature is stored in the features slot of the new assay.
 - Added find_eigenmarkers which calls calculate_featureclust > calculate_eigenfeatures > find_markers_ttest | find_markers_lmm on the eigen assay
 - Added plot_eigenmarkers which takes a single marker test df and the eigen marker output from find_eigenmarkers
+
+
 
 # v0.1.19 ()
 Started recordkeeping, before this, see git history for changes.
