@@ -9,9 +9,13 @@
 #' @export
 tglow_read_binmat <- function(path) {
     con <- file(path, "rb")
-    dim <- readBin(con, "integer", 2)
-    mat <- matrix(readBin(con, "numeric", prod(dim)), dim[1], dim[2])
-    close(con)
+    on.exit(close(con))
+    dims <- readBin(con, "integer", 2)
+    raw <- readBin(con, "numeric", prod(dims))
+    if (length(raw) != prod(dims)) {
+        stop("File truncated or corrupt: expected ", prod(dims), " values, got ", length(raw))
+    }
+    mat <- matrix(raw, dims[1], dims[2])
     return(mat)
 }
 
@@ -26,7 +30,7 @@ tglow_read_binmat <- function(path) {
 #' @param objects A selection vector for which objects to read images for
 #' @param index.col Column on dataset@meta which has the h5 groups (object ids)
 #' @param out.size Pad the images to a constant square size setting 0. NULL = no padding.
-#' @param path The root path for the .h5 files. 'root path'/plate/row/field.h5
+#' @param path The root path for the .h5 files. 'root path'/plate/row/col/field.h5
 #' @param path.col Column in dataset@meta with the paths to .h5 file. Overrides path if not NULL
 #' 
 #' @returns A list with EBImages and channel names
@@ -51,7 +55,6 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
   }
   
   if (!index.col %in% colnames(dataset@meta)) {
-  #if (!isAvailable(dataset, c(index.col), assay=NULL, slot=NULL)) {
     stop(paste0("index.col: ", index.col, " not available on @meta of this dataset"))
   }
   
@@ -61,7 +64,7 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
   object.index <- getDataByObject(dataset, index.col)
   
   # Check if object index have NAs in there (the h5 group names)
-  if (sum(is.na(object.index)!=0)) {
+  if (any(is.na(object.index))) {
     warning("NA's found in index.col. Removing these")
     dataset      <- dataset[!is.na(object.index),]
     object.names <- object.names[!is.na(object.index)]
@@ -82,6 +85,7 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
   rownames(pwf) <- object.names
   
   if (is.null(path.col)) {
+    # col is unpadded numeric (see well_to_index()); directory layout uses plain numbers, not zero-padded
     pwf$h5_path <- paste0(path, "/", pwf[,1], "/", pwf[,"row_letter"], "/", pwf[,"col"], "/", pwf[,"field"], ".h5")
   } else {
     pwf$h5_path <- getDataByObject(dataset, path.col)
@@ -98,7 +102,8 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
     
     cur.pwf <- pwf[pwf$h5_path == h5file,]
     file    <- hdf5r::H5File$new(h5file, mode = "r")
-    
+    on.exit(file$close_all(), add = TRUE)
+
     for (obj in 1:nrow(cur.pwf)) {
       cur.pwf.obj <- cur.pwf[obj,,drop=F]
       m           <- file[[cur.pwf.obj$cell_index]]$read()
@@ -113,12 +118,19 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
     if (is.null(channel.names)) {
       if ("channel_names" %in% names(file)) {
         channel.names <- file[["channel_names"]]$read()
-      } else {
-        channel.names <- NULL
+      }
+    } else if ("channel_names" %in% names(file)) {
+      cur.channel.names <- file[["channel_names"]]$read()
+      if (!identical(cur.channel.names, channel.names)) {
+        warning("channel_names in ", h5file, " differ from previously read channel_names. Using the first file's channel_names for all objects.")
       }
     }
     
     file$close_all()
+  }
+
+  if (!all(object.names %in% names(images))) {
+    stop("Missing images for some objects — internal inconsistency in tglow_read_imgs")
   }
 
   return(list(img=images[object.names], channels=channel.names, channel.order="XY[Z]C"))
