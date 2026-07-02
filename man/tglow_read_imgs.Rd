@@ -22,7 +22,7 @@ tglow_read_imgs(
 
 \item{out.size}{Pad the images to a constant square size setting 0. NULL = no padding.}
 
-\item{path}{The root path for the .h5 files. 'root path'/plate/row/field.h5}
+\item{path}{The root path for the .h5 files. 'root path'/plate/row/col/field.h5}
 
 \item{path.col}{Column in dataset@meta with the paths to .h5 file. Overrides path if not NULL}
 }

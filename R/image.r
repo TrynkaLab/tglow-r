@@ -257,20 +257,13 @@ img_pad_center <- function(input, target.rows, target.cols) {
 img_to_base64png <- function(mat, add.html=F, width=250) {
   check_package("png")
   check_package("base64enc")
-  
-  raw_conn <- base::rawConnection(raw(0), "wb")
-  png::writePNG(mat, raw_conn)
-  
-  img_data <- base::rawConnectionValue(raw_conn)
-  base::close(raw_conn)
-  
-  # Convert the binary data to base64
-  txt <- base64enc::base64encode(img_data)
-  
+
+  txt <- base64enc::base64encode(png::writePNG(mat))
+
   if (add.html) {
     txt <- paste0("<img src='data:image/png;base64,", txt, "' width='",width,"/>")
   }
-  
+
   return(txt)
 }
 

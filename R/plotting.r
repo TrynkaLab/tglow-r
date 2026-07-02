@@ -143,7 +143,9 @@ tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot =
         }
 
         dim <- dim[downsample, , drop = F]
-        col <- col[downsample]
+        if (!is.null(ident)) {
+            col <- col[downsample]
+        }
     }
 
 
@@ -159,8 +161,10 @@ tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot =
         col <- log2(col)
     }
     
-    if (length(facet) == 1 && is.character(facet)) {
-        facet <- getDataByObject(dataset, facet, assay = assay, slot = slot)
+    if (!is.null(facet)) {
+        if (length(facet) == 1 && is.character(facet)) {
+            facet <- getDataByObject(dataset, facet, assay = assay, slot = slot)
+        }
         facet <- facet[na.filter]
         if (!is.null(downsample)) {
             facet <- facet[downsample]
@@ -188,7 +192,7 @@ tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot =
             labs <- make_ident_labels(dim[, 1], dim[, 2], as.character(col))
 
             p <- p + ggrepel::geom_text_repel(
-                mapping = aes(x = x, y = y, label = label, col = "grey"),
+                mapping = aes(x = x, y = y, label = label),
                 data = labs,
                 col = labs.textcol,
                 size = labs.size,
@@ -215,7 +219,7 @@ tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot =
 #' @param dataset A \linkS4class{TglowDataset}
 #' @param assay The assay on dataset to use
 #' @param slot The assay slot to use ("data", "scale.data")
-#' @param feature.z feature to aggregate and color on,
+#' @param feature.c feature to aggregate and color on,
 #' @param feature.x \linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)
 #' @param feature.y \linkS4class{TglowFeatureLocation} describing the y feature or NULL (takes it from datasets@feature.map)
 #' @param xlab xlab
@@ -233,10 +237,12 @@ tglow_dimplot <- function(dataset, reduction, ident = NULL, assay = NULL, slot =
 #' @param func Aggregation function. Reccomend [base::mean()], [stats::median()] or [base::sum()]
 #' @param side.profile Return two plots of X and Y postion vs feature.c instead of the color view
 #' @param side.linecol Linecolor of horizontal line in the sideview. Set to NULL to not draw the line.
+#' @param side.lwd Line width of the horizontal line in the sideview.
+#' @param side.lty Line type of the horizontal line in the sideview.
 #' @param ... Paramaters passed to [plot_hex()] when side.profile=T
 #' 
 #' @returns A ggplot2 object
-#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c
+#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab stat_summary_hex scale_fill_viridis_c geom_hline
 #' @export
 tglow_plot_location_hex <- function(dataset,
                                     assay,
@@ -304,7 +310,7 @@ tglow_plot_location_hex <- function(dataset,
     }
 
     if (scale.z) {
-        df.plot$z <- scale(df.plot$z)
+        df.plot$z <- as.numeric(scale(df.plot$z))
     }
 
     if (is.null(main) && is.character(feature.c)) {
@@ -423,7 +429,7 @@ plot_hex <- function(x, y, bins = 50, binwidth=NULL, do.lm = T, lm.col = "lightg
 #' @param scale.bar.labelsize Size of the scale bar label text. Set to 0 to disable
 #' @param scale.bar.padding Padding of the scale bar from the image border in pixels
 #' @returns A ggplot2 object
-#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab annotation_raster geom_point coord_fixed theme_void
+#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab annotation_raster geom_point coord_fixed theme_void xlim ylim annotate
 #' @export
 plot_img <- function(img, main = "img", marker.add = F, marker.x = NULL, marker.y = NULL, marker.col = "white", marker.size = 8, marker.shape = 1, scale.bar.size=0, scale.bar.pixel.size=0.149, scale.bar.padding=5, scale.bar.location="bottomright", scale.bar.labelsize=3) {
   
@@ -616,7 +622,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
         ct <- list(`p.value` = NA, `estimate` = NA)
     }
 
-    if (length(shape) > 1 && length(col > 1)) {
+    if (length(shape) > 1 && length(col) > 1) {
         if (raster) {
             p <- ggplot(data = df.plot, mapping = aes(x = x, y = y, col = col, shape = shape)) +
                 ggrastr::rasterize(geom_point(alpha = alpha, size = size), dpi = dpi)
@@ -693,7 +699,7 @@ plot_xy <- function(x, y, xlab = "X", ylab = "Y", main = NA, main.prefix = "", s
 #' @param add.median Add a vline for median
 #'
 #' @returns A ggplot2 object
-#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_vline geom_histogram scale_fill_viridis_d facet_wrap geom_density scale_color_viridis_d
+#' @importFrom ggplot2 ggplot aes ggtitle xlab ylab geom_vline geom_histogram scale_fill_viridis_d facet_wrap geom_density scale_color_viridis_d geom_hline
 #' @export
 plot_hist  <- function(x,
                         z = NULL,
@@ -724,9 +730,9 @@ plot_hist  <- function(x,
     if (!density) {
         p1 <- ggplot(
             data = df.plot,
-            mapping = aes(x = x, fill = z), alpha = 0.5, color = "black"
+            mapping = aes(x = x, fill = z)
         ) +
-            geom_histogram() +
+            geom_histogram(alpha = 0.5, color = "black") +
             xlab(xlab) +
             ggtitle(main) +
             scale_fill_viridis_d()
@@ -735,9 +741,9 @@ plot_hist  <- function(x,
     } else {
         p1 <- ggplot(
             data = df.plot,
-            mapping = aes(x = x, col = z), alpha = 0.5, color = "black"
+            mapping = aes(x = x, col = z)
         ) +
-            geom_density() +
+            geom_density(alpha = 0.5) +
             xlab(xlab) +
             ggtitle(main) +
             scale_color_viridis_d()
@@ -845,6 +851,9 @@ plot_box <- function(x, y, xlab = "x", ylab = "y", main = "", facet = NULL, face
 #' @param density.widths Widths of the violin/boxplot and density plot when plot.density=TRUE
 #' 
 #' @returns A ggplot2 object
+#' @importFrom ggplot2 ggplot aes geom_violin stat_summary theme_linedraw theme
+#'   element_blank xlab ylab ggtitle facet_wrap geom_density geom_hline
+#' @importFrom stats quantile median
 #' @export
 plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main=NULL, xlab="x", ylab="y", stat.size=4, plot.density=FALSE, density.widths=c(3,1)) {
   
@@ -939,7 +948,7 @@ plot_violin <- function(x, y, violin = T, facet=NULL, q=c(0.05, 0.5, 0.95), main
 #'   \item plot: ggplot2 object
 #' }
 #'
-#' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip
+#' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient2 facet_wrap theme_linedraw theme coord_flip scale_size_continuous
 #' @export
 plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, feature.clust=NULL, annot=NULL, size.total=T, ylab="class", xlab="group", return.data=F, flip.axes=F, adjust="bonferroni", alpha=0.05, abs.effect=0, topn=NULL, grid.space="free") {
   
@@ -976,10 +985,10 @@ plot_markers <- function(markers, grouping.x="feature", grouping.x2=NULL, featur
     df.plot          <- select_top_markers(markers, topn) 
   } else {
     markers$padj     <- p.adjust(markers$pval, method=adjust)
-    markers.sig      <- markers[markers$padj < alpha,]
-    
+    markers.sig      <- markers[!is.na(markers$padj) & markers$padj < alpha,]
+
     if (abs.effect > 0) {
-        markers.sig  <- markers.sig[abs(markers.sig$estimate) >= abs.effect, ]
+        markers.sig  <- markers.sig[!is.na(markers.sig$estimate) & abs(markers.sig$estimate) >= abs.effect, ]
     }
     
     if (nrow(markers.sig) == 0) {
@@ -1247,7 +1256,7 @@ plot_plate <- function(...) {
 #' @returns An interactive ggplot2 object
 #' @export
 #' @rdname plot_interactive
-plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", main="Interactive plot", opts=opts_tooltip(opacity = 1), add_func=tglowr::theme_plain, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", labs.scalename="color", ...) {
+plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", main="Interactive plot", opts=ggiraph::opts_tooltip(opacity = 1), add_func=tglowr::theme_plain, labs = NULL, labs.add = TRUE, labs.size = 5, labs.textcol = "white", labs.bgcol = "black", labs.scalename="color", ...) {
   check_package("ggiraph")
   
   df.plot <- data.frame(rowid=1:length(x),
@@ -1274,7 +1283,7 @@ plot_xy_interactive <- function(x, y, tooltip, col="grey", xlab="X", ylab="Y", m
                 labs <- make_ident_labels(x, y, as.character(col))
 
                 p <- p + ggrepel::geom_text_repel(
-                    mapping = aes(x = x, y = y, label = label, col = "grey"),
+                    mapping = aes(x = x, y = y, label = label),
                     data = labs,
                     col = labs.textcol,
                     size = labs.size,

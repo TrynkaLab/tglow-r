@@ -38,6 +38,8 @@ tglow_plot_location_hex(
 
 \item{slot}{The assay slot to use ("data", "scale.data")}
 
+\item{feature.c}{feature to aggregate and color on,}
+
 \item{feature.x}{\linkS4class{TglowFeatureLocation} describing the x feature or NULL (takes it from datasets@feature.map)}
 
 \item{feature.y}{\linkS4class{TglowFeatureLocation} describing the y feature or NULL (takes it from datasets@feature.map)}
@@ -72,9 +74,11 @@ tglow_plot_location_hex(
 
 \item{side.linecol}{Linecolor of horizontal line in the sideview. Set to NULL to not draw the line.}
 
-\item{...}{Paramaters passed to \code{\link[=plot_hex]{plot_hex()}} when side.profile=T}
+\item{side.lwd}{Line width of the horizontal line in the sideview.}
 
-\item{feature.z}{feature to aggregate and color on,}
+\item{side.lty}{Line type of the horizontal line in the sideview.}
+
+\item{...}{Paramaters passed to \code{\link[=plot_hex]{plot_hex()}} when side.profile=T}
 }
 \value{
 A ggplot2 object
