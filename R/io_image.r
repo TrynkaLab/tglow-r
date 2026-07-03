@@ -102,31 +102,32 @@ tglow_read_imgs <- function(dataset, objects, index.col, out.size=NULL, path=NUL
     
     cur.pwf <- pwf[pwf$h5_path == h5file,]
     file    <- hdf5r::H5File$new(h5file, mode = "r")
-    on.exit(file$close_all(), add = TRUE)
 
-    for (obj in 1:nrow(cur.pwf)) {
-      cur.pwf.obj <- cur.pwf[obj,,drop=F]
-      m           <- file[[cur.pwf.obj$cell_index]]$read()
-      if (!is.null(out.size)) {
-        m <- img_pad_center(m, out.size, out.size)
+    tryCatch({
+      for (obj in 1:nrow(cur.pwf)) {
+        cur.pwf.obj <- cur.pwf[obj,,drop=F]
+        m           <- file[[cur.pwf.obj$cell_index]]$read()
+        if (!is.null(out.size)) {
+          m <- img_pad_center(m, out.size, out.size)
+        }
+        images[[cur.pwf.obj$object_id]] <- EBImage::Image(m)
+        pb$tick()
       }
-      images[[cur.pwf.obj$object_id]] <- EBImage::Image(m)
-      pb$tick()
-    }
-    
-    # Try to read channel names group if available
-    if (is.null(channel.names)) {
-      if ("channel_names" %in% names(file)) {
-        channel.names <- file[["channel_names"]]$read()
+
+      # Try to read channel names group if available
+      if (is.null(channel.names)) {
+        if ("channel_names" %in% names(file)) {
+          channel.names <- file[["channel_names"]]$read()
+        }
+      } else if ("channel_names" %in% names(file)) {
+        cur.channel.names <- file[["channel_names"]]$read()
+        if (!identical(cur.channel.names, channel.names)) {
+          warning("channel_names in ", h5file, " differ from previously read channel_names. Using the first file's channel_names for all objects.")
+        }
       }
-    } else if ("channel_names" %in% names(file)) {
-      cur.channel.names <- file[["channel_names"]]$read()
-      if (!identical(cur.channel.names, channel.names)) {
-        warning("channel_names in ", h5file, " differ from previously read channel_names. Using the first file's channel_names for all objects.")
-      }
-    }
-    
-    file$close_all()
+    }, finally = {
+      file$close_all()
+    })
   }
 
   if (!all(object.names %in% names(images))) {
