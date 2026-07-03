@@ -80,7 +80,10 @@ img_composite <- function(images, colors) {
         i <- i + 1
     }
 
-    comp <- comp / length(images)
+    #comp <- comp / length(images)
+    # Instead of taking the average, add together then clip
+    # this preserves brightness better
+    comp <- pmin(comp, 1)
 
     return(comp)
 }
