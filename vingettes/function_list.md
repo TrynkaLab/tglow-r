@@ -34,9 +34,6 @@
 * calculate_umap
 * correct_lm
 * correct_lm_per_featuregroup
-* depr_tglow_build_img_index
-* depr_tglow_read_imgs
-* depr_tglow_read_imgs_aics
 * effective_dimensionality
 * fast_colscale
 * fetch_representative_object

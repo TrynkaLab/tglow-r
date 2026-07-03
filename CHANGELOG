@@ -1,6 +1,13 @@
+# v0.1.22 (unreleased)
+
+## Major updates
 
 
-# v0.1.21 (release tbd)
+## Minor changes
+- Updated image composites to use additive blending > clipping rather then averaging to preserve brightness better
+
+
+# v0.1.21 (unreleased)
 
 ## Major updates
 
@@ -9,7 +16,6 @@
 - Removed deprecated functions
 - Documentation cleanups
 - Fixed install issues needing EBImage fixed by removing leftover roxygen tags
-
 
 # v0.1.20 (unreleased)
 
