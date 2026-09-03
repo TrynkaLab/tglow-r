@@ -5,7 +5,7 @@
 
 ## Minor changes
 - Updated image composites to use additive blending > clipping rather then averaging to preserve brightness better
-
+- Added formula.null to enable LRT in calculate_lm()
 
 # v0.1.21 (unreleased)
 

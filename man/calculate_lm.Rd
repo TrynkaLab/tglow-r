@@ -10,6 +10,7 @@ calculate_lm(
   slot,
   covariates,
   formula = NULL,
+  formula.null = NULL,
   grouping = NULL,
   assay.covar = NULL,
   slot.covar = NULL,
@@ -29,6 +30,8 @@ calculate_lm(
 \item{covariates}{Character vector of independent variables to use in the model}
 
 \item{formula}{The formula to use for regression, string or formula. Defaults to additive model. See details}
+
+\item{formula.null}{The null formula for a LRT as a string. The latter component of the formula. I.e. \code{~ x + donor}}
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 
