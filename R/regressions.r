@@ -656,14 +656,14 @@ lm_matrix_lrt <- function(res, res.reduced, design, design.null) {
 
 
         lrt <- data.frame(
-            feature  = rownames(res$coef),
-            ll.full  = res$model.stats$ll,
-            ll.red   = res.reduced$model.stats$ll,
-            lrt.chisqr = lrt.stat,
+            feature         = rownames(res$coef),
+            ll.full         = res$model.stats$ll,
+            ll.red          = res.reduced$model.stats$ll,
+            lrt.chisqr      = lrt.stat,
             lrt.chisqr.pval = lrt.pval,
-            lrt.f = f.stat,
-            lrt.f.pval = f.pval,
-            df       = df.diff,
+            lrt.f           = f.stat,
+            lrt.f.pval      = f.pval,
+            df              = df.diff
         )
         
         return(lrt)
