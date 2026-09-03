@@ -624,6 +624,52 @@ correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, 
     return(dataset)
 }
 
+#-------------------------------------------------------------------------------
+#' Calculate LRT on results from lm_matrix
+#'
+#' Calculates both the chisquared and the f-test based LRT. F test is more accurate for small samples
+#'
+#' @param res The results from lm_matrix
+#' @param res.reduced The results from lm_matrix for the reduced model
+#' @param design The design matrix for the full model
+#' @param design.null The design matrix for the reduced model
+lm_matrix_lrt <- function(res, res.reduced, design, design.null) {
+        #------------------------------------
+        # Chisquared based LRT
+        #------------------------------------
+        # LRT statistic per response column (gene/feature/etc)
+        lrt.stat <- 2 * (res$model.stats$ll - res.reduced$model.stats$ll)
+
+        # Degrees of freedom = difference in number of estimated parameters
+        df.diff <- ncol(design) - ncol(design.null)
+
+        # p-value from chi-square distribution
+        lrt.pval <- pchisq(lrt.stat, df = df.diff, lower.tail = FALSE)
+
+        #------------------------------------
+        # F-test based LRT
+        #------------------------------------
+        f.stat <- ((res.reduced$model.stats$rss - res$model.stats$rss) / df.diff) /
+                (res$model.stats$rss / res$model.stats$df)
+
+        f.pval <- pf(f.stat, df1 = df.diff, df2 = res$model.stats$df, lower.tail = FALSE)
+
+
+        lrt <- data.frame(
+            feature  = rownames(res$coef),
+            ll.full  = res$model.stats$ll,
+            ll.red   = res.reduced$model.stats$ll,
+            lrt.chisqr = lrt.stat,
+            lrt.chisqr.pval = lrt.pval,
+            lrt.f = f.stat,
+            lrt.f.pval = f.pval,
+            df       = df.diff,
+        )
+        
+        return(lrt)
+}
+
+
 
 #-------------------------------------------------------------------------------
 #' Calculate linear coefficients
@@ -735,33 +781,18 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
     if (is.null(grouping)) {
         res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null),...)
          
-        # Reduced (null) model — must be nested in the full model,
+        # LRT 
         if (!is.null(formula.null)) {
             cat("[INFO] Running LRT\n")
+            # Reduced (null) model — must be nested in the full model,
             # i.e. every column in design.reduced should also be in design.full
             res.reduced <- lm_matrix(response = response,
                                     design   = design.null,
                                     calculate_ll = TRUE)
-
-            # LRT statistic per response column (gene/feature/etc)
-            lrt.stat <- 2 * (res$model.stats$ll - res.reduced$model.stats$ll)
-
-            # Degrees of freedom = difference in number of estimated parameters
-            df.diff <- ncol(design) - ncol(design.null)
-
-            # p-value from chi-square distribution
-            lrt.pval <- pchisq(lrt.stat, df = df.diff, lower.tail = FALSE)
-
-            res$lrt <- data.frame(
-            feature  = rownames(res$coef),
-            ll.full  = res$model.stats$ll,
-            ll.red   = res.reduced$model.stats$ll,
-            lrt.stat = lrt.stat,
-            df       = df.diff,
-            lrt.pval = lrt.pval)
+            
+            res$lrt <- lm_matrix_lrt(res, res.reduced, design, design.null)
         }
 
-        
         return(res)
     } else {
         
@@ -783,33 +814,17 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
 
             results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null), ...)
             
+            # LRT
             if (!is.null(formula.null)) {
                 cat("[INFO] Running LRT for group: ", group, "\n")
                 
                 # i.e. every column in design.reduced should also be in design.full
                 res.reduced <- lm_matrix(response = response,
-                                        design   = design.null,
+                                        design   = design.null[selector, ],
                                         calculate_ll = TRUE)
 
-                # LRT statistic per response column (gene/feature/etc)
-                lrt.stat <- 2 * (results[[group]]$model.stats$ll - res.reduced$model.stats$ll)
-
-                # Degrees of freedom = difference in number of estimated parameters
-                df.diff <- ncol(design) - ncol(design.null)
-
-                # p-value from chi-square distribution
-                lrt.pval <- pchisq(lrt.stat, df = df.diff, lower.tail = FALSE)
-
-                results[[group]]$lrt <- data.frame(
-                feature  = rownames(results[[group]]$coef),
-                ll.full  = results[[group]]$model.stats$ll,
-                ll.red   = res.reduced$model.stats$ll,
-                lrt.stat = lrt.stat,
-                df       = df.diff,
-                lrt.pval = lrt.pval)
+                results[[group]]$lrt <- lm_matrix_lrt(results[[group]], res.reduced, design[selector, ], design.null[selector, ])
             }
-            
-            
         }
         return(results)
     }
