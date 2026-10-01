@@ -11,5 +11,5 @@ A \linkS4class{TglowFeatureMap}
 }
 \description{
 Returns the \linkS4class{TglowFeatureMap} matching the output of \code{\link{read_cellprofiler_parquet}}.
-x/y/z, plate and well are taken from \verb{@meta}, field from \verb{@image.meta}.
+x/y/z are taken from \verb{@meta}, plate, well and field from \verb{@image.meta}.
 }

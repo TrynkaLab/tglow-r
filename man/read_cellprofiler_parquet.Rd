@@ -10,9 +10,12 @@ read_cellprofiler_parquet(
   pattern.image = "_image.parquet$",
   plates = NULL,
   meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
-    "_Location_", "BoundingBox", "^plate$", "^well$", "^global_"),
+    "_Location_", "BoundingBox", "^global_"),
   img.meta.patterns = c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_",
     "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_", "^global_"),
+  drop.patterns = c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
+    "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$"),
+  img.drop.patterns = c("^plate$", "^well$"),
   col.object = "cell_ObjectNumber_Global",
   col.img.id = "cell_ImageNumber_Global",
   col.meta.img.id = "ImageNumber_Global",
@@ -33,6 +36,10 @@ read_cellprofiler_parquet(
 \item{meta.patterns}{Regex patterns for object level columns that are put on \verb{@meta} instead of the assay}
 
 \item{img.meta.patterns}{Regex patterns for image level columns that are put on \verb{@image.meta} instead of \verb{@image.data}}
+
+\item{drop.patterns}{Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns}
+
+\item{img.drop.patterns}{Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns}
 
 \item{col.object}{Column with the globally unique object id}
 
@@ -57,8 +64,17 @@ concat_cellprofiler in the gamma version of tglow-pipeline into a \linkS4class{T
 Child objects are expected to be merged onto the parent objects and object/image ids to be globally
 unique already, as concat_cellprofiler does.
 
+Columns matching \code{drop.patterns} / \code{img.drop.patterns} are removed first. By default these are:
+\itemize{
+\item plate and well, which duplicate Metadata_plate and Metadata_well on \verb{@image.meta}
+\item \verb{<child>_Parent_*} (and \verb{_Global}) for all non cell objects. Parent_cell equals the cell's own object number after
+merging, other child parent columns are averaged over the children during merging and no longer refer to an object
+\item \verb{<child>_ImageNumber} and \verb{<child>_ObjectNumber}/\code{Number_Object_Number} (and \verb{_Global}) for all non cell objects
+}
+
+\code{col.object} and \code{col.img.id} are never dropped.
+
 Columns that are not numeric are always placed on \verb{@meta} (object level) or \verb{@image.meta} (image level).
 Numeric columns matching \code{meta.patterns} / \code{img.meta.patterns} are placed there as well, the
-remaining numeric columns form the assay and \verb{@image.data}. plate and well are kept on \verb{@meta} only,
-Metadata_plate and Metadata_well remain available on \verb{@image.meta} for grouping images.
+remaining numeric columns form the assay and \verb{@image.data}.
 }

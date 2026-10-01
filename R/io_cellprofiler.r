@@ -518,7 +518,7 @@ read_cellprofiler_fileset_b <- function(prefix,
 #'
 #' @description
 #' Returns the \linkS4class{TglowFeatureMap} matching the output of \code{\link{read_cellprofiler_parquet}}.
-#' x/y/z, plate and well are taken from `@meta`, field from `@image.meta`.
+#' x/y/z are taken from `@meta`, plate, well and field from `@image.meta`.
 #'
 #' @returns A \linkS4class{TglowFeatureMap}
 #' @export
@@ -527,8 +527,8 @@ tglow_feature_map_cellprofiler <- function() {
     x = "cell_Location_Center_X",
     y = "cell_Location_Center_Y",
     z = "cell_Location_Center_Z",
-    plate = "plate",
-    well = "well",
+    plate = "Metadata_plate",
+    well = "Metadata_well",
     field = "Metadata_field"
   )))
 }
@@ -673,6 +673,30 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 
 
 #-------------------------------------------------------------------------------
+#' Remove columns matching any of a set of perl regex patterns
+#'
+#' @param df Input data.frame
+#' @param patterns Perl regex patterns, NULL drops nothing
+#' @param keep Columns that are never dropped
+#' @param label Description of the columns, used in messages
+#' @param verbose Should I be chatty?
+#' @noRd
+.drop_columns <- function(df, patterns, keep = NULL, label = "", verbose = FALSE) {
+  drop <- rep(FALSE, ncol(df))
+  for (pattern in patterns) {
+    drop <- drop | grepl(pattern, colnames(df), perl = TRUE)
+  }
+  drop <- drop & !colnames(df) %in% keep
+
+  if (verbose) {
+    cat("[DEBUG] dropping ", sum(drop), " ", label, " columns: ", paste(colnames(df)[drop], collapse = ", "), "\n", sep = "")
+  }
+
+  return(df[, !drop, drop = F])
+}
+
+
+#-------------------------------------------------------------------------------
 #' Warn for feature map features not present on a dataset
 #' @noRd
 .check_feature_map <- function(dataset) {
@@ -792,6 +816,8 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 #' @param plates Character vector of plates to read. NULL reads all plates found
 #' @param meta.patterns Regex patterns for object level columns that are put on `@meta` instead of the assay
 #' @param img.meta.patterns Regex patterns for image level columns that are put on `@image.meta` instead of `@image.data`
+#' @param drop.patterns Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns
+#' @param img.drop.patterns Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns
 #' @param col.object Column with the globally unique object id
 #' @param col.img.id Column in the object level data with the globally unique image id
 #' @param col.meta.img.id Column in the image level data with the globally unique image id
@@ -803,10 +829,17 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 #' Child objects are expected to be merged onto the parent objects and object/image ids to be globally
 #' unique already, as concat_cellprofiler does.
 #'
+#' Columns matching `drop.patterns` / `img.drop.patterns` are removed first. By default these are:
+#' - plate and well, which duplicate Metadata_plate and Metadata_well on `@image.meta`
+#' - `<child>_Parent_*` (and `_Global`) for all non cell objects. Parent_cell equals the cell's own object number after
+#'   merging, other child parent columns are averaged over the children during merging and no longer refer to an object
+#' - `<child>_ImageNumber` and `<child>_ObjectNumber`/`Number_Object_Number` (and `_Global`) for all non cell objects
+#'
+#' `col.object` and `col.img.id` are never dropped.
+#'
 #' Columns that are not numeric are always placed on `@meta` (object level) or `@image.meta` (image level).
 #' Numeric columns matching `meta.patterns` / `img.meta.patterns` are placed there as well, the
-#' remaining numeric columns form the assay and `@image.data`. plate and well are kept on `@meta` only,
-#' Metadata_plate and Metadata_well remain available on `@image.meta` for grouping images.
+#' remaining numeric columns form the assay and `@image.data`.
 #'
 #' @returns A \linkS4class{TglowDataset}
 #' @importFrom arrow read_parquet
@@ -816,10 +849,13 @@ read_cellprofiler_parquet <- function(path,
                                       pattern.image = "_image.parquet$",
                                       plates = NULL,
                                       meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
-                                                        "_Location_", "BoundingBox", "^plate$", "^well$", "^global_"),
+                                                        "_Location_", "BoundingBox", "^global_"),
                                       img.meta.patterns = c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_",
                                                             "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_",
                                                             "^global_"),
+                                      drop.patterns = c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
+                                                        "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$"),
+                                      img.drop.patterns = c("^plate$", "^well$"),
                                       col.object = "cell_ObjectNumber_Global",
                                       col.img.id = "cell_ImageNumber_Global",
                                       col.meta.img.id = "ImageNumber_Global",
@@ -889,6 +925,10 @@ read_cellprofiler_parquet <- function(path,
     stop(paste0(length(missing), " image ids in ", col.img.id, " not found in the image files"))
   }
 
+  # Remove redundant columns
+  cells <- .drop_columns(cells, drop.patterns, keep = c(col.object, col.img.id), label = "object", verbose = verbose)
+  img <- .drop_columns(img, img.drop.patterns, keep = col.meta.img.id, label = "image", verbose = verbose)
+
   # Split into meta and features
   obj <- .split_meta_features(cells, meta.patterns = meta.patterns)
   rownames(obj$meta) <- cells[[col.object]]
@@ -897,9 +937,6 @@ read_cellprofiler_parquet <- function(path,
   im <- .split_meta_features(img, meta.patterns = img.meta.patterns)
   rownames(im$meta) <- img[[col.meta.img.id]]
   rownames(im$features) <- img[[col.meta.img.id]]
-
-  # Keep shared columns (plate, well) on @meta only
-  im$meta <- im$meta[, !colnames(im$meta) %in% colnames(obj$meta), drop = F]
 
   if (verbose) {
     cat("[DEBUG] object meta cols: ", ncol(obj$meta), " image meta cols: ", ncol(im$meta), "\n")
