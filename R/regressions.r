@@ -624,6 +624,52 @@ correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, 
     return(dataset)
 }
 
+#-------------------------------------------------------------------------------
+#' Calculate LRT on results from lm_matrix
+#'
+#' Calculates both the chisquared and the f-test based LRT. F test is more accurate for small samples
+#'
+#' @param res The results from lm_matrix
+#' @param res.reduced The results from lm_matrix for the reduced model
+#' @param design The design matrix for the full model
+#' @param design.null The design matrix for the reduced model
+lm_matrix_lrt <- function(res, res.reduced, design, design.null) {
+        #------------------------------------
+        # Chisquared based LRT
+        #------------------------------------
+        # LRT statistic per response column (gene/feature/etc)
+        lrt.stat <- 2 * (res$model.stats$ll - res.reduced$model.stats$ll)
+
+        # Degrees of freedom = difference in number of estimated parameters
+        df.diff <- ncol(design) - ncol(design.null)
+
+        # p-value from chi-square distribution
+        lrt.pval <- pchisq(lrt.stat, df = df.diff, lower.tail = FALSE)
+
+        #------------------------------------
+        # F-test based LRT
+        #------------------------------------
+        f.stat <- ((res.reduced$model.stats$rss - res$model.stats$rss) / df.diff) /
+                (res$model.stats$rss / res$model.stats$df)
+
+        f.pval <- pf(f.stat, df1 = df.diff, df2 = res$model.stats$df, lower.tail = FALSE)
+
+
+        lrt <- data.frame(
+            feature         = rownames(res$coef),
+            ll.full         = res$model.stats$ll,
+            ll.red          = res.reduced$model.stats$ll,
+            lrt.chisqr      = lrt.stat,
+            lrt.chisqr.pval = lrt.pval,
+            lrt.f           = f.stat,
+            lrt.f.pval      = f.pval,
+            df              = df.diff
+        )
+        
+        return(lrt)
+}
+
+
 
 #-------------------------------------------------------------------------------
 #' Calculate linear coefficients
@@ -634,6 +680,7 @@ correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, 
 #' @param slot The assay slot to use ("data", "scale.data")
 #' @param covariates Character vector of independent variables to use in the model
 #' @param formula The formula to use for regression, string or formula. Defaults to additive model. See details
+#' @param formula.null The null formula for a LRT as a string. The latter component of the formula. I.e. `~ x + donor`
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data"
@@ -660,7 +707,7 @@ correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, 
 #'
 #' @returns A list of regression results. If grouping != NULL, there is one list per group
 #' @export
-calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
+calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formula.null=NULL, grouping = NULL, assay.covar = NULL, slot.covar = NULL, assay.image = NULL, covariates.dont.use = NULL, rescale.group = FALSE, ...) {
     check_dataset_assay_slot(dataset, assay, slot)
 
     if (is.null(slot.covar)) {
@@ -685,6 +732,7 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, group
 
     covariates.dont.use <- check_unused_covar(data, covariates.dont.use)
 
+    # Parse formula
     if (is.null(formula)) {
         design <- model.matrix(~., data = data)
     } else {
@@ -696,6 +744,8 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, group
         
         design <- model.matrix(formula, data = data)
     }
+
+    
     response <- slot(dataset@assays[[assay]], slot)
 
     # Remove NA's from the design matrix
@@ -712,8 +762,37 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, group
         stop("nrow(design) must equal nrow(assay)")
     }
     
+    
+    # Parse null formula
+    if (!is.null(formula.null)) {
+        if (is.character(formula.null)) {
+            formula.null <- as.formula(formula.null)
+            warning(paste0("Formula.null is character, converting to formula dataset: ", paste0(as.character(formula.null), collapse=" ")))
+        }
+        
+        design.null <- model.matrix(formula.null, data = data)
+        
+        if (nrow(design.null) != nrow(response)) {
+            stop("nrow(design.null) must equal nrow(assay)")
+        }
+    }
+    
+    
     if (is.null(grouping)) {
-        res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use, ...)
+        res <- lm_matrix(response, design, covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null),...)
+         
+        # LRT 
+        if (!is.null(formula.null)) {
+            cat("[INFO] Running LRT\n")
+            # Reduced (null) model — must be nested in the full model,
+            # i.e. every column in design.reduced should also be in design.full
+            res.reduced <- lm_matrix(response = response,
+                                    design   = design.null,
+                                    calculate_ll = TRUE)
+            
+            res$lrt <- lm_matrix_lrt(res, res.reduced, design, design.null)
+        }
+
         return(res)
     } else {
         
@@ -733,7 +812,19 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, group
                 response.cur <- response[selector, ]
             }
 
-            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, ...)
+            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null), ...)
+            
+            # LRT
+            if (!is.null(formula.null)) {
+                cat("[INFO] Running LRT for group: ", group, "\n")
+                
+                # i.e. every column in design.reduced should also be in design.full
+                res.reduced <- lm_matrix(response = response,
+                                        design   = design.null[selector, ],
+                                        calculate_ll = TRUE)
+
+                results[[group]]$lrt <- lm_matrix_lrt(results[[group]], res.reduced, design[selector, ], design.null[selector, ])
+            }
         }
         return(results)
     }
@@ -1062,7 +1153,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
       
       # Calculate ll
       if (calculate_ll) {
-        ll <- sum(dnorm(response[, col], mean = ypred, sd = sd(rs), log = TRUE))
+        ll <- sum(dnorm(response[, col], mean = ypred, sd = sqrt(sum(rs^2) / length(rs)), log = TRUE))
       } else {
         ll <- NA
       }
