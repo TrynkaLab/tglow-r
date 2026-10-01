@@ -478,3 +478,569 @@ read_cellprofiler_fileset_b <- function(prefix,
 
   return(out.list)
 }
+
+
+#-------------------------------------------------------------------------------
+# Parquet readers for the gamma pipeline
+#-------------------------------------------------------------------------------
+
+# Feature maps per tglow-pipeline version (manifest.version in nextflow.config)
+.PIPELINE_FEATURE_MAPS <- list(
+  "0.2.0" = list(x = "centroid_x", y = "centroid_y", z = "centroid_z", plate = "plate", well = "well", field = "field")
+)
+
+# Fixed metadata columns in measure_intensity_features_with_debris.py output (+ the ids added on reading)
+.PIPELINE_OBJECT_META <- c("plate", "row", "col", "well", "field", "plate_well_field", "cell_label",
+                           "centroid_x", "centroid_y", "centroid_z", "plate_id", "image_id", "object_id")
+.PIPELINE_IMAGE_META <- c("plate", "row", "col", "well", "field", "plate_well_field", "method",
+                          "cellmask_expansion", "n_cells_reg_corr_pass", "plate_id", "image_id")
+.PIPELINE_META_PATTERNS <- c("__registration_corr$")
+
+# Per channel debris statistics, used to categorize features
+.PIPELINE_DEBRIS_STATS <- c("threshold", "mean_intensity", "threshold_mean_ratio", "debris_percentage",
+                            "ori_cell_mask_covered_percent", "cell_mask_covered_percent")
+
+
+#-------------------------------------------------------------------------------
+#' Build a TglowFeatureMap from a named list of meta level feature names
+#' @noRd
+.feature_map_from_list <- function(features) {
+  feature.map <- TglowFeatureMap()
+  for (cur.slot in names(features)) {
+    slot(feature.map, cur.slot) <- TglowFeatureLocation(features[[cur.slot]])
+  }
+  return(feature.map)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Default feature map for CellProfiler parquet output
+#'
+#' @description
+#' Returns the \linkS4class{TglowFeatureMap} matching the output of \code{\link{read_cellprofiler_parquet}}.
+#' x/y/z, plate and well are taken from `@meta`, field from `@image.meta`.
+#'
+#' @returns A \linkS4class{TglowFeatureMap}
+#' @export
+tglow_feature_map_cellprofiler <- function() {
+  return(.feature_map_from_list(list(
+    x = "cell_Location_Center_X",
+    y = "cell_Location_Center_Y",
+    z = "cell_Location_Center_Z",
+    plate = "plate",
+    well = "well",
+    field = "Metadata_field"
+  )))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Feature map for tglow-pipeline intensity output
+#'
+#' @description
+#' Returns the \linkS4class{TglowFeatureMap} matching the output of \code{\link{read_pipeline_parquet}}
+#' for a given tglow-pipeline version (manifest.version in the pipeline's nextflow.config).
+#'
+#' @param version Pipeline version, or "latest" for the most recent supported version
+#'
+#' @returns A \linkS4class{TglowFeatureMap}
+#' @export
+tglow_feature_map_pipeline <- function(version = "latest") {
+  versions <- names(.PIPELINE_FEATURE_MAPS)
+
+  if (version == "latest") {
+    version <- as.character(max(numeric_version(versions)))
+  }
+
+  if (!version %in% versions) {
+    stop(paste0("Pipeline version '", version, "' is not supported. Supported versions: ", paste(versions, collapse = ", ")))
+  }
+
+  return(.feature_map_from_list(.PIPELINE_FEATURE_MAPS[[version]]))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Get feature metadata from tglow-pipeline feature names
+#'
+#' @description
+#' Counterpart of \code{\link{get_feature_meta_from_names}} for tglow-pipeline names of the
+#' form `ch{N}__{stat}`. Names without '__' (area, n_nuclei) are assigned to object 'cell'.
+#'
+#' @param feature.names Character vector of feature names
+#'
+#' @returns A data.frame with columns id, object, measurement, category and name
+#' @export
+get_feature_meta_from_names_pipeline <- function(feature.names) {
+  pos <- regexpr("__", feature.names, fixed = TRUE)
+  has.channel <- pos > 0
+
+  object <- ifelse(has.channel, substr(feature.names, 1, pos - 1), "cell")
+  measurement <- ifelse(has.channel, substr(feature.names, pos + 2, nchar(feature.names)), feature.names)
+
+  category <- rep("intensity", length(feature.names))
+  category[grepl("^background_", measurement)] <- "background"
+  category[measurement %in% .PIPELINE_DEBRIS_STATS] <- "debris"
+  category[measurement == "registration_corr"] <- "registration"
+  category[!has.channel] <- "morphology"
+
+  feature.meta <- data.frame(
+    id = feature.names,
+    object = object,
+    measurement = measurement,
+    category = category,
+    name = measurement
+  )
+  rownames(feature.meta) <- feature.meta$id
+  return(feature.meta)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Read and row bind a set of parquet files
+#'
+#' @param files Character vector of parquet files
+#' @param label Description of the files, used in messages
+#' @param idcol If not NULL, add a column with this name holding the source file of each row
+#'
+#' @returns A data.frame
+#' @noRd
+.read_parquet_files <- function(files, label = "files", idcol = NULL) {
+  # Skip empty files (stub outputs from the pipeline)
+  empty <- is.na(file.size(files)) | file.size(files) == 0
+  if (any(empty)) {
+    warning(paste0("Skipped ", sum(empty), " empty ", label, ": ", paste(files[empty], collapse = ", ")))
+    files <- files[!empty]
+  }
+
+  if (length(files) == 0) {
+    stop(paste0("No non-empty ", label, " to read"))
+  }
+
+  pb <- progress::progress_bar$new(format = paste0("[INFO] Reading ", label, " [:bar] :current/:total (:percent) eta :eta"), total = length(files))
+  pb$tick(0)
+  tables <- lapply(files, function(file) {
+    cur <- as.data.frame(arrow::read_parquet(file))
+    pb$tick()
+    return(cur)
+  })
+  names(tables) <- files
+
+  # Report columns not present in every file, these are filled with NA
+  col.counts <- table(unlist(lapply(tables, colnames)))
+  missing <- col.counts[col.counts != length(tables)]
+  if (length(missing) > 0) {
+    msg <- paste0("Not all ", label, " have the same columns, filling with NA. Missing in n files: ",
+                  paste0(names(missing), " (", length(tables) - missing, ")", collapse = ", "))
+    warning(msg)
+  }
+
+  return(as.data.frame(data.table::rbindlist(tables, use.names = TRUE, fill = TRUE, idcol = idcol)))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Split a data.frame into metadata and a numeric feature matrix
+#'
+#' @param df Input data.frame
+#' @param meta.patterns Regex patterns, matching columns are considered metadata
+#' @param meta.cols Column names considered metadata
+#'
+#' @details Non numeric columns are always considered metadata.
+#'
+#' @returns list with meta (data.frame), features (numeric matrix) and types (original class per feature)
+#' @noRd
+.split_meta_features <- function(df, meta.patterns = NULL, meta.cols = NULL) {
+  # integer64 does not behave as numeric, convert to double
+  for (col in colnames(df)[sapply(df, inherits, "integer64")]) {
+    df[[col]] <- as.numeric(df[[col]])
+  }
+
+  is.meta <- !sapply(df, is.numeric) | colnames(df) %in% meta.cols
+  for (pattern in meta.patterns) {
+    is.meta <- is.meta | grepl(pattern, colnames(df))
+  }
+
+  features <- as.matrix(df[, !is.meta, drop = F])
+  storage.mode(features) <- "double"
+
+  return(list(
+    meta = df[, is.meta, drop = F],
+    features = features,
+    types = sapply(df[, !is.meta, drop = F], function(x) class(x)[1])
+  ))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Warn for feature map features not present on a dataset
+#' @noRd
+.check_feature_map <- function(dataset) {
+  for (cur.slot in slotNames(dataset@feature.map)) {
+    loc <- slot(dataset@feature.map, cur.slot)
+
+    # Slot not set
+    if (length(loc@feature) == 0) {
+      next
+    }
+
+    if (is.null(loc@assay)) {
+      available <- loc@feature %in% c(colnames(dataset@meta), colnames(dataset@image.meta))
+    } else {
+      available <- loc@feature %in% colnames(slot(dataset@assays[[loc@assay]], loc@slot))
+    }
+
+    if (!available) {
+      warning(paste0("Feature map ", cur.slot, " feature '", loc@feature, "' not found on dataset"))
+    }
+  }
+}
+
+
+#-------------------------------------------------------------------------------
+#' Set the plate column from the plate folder each row was read from
+#'
+#' @param df Output of .read_parquet_files with idcol ".source_file"
+#' @param file.plate Named vector, names are files, values the plate folder
+#' @param label Description of the rows, used in messages
+#' @noRd
+.set_folder_plate <- function(df, file.plate, label) {
+  folder.plate <- unname(file.plate[df$.source_file])
+
+  mismatch <- df$plate != folder.plate
+  if (any(mismatch, na.rm = T)) {
+    warning(paste0("plate column does not match the plate folder for ", sum(mismatch, na.rm = T), " ", label, ", using the folder name"))
+  }
+
+  df$plate <- folder.plate
+  df$.source_file <- NULL
+  return(df)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Warn for non numeric columns that are not in the expected metadata columns
+#' @noRd
+.warn_unexpected_meta <- function(df, expected, label) {
+  unexpected <- setdiff(colnames(df)[!sapply(df, is.numeric)], expected)
+  if (length(unexpected) > 0) {
+    warning(paste0("Unexpected non numeric columns in ", label, ", placing on meta: ", paste(unexpected, collapse = ", ")))
+  }
+}
+
+
+#-------------------------------------------------------------------------------
+#' Build a TglowDataset from split object and image level data
+#'
+#' @param obj Output of .split_meta_features for the objects, with rownames set
+#' @param img Output of .split_meta_features for the images, with rownames set
+#' @param image.ids Image id for each object
+#' @param feature.meta.fun Function to generate the feature metadata from feature names
+#' @param feature.map TglowFeatureMap or NULL
+#' @param assay.out The assay name to store objects under
+#' @noRd
+.build_parquet_dataset <- function(obj, img, image.ids, feature.meta.fun, feature.map, assay.out = "raw") {
+  # No numeric image features, use a dummy as TglowDatasetFromList does
+  if (ncol(img$features) == 0) {
+    img$features <- matrix(0, nrow = nrow(img$meta), ncol = 1, dimnames = list(rownames(img$meta), "dummy"))
+    img$types <- c(dummy = "numeric")
+  }
+
+  overlap <- intersect(colnames(obj$meta), colnames(img$meta))
+  if (length(overlap) > 0) {
+    warning(paste0("Columns present in both @meta and @image.meta: ", paste(overlap, collapse = ", ")))
+  }
+
+  dataset <- tglowr::TglowDatasetFromMatrices(obj$features, img$features, image.ids,
+                                              object.meta = obj$meta, image.meta = img$meta, assay.out = assay.out)
+
+  # Feature level metadata
+  features <- feature.meta.fun(colnames(obj$features))
+  features$type <- obj$types[features$id]
+  features$analyze <- TRUE
+  dataset@assays[[assay.out]]@features <- features
+
+  features <- feature.meta.fun(colnames(img$features))
+  features$type <- img$types[features$id]
+  features$analyze <- TRUE
+  dataset@image.data@features <- features
+
+  dataset@active.assay <- assay.out
+  dataset@feature.map <- feature.map
+
+  if (!is.null(feature.map)) {
+    .check_feature_map(dataset)
+  }
+
+  cat("[INFO] Read ", nrow(obj$features), " objects with ", ncol(obj$features), " features and ",
+      nrow(img$features), " images with ", ncol(img$features), " features\n", sep = "")
+
+  return(dataset)
+}
+
+
+#-------------------------------------------------------------------------------
+#' Read per-plate CellProfiler parquet files
+#'
+#' @description
+#' Read the per-plate `<plate>_cells.parquet` and `<plate>_image.parquet` files produced by
+#' concat_cellprofiler in the gamma version of tglow-pipeline into a \linkS4class{TglowDataset}.
+#'
+#' @param path Directory to search recursively for parquet files, or a character vector of parquet files
+#' @param pattern.cells Pattern identifying the object level files. Removing it from the filename gives the plate name
+#' @param pattern.image Pattern identifying the image level files. Removing it from the filename gives the plate name
+#' @param plates Character vector of plates to read. NULL reads all plates found
+#' @param meta.patterns Regex patterns for object level columns that are put on `@meta` instead of the assay
+#' @param img.meta.patterns Regex patterns for image level columns that are put on `@image.meta` instead of `@image.data`
+#' @param col.object Column with the globally unique object id
+#' @param col.img.id Column in the object level data with the globally unique image id
+#' @param col.meta.img.id Column in the image level data with the globally unique image id
+#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_cellprofiler}}
+#' @param assay.out The assay name to store objects under
+#' @param verbose Should I be chatty?
+#'
+#' @details
+#' Child objects are expected to be merged onto the parent objects and object/image ids to be globally
+#' unique already, as concat_cellprofiler does.
+#'
+#' Columns that are not numeric are always placed on `@meta` (object level) or `@image.meta` (image level).
+#' Numeric columns matching `meta.patterns` / `img.meta.patterns` are placed there as well, the
+#' remaining numeric columns form the assay and `@image.data`. plate and well are kept on `@meta` only,
+#' Metadata_plate and Metadata_well remain available on `@image.meta` for grouping images.
+#'
+#' @returns A \linkS4class{TglowDataset}
+#' @importFrom arrow read_parquet
+#' @export
+read_cellprofiler_parquet <- function(path,
+                                      pattern.cells = "_cells.parquet$",
+                                      pattern.image = "_image.parquet$",
+                                      plates = NULL,
+                                      meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
+                                                        "_Location_", "BoundingBox", "^plate$", "^well$", "^global_"),
+                                      img.meta.patterns = c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_",
+                                                            "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_",
+                                                            "^global_"),
+                                      col.object = "cell_ObjectNumber_Global",
+                                      col.img.id = "cell_ImageNumber_Global",
+                                      col.meta.img.id = "ImageNumber_Global",
+                                      feature.map = tglow_feature_map_cellprofiler(),
+                                      assay.out = "raw",
+                                      verbose = FALSE) {
+  if (length(path) == 1 && dir.exists(path)) {
+    files <- list.files(path, recursive = T, full.names = T)
+  } else {
+    files <- path
+  }
+
+  # Pair cell and image files by plate
+  cell.files <- grep(pattern.cells, files, value = T)
+  img.files <- grep(pattern.image, files, value = T)
+  names(cell.files) <- sub(pattern.cells, "", basename(cell.files))
+  names(img.files) <- sub(pattern.image, "", basename(img.files))
+
+  unpaired <- setdiff(union(names(cell.files), names(img.files)), intersect(names(cell.files), names(img.files)))
+  if (length(unpaired) > 0) {
+    stop(paste0("Plates without both a cells and image file: ", paste(unpaired, collapse = ", ")))
+  }
+
+  if (is.null(plates)) {
+    plates <- sort(names(cell.files))
+  }
+
+  if (length(plates) == 0) {
+    stop(paste0("No files matching '", pattern.cells, "' found"))
+  }
+
+  missing <- setdiff(plates, names(cell.files))
+  if (length(missing) > 0) {
+    stop(paste0("Plates not found: ", paste(missing, collapse = ", ")))
+  }
+
+  cells <- .read_parquet_files(cell.files[plates], label = "cell files")
+  img <- .read_parquet_files(img.files[plates], label = "image files")
+
+  # Check ids
+  for (col in c(col.object, col.img.id)) {
+    if (!col %in% colnames(cells)) {
+      stop(paste0("Column ", col, " not found in cell files"))
+    }
+  }
+
+  if (!col.meta.img.id %in% colnames(img)) {
+    stop(paste0("Column ", col.meta.img.id, " not found in image files"))
+  }
+
+  selector <- !is.na(cells[[col.object]])
+  if (sum(!selector) != 0) {
+    warning(paste0("Detected ", sum(!selector), " objects with NA in ", col.object, " removing these"))
+    cells <- cells[selector, , drop = F]
+  }
+
+  if (any(duplicated(cells[[col.object]]))) {
+    stop(paste0("Duplicated ids in ", col.object, ". Check plates were not given the same plate_id in the pipeline"))
+  }
+
+  if (any(duplicated(img[[col.meta.img.id]]))) {
+    stop(paste0("Duplicated ids in ", col.meta.img.id, ". Check plates were not given the same plate_id in the pipeline"))
+  }
+
+  missing <- setdiff(cells[[col.img.id]], img[[col.meta.img.id]])
+  if (length(missing) > 0) {
+    stop(paste0(length(missing), " image ids in ", col.img.id, " not found in the image files"))
+  }
+
+  # Split into meta and features
+  obj <- .split_meta_features(cells, meta.patterns = meta.patterns)
+  rownames(obj$meta) <- cells[[col.object]]
+  rownames(obj$features) <- cells[[col.object]]
+
+  im <- .split_meta_features(img, meta.patterns = img.meta.patterns)
+  rownames(im$meta) <- img[[col.meta.img.id]]
+  rownames(im$features) <- img[[col.meta.img.id]]
+
+  # Keep shared columns (plate, well) on @meta only
+  im$meta <- im$meta[, !colnames(im$meta) %in% colnames(obj$meta), drop = F]
+
+  if (verbose) {
+    cat("[DEBUG] object meta cols: ", ncol(obj$meta), " image meta cols: ", ncol(im$meta), "\n")
+  }
+
+  return(.build_parquet_dataset(obj, im,
+    image.ids = cells[[col.img.id]],
+    feature.meta.fun = tglowr::get_feature_meta_from_names,
+    feature.map = feature.map,
+    assay.out = assay.out
+  ))
+}
+
+
+#-------------------------------------------------------------------------------
+#' Read tglow-pipeline intensity parquet files
+#'
+#' @description
+#' Read the per-well object_features.parquet and image_features.parquet files produced by
+#' measure_intensity_features_with_debris in the gamma version of tglow-pipeline into a \linkS4class{TglowDataset}.
+#' Files are expected as `<path>/<plate>/<row>/<col>/object_features.parquet` and image_features.parquet.
+#'
+#' @param path The output directory containing one folder per plate
+#' @param plates Character vector of plate folder names to read. NULL reads all plate folders in alphabetical order
+#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_pipeline}}
+#'
+#' @details
+#' Object ids are constructed as `<plate_id>_<well>_I<field>_L<cell_label>`, image ids as `<plate_id>_<well>_I<field>`.
+#' The L indicates the cell mask label, which is not the same as the CellProfiler ObjectNumber.
+#'
+#' Plate ids (P1, P2, ...) follow the order of `plates`. They match the plate ids in the CellProfiler parquet
+#' output only if `plates` is given in the same order as the pipeline manifest, which is how the pipeline
+#' assigns them. To align with a CellProfiler dataset, either provide `plates` in manifest order, or use
+#' \code{\link{match_objects_xy_nn}}, which matches objects on plate name, well, field and position and
+#' does not depend on the ids.
+#'
+#' Metadata columns are fixed. Registration correlations are placed on `@meta` and n_cells_reg_corr_pass on
+#' `@image.meta`. Image level metadata (plate, row, col, well, field, plate_well_field, plate_id) is placed on
+#' `@image.meta` only, `@meta` holds the object level metadata (cell_label, centroids, registration correlations)
+#' and image_id. Image level columns are still available per object through \code{\link{getDataByObject}}.
+#'
+#' @returns A \linkS4class{TglowDataset}
+#' @importFrom arrow read_parquet
+#' @export
+read_pipeline_parquet <- function(path, plates = NULL, feature.map = tglow_feature_map_pipeline()) {
+  if (!dir.exists(path)) {
+    stop(paste0("Directory not found: ", path))
+  }
+
+  if (is.null(plates)) {
+    plates <- sort(list.dirs(path, recursive = F, full.names = F))
+  }
+
+  if (any(duplicated(plates))) {
+    stop("plates contains duplicates")
+  }
+
+  missing <- plates[!dir.exists(file.path(path, plates))]
+  if (length(missing) > 0) {
+    stop(paste0("Plate folders not found in ", path, ": ", paste(missing, collapse = ", ")))
+  }
+
+  # Find files per plate
+  obj.files <- c()
+  img.files <- c()
+  for (plate in plates) {
+    cur.obj <- Sys.glob(file.path(path, plate, "*", "*", "object_features.parquet"))
+    cur.img <- Sys.glob(file.path(path, plate, "*", "*", "image_features.parquet"))
+
+    if (length(cur.obj) == 0 || length(cur.img) == 0) {
+      warning(paste0("No object_features.parquet or image_features.parquet found for plate ", plate, ", skipping"))
+      next
+    }
+
+    obj.files <- c(obj.files, setNames(cur.obj, rep(plate, length(cur.obj))))
+    img.files <- c(img.files, setNames(cur.img, rep(plate, length(cur.img))))
+  }
+
+  if (length(obj.files) == 0) {
+    stop(paste0("No parquet files found in ", path))
+  }
+
+  # Plate ids follow the order of plates
+  plates <- plates[plates %in% names(obj.files)]
+  plate.ids <- setNames(paste0("P", seq_along(plates)), plates)
+  cat("[INFO] Plate ids:\n")
+  cat(paste0("  ", plate.ids, " = ", plates, "\n"), sep = "")
+
+  # Read, the source file is used to set the plate from the folder name
+  objects <- .read_parquet_files(obj.files, label = "object files", idcol = ".source_file")
+  objects <- .set_folder_plate(objects, setNames(names(obj.files), obj.files), "objects")
+  images <- .read_parquet_files(img.files, label = "image files", idcol = ".source_file")
+  images <- .set_folder_plate(images, setNames(names(img.files), img.files), "images")
+
+  # Older 2D output has no centroid_z, use 0 as the pipeline does for 2D input
+  if (!"centroid_z" %in% colnames(objects)) {
+    objects$centroid_z <- 0
+  } else {
+    objects$centroid_z[is.na(objects$centroid_z)] <- 0
+  }
+
+  # Construct ids
+  objects$plate_id <- unname(plate.ids[objects$plate])
+  images$plate_id <- unname(plate.ids[images$plate])
+  images$image_id <- paste0(images$plate_id, "_", images$well, "_I", images$field)
+  objects$image_id <- paste0(objects$plate_id, "_", objects$well, "_I", objects$field)
+  objects$object_id <- paste0(objects$image_id, "_L", objects$cell_label)
+
+  if (any(duplicated(objects$object_id))) {
+    stop("Duplicated object ids, check for duplicate wells or fields in the input")
+  }
+
+  if (any(duplicated(images$image_id))) {
+    stop("Duplicated image ids, check for duplicate wells or fields in the input")
+  }
+
+  missing <- setdiff(objects$image_id, images$image_id)
+  if (length(missing) > 0) {
+    stop(paste0(length(missing), " image ids of objects not found in the image files"))
+  }
+
+  # Non numeric columns that are not part of the expected output still go to meta
+  .warn_unexpected_meta(objects, .PIPELINE_OBJECT_META, "objects")
+  .warn_unexpected_meta(images, .PIPELINE_IMAGE_META, "images")
+
+  # Split into meta and features
+  obj <- .split_meta_features(objects, meta.patterns = .PIPELINE_META_PATTERNS, meta.cols = .PIPELINE_OBJECT_META)
+  rownames(obj$meta) <- objects$object_id
+  rownames(obj$features) <- objects$object_id
+
+  im <- .split_meta_features(images, meta.patterns = .PIPELINE_META_PATTERNS, meta.cols = .PIPELINE_IMAGE_META)
+  rownames(im$meta) <- images$image_id
+  rownames(im$features) <- images$image_id
+
+  # Image level metadata (plate, well, field, ...) is kept on @image.meta only, image_id on @meta only
+  obj$meta <- obj$meta[, !colnames(obj$meta) %in% colnames(im$meta) | colnames(obj$meta) == "image_id", drop = F]
+  im$meta <- im$meta[, colnames(im$meta) != "image_id", drop = F]
+
+  return(.build_parquet_dataset(obj, im,
+    image.ids = objects$image_id,
+    feature.meta.fun = get_feature_meta_from_names_pipeline,
+    feature.map = feature.map
+  ))
+}
