@@ -7,7 +7,8 @@
 read_pipeline_parquet(
   path,
   plates = NULL,
-  feature.map = default_feature_map_pipeline()
+  feature.map = default_feature_map_pipeline(),
+  assay.out = "raw"
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ read_pipeline_parquet(
 \item{plates}{Character vector of plate folder names to read. NULL reads all plate folders in alphabetical order}
 
 \item{feature.map}{\linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_pipeline}}}
+
+\item{assay.out}{The assay name to store objects under}
 }
 \value{
 A \linkS4class{TglowDataset}

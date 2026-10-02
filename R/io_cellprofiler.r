@@ -1058,6 +1058,7 @@ read_cellprofiler_parquet <- function(path,
 #' @param path The output directory containing one folder per plate
 #' @param plates Character vector of plate folder names to read. NULL reads all plate folders in alphabetical order
 #' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_pipeline}}
+#' @param assay.out The assay name to store objects under
 #'
 #' @details
 #' Object ids are constructed as `<plate_id>_<well>_I<field>_L<cell_label>`, image ids as `<plate_id>_<well>_I<field>`.
@@ -1081,7 +1082,7 @@ read_cellprofiler_parquet <- function(path,
 #' @returns A \linkS4class{TglowDataset}
 #' @importFrom arrow read_parquet
 #' @export
-read_pipeline_parquet <- function(path, plates = NULL, feature.map = default_feature_map_pipeline()) {
+read_pipeline_parquet <- function(path, plates = NULL, feature.map = default_feature_map_pipeline(), assay.out = "raw") {
   if (!dir.exists(path)) {
     stop(paste0("Directory not found: ", path))
   }
@@ -1185,6 +1186,7 @@ read_pipeline_parquet <- function(path, plates = NULL, feature.map = default_fea
   return(.build_parquet_dataset(obj, im,
     image.ids = objects$image_id,
     feature.meta.fun = get_feature_meta_from_names_pipeline,
-    feature.map = feature.map
+    feature.map = feature.map,
+    assay.out = assay.out
   ))
 }
