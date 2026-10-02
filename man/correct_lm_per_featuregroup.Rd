@@ -34,7 +34,7 @@ correct_lm_per_featuregroup(
 
 \item{assay.image}{The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"}
 
-\item{assay.out}{Name of the output assay. Defaults to \if{html}{\out{<assay>}}.lm.corrected}
+\item{assay.out}{Name of the output assay. Defaults to \if{html}{\out{<assay>}}.lm.corrected.featuregroup}
 
 \item{grouping}{Vector with grouping variable if residuals be calculated per group of objects. See details}
 

@@ -138,6 +138,38 @@ mod_zscore <- function(x) {
     return((0.6745 * (x - median(x, na.rm = TRUE))) / mad(x, na.rm = TRUE))
 }
 
+#-------------------------------------------------------------------------------
+#' Z-score or modified z-score a vector per group
+#'
+#' @param data A numeric vector
+#' @param grouping A vector of the same length as data, the groups to scale within
+#' @param method Either "mod.z" for a modified z-score (see \code{\link{mod_zscore}}) or "z" for a z-score
+#' @returns The vector scaled within each group
+#'
+#' @export
+scale_grouped <- function(data, grouping, method = "mod.z") {
+    if (!is.numeric(data) || !is.null(dim(data))) {
+        stop("data must be a numeric vector")
+    }
+
+    if (length(grouping) != length(data)) {
+        stop("grouping must be the same length as data")
+    }
+
+    for (i in unique(grouping)) {
+        subset <- grouping == i
+        if (method == "mod.z") {
+            data[subset] <- mod_zscore(data[subset])
+        } else if (method == "z") {
+            data[subset] <- scale(data[subset], center = T, scale = T)
+        } else {
+            stop("Method not valid")
+        }
+    }
+
+    return(data)
+}
+
 
 #-------------------------------------------------------------------------------
 #' Modulus transformation
@@ -552,7 +584,7 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
 scale_dataset <- function(dataset, assay = NULL, grouping = NULL, ...) {
     if (is.character(grouping) && length(grouping) == 1) {
         if (tglowr::isAvailable(dataset, grouping, assay = assay, slot = "data")) {
-            grouping <- tglowr::getDataByObject(dataset, assay = assay)[, 1]
+            grouping <- tglowr::getDataByObject(dataset, grouping, assay = assay, drop = FALSE)[, 1]
         } else {
             stop(paste0(grouping, " is not available meta, image.meta, or assay item on dataset"))
         }

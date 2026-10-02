@@ -47,27 +47,27 @@ filter_agg_na(vec, thresh, grouping = NULL)
 
 filter_agg_na_multicol(...)
 
-filter_agg_zero_var(vec, thresh = 0)
+filter_agg_zero_var(vec, thresh = 0, grouping = NULL)
 
 filter_agg_zero_var_multicol(...)
 
-filter_agg_coef_var(vec, thresh)
+filter_agg_coef_var(vec, thresh, grouping = NULL)
 
 filter_agg_coef_var_multicol(...)
 
-filter_agg_skewness(vec, thresh)
+filter_agg_skewness(vec, thresh, grouping = NULL)
 
 filter_agg_skewness_multicol(...)
 
-filter_agg_kurtosis(vec, thresh)
+filter_agg_kurtosis(vec, thresh, grouping = NULL)
 
 filter_agg_kurtosis_multicol(...)
 
-filter_agg_unique_val(vec, thresh = NULL)
+filter_agg_unique_val(vec, thresh = NULL, grouping = NULL)
 
 filter_agg_unique_val_multicol(...)
 
-filter_agg_inf_median(vec, thresh = NULL)
+filter_agg_inf_median(vec, thresh = NULL, grouping = NULL)
 
 filter_agg_inf_median_sum(...)
 

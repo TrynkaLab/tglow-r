@@ -84,6 +84,9 @@ filter.table <- data.frame(
         "all", "all", "cell_AreaShape_MinorAxisLength",
         "cell_AreaShape_MinorAxisLength", "cell_AreaShape_MajorAxisLength",
         "cell_AreaShape_MajorAxisLength",
+        # Note: these cell_Neighbors_* and cell_Children_* columns are features on tglow_example. When reading
+        # with read_cellprofiler_parquet() they go to @meta (see default_meta_patterns()), so an assay-based
+        # filter on them would select 0 features
         "cell_Neighbors_NumberOfNeighbors_Adjacent",
         "cell_AreaShape_EquivalentDiameter",
         "cell_Children_nucl_Count",
@@ -91,7 +94,7 @@ filter.table <- data.frame(
     ),
     metadata_group = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     type = c(
-        "filter_agg_na_multicol", "filter_agg_inf_mutlicol", "filter_vec_min_sum",
+        "filter_agg_na_multicol", "filter_agg_inf_multicol", "filter_vec_min_sum",
         "filter_vec_max_sum", "filter_vec_min_sum", "filter_vec_max_sum",
         "filter_vec_max_sum", "filter_vec_min_sum",
         "filter_vec_min_sum", "filter_vec_max_sum"
@@ -149,13 +152,16 @@ plot(um[, 1],
 # Clustering
 tglow <- calculate_clustering(tglow, reduction = "PCA.trans", resolution = 0.2, k = 10, method = "louvain")
 
+# Clusters are stored in @meta as <col.out>res_<resolution>, copy to a shorter name for the rest of the example
+tglow@meta$clusters <- tglow@meta$clusters_res_0.2
+
 table(tglow@meta$clusters)
 
 plot(um[, 1], um[, 2], col = tglow@meta$clusters, pch = 20)
 
 #-------------------------------------------------------------------------------
 # Find marker features for clusters
-markers <- find_markers(tglow, "clusters", assay = "trans", slot = "scale.data")
+markers <- find_markers_ttest(tglow, "clusters", assay = "trans", slot = "scale.data", return.top = 10)
 
 boxplot(tglow@assays$trans@scale.data$cell_Intensity_MassDisplacement_ER ~ tglow@meta$clusters)
 
@@ -165,7 +171,7 @@ tglow@meta$clusters <- as.character(tglow@meta$clusters)
 
 # Regress out effects of covariates
 covariates <- c("clusters")
-tglow <- apply_correction_lm(tglow, "trans", slot = "scale.data", slot.covar = "scale.data", covariates = covariates)
+tglow <- correct_lm(tglow, "trans", slot = "scale.data", slot.covar = "scale.data", covariates = covariates)
 
 # PCA after correction
 tglow <- calculate_pca(tglow, assay = "trans.lm.corrected", pc.n = 10)
@@ -237,15 +243,15 @@ View(res$model.stats)
 tglow.agg <- aggregate_by_imagecol(tglow, "time_plate_well", method = "mean")
 tglow.agg <- calculate_pca(tglow.agg, "trans")
 tglow.agg <- calculate_umap(tglow.agg, reduction = "PCA.trans")
-tglow.agg <- apply_clustering(tglow.agg, reduction = "PCA.trans", resolution = 1, k = 10, method = "louvain")
+tglow.agg <- calculate_clustering(tglow.agg, reduction = "PCA.trans", resolution = 1, k = 10, method = "louvain")
 
 um <- tglow.agg@reduction$UMAP.PCA.trans@x
 
 plot(um[, 1],
     um[, 2],
-    col = tglow.agg@meta$clusters,
+    col = tglow.agg@meta$clusters_res_1,
     pch = 20, cex = 2
 )
 
-find_markers(tglow.agg, ident = "clusters", assay = "trans", slot = "scale.data", return.top = 3)
+find_markers_ttest(tglow.agg, ident = "clusters_res_1", assay = "trans", slot = "scale.data", return.top = 3)
 #-------------------------------------------------------------------------------

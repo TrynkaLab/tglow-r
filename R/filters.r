@@ -64,7 +64,7 @@ filter_vec_mod_z <- function(vec, thresh, grouping = NULL, absolute = T, method 
     if (is.null(grouping)) {
         grouping <- rep(1, length(vec))
     }
-    mod.z <- tglowr::grouped_scale(vec, grouping = grouping, method = method)
+    mod.z <- tglowr::scale_grouped(vec, grouping = grouping, method = method)
 
     if (absolute) {
         mod.z <- abs(mod.z)
@@ -126,7 +126,7 @@ filter_agg_na_multicol <- function(...) {
 #' Zero variance filter
 #' @rdname tglow_filters
 #' @export
-filter_agg_zero_var <- function(vec, thresh = 0) {
+filter_agg_zero_var <- function(vec, thresh = 0, grouping = NULL) {
     # return(Rfast::Var(vec[!is.na(vec)]) > thresh)
     return(var(vec[!is.na(vec)]) > thresh)
 }
@@ -141,7 +141,7 @@ filter_agg_zero_var_multicol <- function(...) {
 #' Absolute coefficient of variation filter
 #' @rdname tglow_filters
 #' @export
-filter_agg_coef_var <- function(vec, thresh) {
+filter_agg_coef_var <- function(vec, thresh, grouping = NULL) {
     # cur.var <- var(vec[!is.na(vec)])
     # cur.var[cur.var < 1e-10] <- 0
     return(abs((sd(vec[!is.na(vec)]) / mean(vec[!is.na(vec)]))) > thresh)
@@ -156,7 +156,7 @@ filter_agg_coef_var_multicol <- function(...) {
 #' Absolute skewness filter
 #' @rdname tglow_filters
 #' @export
-filter_agg_skewness <- function(vec, thresh) {
+filter_agg_skewness <- function(vec, thresh, grouping = NULL) {
     # cur.var <- var(vec[!is.na(vec)])
     # cur.var[cur.var < 1e-10] <- 0
     return(abs(skewness(vec, na.rm=T)) > thresh)
@@ -172,7 +172,7 @@ filter_agg_skewness_multicol <- function(...) {
 #' Absolute kurtosis filter
 #' @rdname tglow_filters
 #' @export
-filter_agg_kurtosis <- function(vec, thresh) {
+filter_agg_kurtosis <- function(vec, thresh, grouping = NULL) {
     # cur.var <- var(vec[!is.na(vec)])
     # cur.var[cur.var < 1e-10] <- 0
     return(abs(kurtosis(vec, na.rm=T)) > thresh)
@@ -181,14 +181,14 @@ filter_agg_kurtosis <- function(vec, thresh) {
 #' @rdname tglow_filters
 #' @export
 filter_agg_kurtosis_multicol <- function(...) {
-    filter_multicol(..., func = filter_agg_skewness)
+    filter_multicol(..., func = filter_agg_kurtosis)
 }
 
 #-------------------------------------------------------------------------------
 #' Minimum number of unique values
 #' @rdname tglow_filters
 #' @export
-filter_agg_unique_val <- function(vec, thresh = NULL) {
+filter_agg_unique_val <- function(vec, thresh = NULL, grouping = NULL) {
     return(length(unique(vec)) > thresh)
 }
 #' @rdname tglow_filters
@@ -201,7 +201,7 @@ filter_agg_unique_val_multicol <- function(...) {
 #' Infinite median filter
 #' @rdname tglow_filters
 #' @export
-filter_agg_inf_median <- function(vec, thresh = NULL) {
+filter_agg_inf_median <- function(vec, thresh = NULL, grouping = NULL) {
     return(!is.infinite(median(vec, na.rm = T)))
 }
 #' @rdname tglow_filters

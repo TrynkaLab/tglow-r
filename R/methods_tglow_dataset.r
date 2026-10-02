@@ -235,7 +235,7 @@ setMethod(
     if (!is.null(assay.image)) {
       is.image <- j %in% colnames(slot(dataset, assay.image))
     } else {
-      is.image <- rep(TRUE, length(j))
+      is.image <- rep(FALSE, length(j))
     }
 
     is.image.meta <- j %in% colnames(dataset@image.meta)
@@ -244,10 +244,10 @@ setMethod(
     if (!is.null(assay)) {
       is.assay <- j %in% colnames(dataset[[assay]])
     } else {
-      is.assay <- rep(TRUE, length(j))
+      is.assay <- rep(FALSE, length(j))
     }
 
-    exists <- is.meta | is.image.meta | is.meta | is.assay
+    exists <- is.image | is.image.meta | is.meta | is.assay
 
     if (is.null(assay.image)) {
       is.image <- rep(NA, length(is.image))

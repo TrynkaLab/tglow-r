@@ -479,7 +479,7 @@ correct_lm <- function(dataset, assay, slot, covariates, slot.covar = NULL, assa
 #' @param slot.covar The slot to grab covariates from. Can be "data" or "scale.data". Defaults to slot
 #' @param assay.covar The assay to grab covariates from. Defaults to assay argument
 #' @param assay.image The image assay to use for grabbing covariates, NULL, "image.data", "image.data.trans" or "image.data.norm"
-#' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected
+#' @param assay.out Name of the output assay. Defaults to <assay>.lm.corrected.featuregroup
 #' @param grouping Vector with grouping variable if residuals be calculated per group of objects. See details
 #' @param covariates.dont.use Vector of covariate names to NOT use when calculating residuals. See details
 #' @param rescale.group When grouping is active, should the group be re-centered and scaled prior to regressing
@@ -819,7 +819,7 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
                 cat("[INFO] Running LRT for group: ", group, "\n")
                 
                 # i.e. every column in design.reduced should also be in design.full
-                res.reduced <- lm_matrix(response = response,
+                res.reduced <- lm_matrix(response = response.cur,
                                         design   = design.null[selector, ],
                                         calculate_ll = TRUE)
 

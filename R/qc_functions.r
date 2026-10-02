@@ -70,15 +70,10 @@ find_outliers_pca <- function(dataset,
     check_dataset_assay_slot(dataset, assay, slot)
 
 
-    if (is.null(qc.group)) {
-        cat("[INFO] No QC group provided, setting all objects to same group\n")
-        qc.group <- rep(1, nrow(data))
-    }
-
     if (assay %in% c("image.data", "image.data.trans", "image.data.norm")) {
         cur.assay <- slot(dataset, assay)
         if (is.character(qc.group) && length(qc.group) == 1) {
-            qc.group <- getImageData(dataset, qc.group, assay = assay, slot = slot)
+            qc.group <- getImageData(dataset, qc.group, assay.image = assay, slot = slot)
         }
     } else {
         cur.assay <- dataset[[assay]]
@@ -97,6 +92,11 @@ find_outliers_pca <- function(dataset,
     
     if (!is.null(features)) {
         data <- data[,features]
+    }
+
+    if (is.null(qc.group)) {
+        cat("[INFO] No QC group provided, setting all objects to same group\n")
+        qc.group <- rep(1, nrow(data))
     }
 
     # Define results matrix
@@ -233,6 +233,8 @@ find_outliers_pca <- function(dataset,
             # Center each col and calc euclidian distance
             tmp         <- tmp - colMeans(tmp)
             dist        <- apply(tmp, 1, function(x){ sum(x^2)})
+            pcs.norm    <- tmp
+            rownames(pcs.norm) <- rownames(cur.data)
                         
             # Calculate pvalues on this 
             pval       <- pchisq(dist, df = pc.n.final, lower.tail = FALSE)
@@ -272,6 +274,13 @@ find_outliers_pca <- function(dataset,
            padj   <- final.pval
         }
         final.outliers <- padj < thresh
+
+        # Outliers are only known after all groups are done, so add them to the returned pcs here
+        if (return.pcs) {
+            for (group in names(final.pca)) {
+                final.pca[[group]]$outliers <- final.outliers[rownames(final.pca[[group]]$pcs)]
+            }
+        }
     }
 
     if (return.pcs) {

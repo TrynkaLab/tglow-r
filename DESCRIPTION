@@ -4,7 +4,7 @@ Version: 0.1.23
 Authors@R: person("Olivier", "Bakker", email = "ob7@sanger.ac.uk", role = c("aut", "cre"))
 Description: Data structure and analysis functions for processing high content imaging data, performing QC,
  normalizing, dimension reduction and statistics.
-License: 
+License: MIT + file LICENSE
 Encoding: UTF-8
 Imports: 
     arrow,
