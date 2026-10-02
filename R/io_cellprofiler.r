@@ -579,7 +579,9 @@ default_feature_map_pipeline <- function(version = "latest") {
 #' @rdname default_patterns
 #' @export
 default_meta_patterns <- function(...) {
-  return(unique(c("ImageNumber", "ObjectNumber", "Object_Number", "Parent", "_Location_", "BoundingBox", "^global_", "_QC_Object_Count", "cell_Neighbors_", "AreaShape_Center",  ...)))
+  return(unique(c("ImageNumber", "ObjectNumber", "Object_Number", "Parent", "_Location_", "BoundingBox", "^global_",
+   "_QC_Object_Count", "cell_Neighbors_", "AreaShape_Center",
+   "cell_Children_nucl_Count",  ...)))
 }
 
 #' @rdname default_patterns
@@ -592,7 +594,10 @@ default_img_meta_patterns <- function(...) {
 #' @export
 default_drop_patterns <- function(...) {
   return(unique(c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
-                  "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$", ...)))
+                  "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$",
+                  "cell_Children_mitoNetwork_Count", 
+                  "cell_Children_cyto_Count",
+                  "cell_Children_memb_Count", ...)))
 }
 
 #' @rdname default_patterns
