@@ -34,6 +34,12 @@
 * calculate_umap
 * correct_lm
 * correct_lm_per_featuregroup
+* default_drop_patterns
+* default_feature_map_cellprofiler
+* default_feature_map_pipeline
+* default_img_drop_patterns
+* default_img_meta_patterns
+* default_meta_patterns
 * effective_dimensionality
 * fast_colscale
 * fetch_representative_object
@@ -128,8 +134,6 @@
 * skewness
 * tglow_dimplot
 * tglow_dimplot_interactive
-* tglow_feature_map_cellprofiler
-* tglow_feature_map_pipeline
 * tglow_filters_from_table
 * tglow_plot_execution_time
 * tglow_plot_location_hex
