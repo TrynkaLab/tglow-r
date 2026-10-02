@@ -3,8 +3,9 @@
 ## Major updates
 - Added read_cellprofiler_parquet() to read the per-plate CellProfiler parquet files from the gamma version of tglow-pipeline into a TglowDataset
 - Added read_pipeline_parquet() to read the per-well intensity parquet files (measure_intensity_features_with_debris) from the gamma version of tglow-pipeline into a TglowDataset
-- Added tglow_feature_map_cellprofiler() and tglow_feature_map_pipeline() returning the default feature maps for these readers
+- Added default_feature_map_cellprofiler() and default_feature_map_pipeline() returning the default feature maps for these readers
 - Added get_feature_meta_from_names_pipeline() to generate feature metadata for tglow-pipeline ch{N}__{stat} feature names
+- Added default_meta_patterns(), default_img_meta_patterns(), default_drop_patterns() and default_img_drop_patterns() returning the default column patterns of read_cellprofiler_parquet(), with extra patterns appended
 - arrow is now a dependency
 
 ## Minor changes

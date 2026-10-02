@@ -7,7 +7,7 @@
 read_pipeline_parquet(
   path,
   plates = NULL,
-  feature.map = tglow_feature_map_pipeline()
+  feature.map = default_feature_map_pipeline()
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ read_pipeline_parquet(
 
 \item{plates}{Character vector of plate folder names to read. NULL reads all plate folders in alphabetical order}
 
-\item{feature.map}{\linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_pipeline}}}
+\item{feature.map}{\linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_pipeline}}}
 }
 \value{
 A \linkS4class{TglowDataset}
@@ -39,4 +39,8 @@ Metadata columns are fixed. Registration correlations are placed on \verb{@meta}
 \verb{@image.meta}. Image level metadata (plate, row, col, well, field, plate_well_field, plate_id) is placed on
 \verb{@image.meta} only, \verb{@meta} holds the object level metadata (cell_label, centroids, registration correlations)
 and image_id. Image level columns are still available per object through \code{\link{getDataByObject}}.
+
+If \code{feature.map} is set, \verb{@image.meta} gets plate_well (\verb{<plate>:<well>}) and plate_well_field
+(\verb{<plate>:<well>:<field>}) columns built from its plate, well and field features. This replaces the
+plate_well_field column written by the pipeline (\verb{<plate>_<well>_<field>}).
 }

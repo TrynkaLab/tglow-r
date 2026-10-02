@@ -9,17 +9,14 @@ read_cellprofiler_parquet(
   pattern.cells = "_cells.parquet$",
   pattern.image = "_image.parquet$",
   plates = NULL,
-  meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
-    "_Location_", "BoundingBox", "^global_"),
-  img.meta.patterns = c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_",
-    "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_", "^global_"),
-  drop.patterns = c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
-    "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$"),
-  img.drop.patterns = c("^plate$", "^well$"),
+  meta.patterns = default_meta_patterns(),
+  img.meta.patterns = default_img_meta_patterns(),
+  drop.patterns = default_drop_patterns(),
+  img.drop.patterns = default_img_drop_patterns(),
   col.object = "cell_ObjectNumber_Global",
   col.img.id = "cell_ImageNumber_Global",
   col.meta.img.id = "ImageNumber_Global",
-  feature.map = tglow_feature_map_cellprofiler(),
+  feature.map = default_feature_map_cellprofiler(),
   assay.out = "raw",
   verbose = FALSE
 )
@@ -33,13 +30,17 @@ read_cellprofiler_parquet(
 
 \item{plates}{Character vector of plates to read. NULL reads all plates found}
 
-\item{meta.patterns}{Regex patterns for object level columns that are put on \verb{@meta} instead of the assay}
+\item{meta.patterns}{Regex patterns for object level columns that are put on \verb{@meta} instead of the assay.
+See \code{\link{default_meta_patterns}} to extend the defaults}
 
-\item{img.meta.patterns}{Regex patterns for image level columns that are put on \verb{@image.meta} instead of \verb{@image.data}}
+\item{img.meta.patterns}{Regex patterns for image level columns that are put on \verb{@image.meta} instead of \verb{@image.data}.
+See \code{\link{default_img_meta_patterns}} to extend the defaults}
 
-\item{drop.patterns}{Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns}
+\item{drop.patterns}{Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns.
+See \code{\link{default_drop_patterns}} to extend the defaults}
 
-\item{img.drop.patterns}{Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns}
+\item{img.drop.patterns}{Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns.
+See \code{\link{default_img_drop_patterns}} to extend the defaults}
 
 \item{col.object}{Column with the globally unique object id}
 
@@ -47,7 +48,7 @@ read_cellprofiler_parquet(
 
 \item{col.meta.img.id}{Column in the image level data with the globally unique image id}
 
-\item{feature.map}{\linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_cellprofiler}}}
+\item{feature.map}{\linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_cellprofiler}}}
 
 \item{assay.out}{The assay name to store objects under}
 
@@ -64,12 +65,17 @@ concat_cellprofiler in the gamma version of tglow-pipeline into a \linkS4class{T
 Child objects are expected to be merged onto the parent objects and object/image ids to be globally
 unique already, as concat_cellprofiler does.
 
+To add patterns to a default rather than replacing it, call the matching pattern function with the
+extra patterns, e.g. \code{drop.patterns = default_drop_patterns("^cell_Neighbors_")}.
+
 Columns matching \code{drop.patterns} / \code{img.drop.patterns} are removed first. By default these are:
 \itemize{
 \item plate and well, which duplicate Metadata_plate and Metadata_well on \verb{@image.meta}
 \item \verb{<child>_Parent_*} (and \verb{_Global}) for all non cell objects. Parent_cell equals the cell's own object number after
 merging, other child parent columns are averaged over the children during merging and no longer refer to an object
 \item \verb{<child>_ImageNumber} and \verb{<child>_ObjectNumber}/\code{Number_Object_Number} (and \verb{_Global}) for all non cell objects
+\item at image level, CellProfiler run and file bookkeeping: ModuleError, Frame, Series, Height, Width, FileName, URL,
+PathName, MD5Digest and Scaling columns
 }
 
 \code{col.object} and \code{col.img.id} are never dropped.
@@ -77,4 +83,7 @@ merging, other child parent columns are averaged over the children during mergin
 Columns that are not numeric are always placed on \verb{@meta} (object level) or \verb{@image.meta} (image level).
 Numeric columns matching \code{meta.patterns} / \code{img.meta.patterns} are placed there as well, the
 remaining numeric columns form the assay and \verb{@image.data}.
+
+If \code{feature.map} is set, \verb{@image.meta} gets plate_well (\verb{<plate>:<well>}) and plate_well_field
+(\verb{<plate>:<well>:<field>}) columns built from its plate, well and field features.
 }

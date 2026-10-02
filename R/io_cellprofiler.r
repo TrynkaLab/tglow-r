@@ -522,7 +522,7 @@ read_cellprofiler_fileset_b <- function(prefix,
 #'
 #' @returns A \linkS4class{TglowFeatureMap}
 #' @export
-tglow_feature_map_cellprofiler <- function() {
+default_feature_map_cellprofiler <- function() {
   return(.feature_map_from_list(list(
     x = "cell_Location_Center_X",
     y = "cell_Location_Center_Y",
@@ -532,7 +532,6 @@ tglow_feature_map_cellprofiler <- function() {
     field = "Metadata_field"
   )))
 }
-
 
 #-------------------------------------------------------------------------------
 #' Feature map for tglow-pipeline intensity output
@@ -545,7 +544,7 @@ tglow_feature_map_cellprofiler <- function() {
 #'
 #' @returns A \linkS4class{TglowFeatureMap}
 #' @export
-tglow_feature_map_pipeline <- function(version = "latest") {
+default_feature_map_pipeline <- function(version = "latest") {
   versions <- names(.PIPELINE_FEATURE_MAPS)
 
   if (version == "latest") {
@@ -558,6 +557,51 @@ tglow_feature_map_pipeline <- function(version = "latest") {
 
   return(.feature_map_from_list(.PIPELINE_FEATURE_MAPS[[version]]))
 }
+
+
+#-------------------------------------------------------------------------------
+#' Default column patterns for CellProfiler parquet output
+#'
+#' @description
+#' Return the default patterns used by \code{\link{read_cellprofiler_parquet}}, with any extra patterns
+#' appended. Use these to extend the defaults instead of replacing them.
+#'
+#' - `default_meta_patterns()`: object level columns placed on `@meta` instead of the assay
+#' - `default_img_meta_patterns()`: image level columns placed on `@image.meta` instead of `@image.data`
+#' - `default_drop_patterns()`: object level columns removed entirely (perl regex)
+#' - `default_img_drop_patterns()`: image level columns removed entirely (perl regex)
+#'
+#' @param ... Extra patterns, as character vectors, appended to the defaults
+#'
+#' @returns A character vector of unique patterns
+#' @examples
+#' default_drop_patterns("^cell_Neighbors_")
+#' @rdname default_patterns
+#' @export
+default_meta_patterns <- function(...) {
+  return(unique(c("ImageNumber", "ObjectNumber", "Object_Number", "Parent", "_Location_", "BoundingBox", "^global_", "_QC_Object_Count", "cell_Neighbors_", "AreaShape_Center",  ...)))
+}
+
+#' @rdname default_patterns
+#' @export
+default_img_meta_patterns <- function(...) {
+  return(unique(c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_", "^global_", "^Threshold_", ...)))
+}
+
+#' @rdname default_patterns
+#' @export
+default_drop_patterns <- function(...) {
+  return(unique(c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
+                  "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$", ...)))
+}
+
+#' @rdname default_patterns
+#' @export
+default_img_drop_patterns <- function(...) {
+  return(unique(c("^plate$", "^well$", "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_",  "^FileName_",  "^URL_", "^PathName_", "^MD5Digest_", "^Scaling_", ...)))
+}
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -754,6 +798,42 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 
 
 #-------------------------------------------------------------------------------
+#' Add plate_well and plate_well_field columns to @image.meta from the feature map
+#'
+#' @details Feature map features are taken from @image.meta when present there, otherwise from the
+#' first object of each image. Images without objects are not on a dataset, so every image has one.
+#' Skipped with a warning if the plate, well or field feature is not set or not found.
+#' @noRd
+.add_plate_well_ids <- function(dataset) {
+  image.ids <- rownames(dataset@image.meta)
+  values <- list()
+
+  for (cur.slot in c("plate", "well", "field")) {
+    loc <- slot(dataset@feature.map, cur.slot)
+
+    if (length(loc@feature) == 0) {
+      warning(paste0("Feature map ", cur.slot, " not set, not adding plate_well and plate_well_field to @image.meta"))
+      return(dataset)
+    }
+
+    if (loc@feature %in% colnames(dataset@image.meta)) {
+      values[[cur.slot]] <- dataset@image.meta[[loc@feature]]
+    } else if (loc@feature %in% colnames(dataset@meta) || (!is.null(loc@assay) && loc@feature %in% colnames(slot(dataset@assays[[loc@assay]], loc@slot)))) {
+      per.object <- getDataByObject(dataset, loc@feature, assay = loc@assay, slot = loc@slot)
+      values[[cur.slot]] <- per.object[match(image.ids, dataset@image.ids)]
+    } else {
+      warning(paste0("Feature map ", cur.slot, " feature '", loc@feature, "' not found, not adding plate_well and plate_well_field to @image.meta"))
+      return(dataset)
+    }
+  }
+
+  dataset@image.meta$plate_well <- paste0(values$plate, ":", values$well)
+  dataset@image.meta$plate_well_field <- paste0(dataset@image.meta$plate_well, ":", values$field)
+  return(dataset)
+}
+
+
+#-------------------------------------------------------------------------------
 #' Build a TglowDataset from split object and image level data
 #'
 #' @param obj Output of .split_meta_features for the objects, with rownames set
@@ -794,6 +874,7 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 
   if (!is.null(feature.map)) {
     .check_feature_map(dataset)
+    dataset <- .add_plate_well_ids(dataset)
   }
 
   cat("[INFO] Read ", nrow(obj$features), " objects with ", ncol(obj$features), " features and ",
@@ -814,14 +895,18 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 #' @param pattern.cells Pattern identifying the object level files. Removing it from the filename gives the plate name
 #' @param pattern.image Pattern identifying the image level files. Removing it from the filename gives the plate name
 #' @param plates Character vector of plates to read. NULL reads all plates found
-#' @param meta.patterns Regex patterns for object level columns that are put on `@meta` instead of the assay
-#' @param img.meta.patterns Regex patterns for image level columns that are put on `@image.meta` instead of `@image.data`
-#' @param drop.patterns Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns
-#' @param img.drop.patterns Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns
+#' @param meta.patterns Regex patterns for object level columns that are put on `@meta` instead of the assay.
+#' See \code{\link{default_meta_patterns}} to extend the defaults
+#' @param img.meta.patterns Regex patterns for image level columns that are put on `@image.meta` instead of `@image.data`.
+#' See \code{\link{default_img_meta_patterns}} to extend the defaults
+#' @param drop.patterns Perl regex patterns for object level columns that are removed entirely. NULL keeps all columns.
+#' See \code{\link{default_drop_patterns}} to extend the defaults
+#' @param img.drop.patterns Perl regex patterns for image level columns that are removed entirely. NULL keeps all columns.
+#' See \code{\link{default_img_drop_patterns}} to extend the defaults
 #' @param col.object Column with the globally unique object id
 #' @param col.img.id Column in the object level data with the globally unique image id
 #' @param col.meta.img.id Column in the image level data with the globally unique image id
-#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_cellprofiler}}
+#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_cellprofiler}}
 #' @param assay.out The assay name to store objects under
 #' @param verbose Should I be chatty?
 #'
@@ -829,17 +914,25 @@ get_feature_meta_from_names_pipeline <- function(feature.names) {
 #' Child objects are expected to be merged onto the parent objects and object/image ids to be globally
 #' unique already, as concat_cellprofiler does.
 #'
+#' To add patterns to a default rather than replacing it, call the matching pattern function with the
+#' extra patterns, e.g. `drop.patterns = default_drop_patterns("^cell_Neighbors_")`.
+#'
 #' Columns matching `drop.patterns` / `img.drop.patterns` are removed first. By default these are:
 #' - plate and well, which duplicate Metadata_plate and Metadata_well on `@image.meta`
 #' - `<child>_Parent_*` (and `_Global`) for all non cell objects. Parent_cell equals the cell's own object number after
 #'   merging, other child parent columns are averaged over the children during merging and no longer refer to an object
 #' - `<child>_ImageNumber` and `<child>_ObjectNumber`/`Number_Object_Number` (and `_Global`) for all non cell objects
+#' - at image level, CellProfiler run and file bookkeeping: ModuleError, Frame, Series, Height, Width, FileName, URL,
+#'   PathName, MD5Digest and Scaling columns
 #'
 #' `col.object` and `col.img.id` are never dropped.
 #'
 #' Columns that are not numeric are always placed on `@meta` (object level) or `@image.meta` (image level).
 #' Numeric columns matching `meta.patterns` / `img.meta.patterns` are placed there as well, the
 #' remaining numeric columns form the assay and `@image.data`.
+#'
+#' If `feature.map` is set, `@image.meta` gets plate_well (`<plate>:<well>`) and plate_well_field
+#' (`<plate>:<well>:<field>`) columns built from its plate, well and field features.
 #'
 #' @returns A \linkS4class{TglowDataset}
 #' @importFrom arrow read_parquet
@@ -848,18 +941,14 @@ read_cellprofiler_parquet <- function(path,
                                       pattern.cells = "_cells.parquet$",
                                       pattern.image = "_image.parquet$",
                                       plates = NULL,
-                                      meta.patterns = c("ImageNumber", "ObjectNumber", "Object_Number", "Parent",
-                                                        "_Location_", "BoundingBox", "^global_"),
-                                      img.meta.patterns = c("ImageNumber", "^Metadata_", "^Group_", "^ExecutionTime_",
-                                                            "^ModuleError_", "^Frame_", "^Series_", "^Height_", "^Width_",
-                                                            "^global_"),
-                                      drop.patterns = c("^plate$", "^well$", "^(?!cell_)[^_]+_Parent_",
-                                                        "^(?!cell_)[^_]+_(ImageNumber|ObjectNumber|Number_Object_Number)(_Global)?$"),
-                                      img.drop.patterns = c("^plate$", "^well$"),
+                                      meta.patterns = default_meta_patterns(),
+                                      img.meta.patterns = default_img_meta_patterns(),
+                                      drop.patterns = default_drop_patterns(),
+                                      img.drop.patterns = default_img_drop_patterns(),
                                       col.object = "cell_ObjectNumber_Global",
                                       col.img.id = "cell_ImageNumber_Global",
                                       col.meta.img.id = "ImageNumber_Global",
-                                      feature.map = tglow_feature_map_cellprofiler(),
+                                      feature.map = default_feature_map_cellprofiler(),
                                       assay.out = "raw",
                                       verbose = FALSE) {
   if (length(path) == 1 && dir.exists(path)) {
@@ -925,6 +1014,13 @@ read_cellprofiler_parquet <- function(path,
     stop(paste0(length(missing), " image ids in ", col.img.id, " not found in the image files"))
   }
 
+  # Images without objects (empty fields) are not allowed on a TglowDataset
+  empty <- !img[[col.meta.img.id]] %in% cells[[col.img.id]]
+  if (any(empty)) {
+    warning(paste0("Skipped ", sum(empty), " images without objects: ", paste(img[[col.meta.img.id]][empty], collapse = ", ")))
+    img <- img[!empty, , drop = F]
+  }
+
   # Remove redundant columns
   cells <- .drop_columns(cells, drop.patterns, keep = c(col.object, col.img.id), label = "object", verbose = verbose)
   img <- .drop_columns(img, img.drop.patterns, keep = col.meta.img.id, label = "image", verbose = verbose)
@@ -961,7 +1057,7 @@ read_cellprofiler_parquet <- function(path,
 #'
 #' @param path The output directory containing one folder per plate
 #' @param plates Character vector of plate folder names to read. NULL reads all plate folders in alphabetical order
-#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{tglow_feature_map_pipeline}}
+#' @param feature.map \linkS4class{TglowFeatureMap} to set on the dataset, or NULL. See \code{\link{default_feature_map_pipeline}}
 #'
 #' @details
 #' Object ids are constructed as `<plate_id>_<well>_I<field>_L<cell_label>`, image ids as `<plate_id>_<well>_I<field>`.
@@ -978,10 +1074,14 @@ read_cellprofiler_parquet <- function(path,
 #' `@image.meta` only, `@meta` holds the object level metadata (cell_label, centroids, registration correlations)
 #' and image_id. Image level columns are still available per object through \code{\link{getDataByObject}}.
 #'
+#' If `feature.map` is set, `@image.meta` gets plate_well (`<plate>:<well>`) and plate_well_field
+#' (`<plate>:<well>:<field>`) columns built from its plate, well and field features. This replaces the
+#' plate_well_field column written by the pipeline (`<plate>_<well>_<field>`).
+#'
 #' @returns A \linkS4class{TglowDataset}
 #' @importFrom arrow read_parquet
 #' @export
-read_pipeline_parquet <- function(path, plates = NULL, feature.map = tglow_feature_map_pipeline()) {
+read_pipeline_parquet <- function(path, plates = NULL, feature.map = default_feature_map_pipeline()) {
   if (!dir.exists(path)) {
     stop(paste0("Directory not found: ", path))
   }
@@ -1056,6 +1156,13 @@ read_pipeline_parquet <- function(path, plates = NULL, feature.map = tglow_featu
   missing <- setdiff(objects$image_id, images$image_id)
   if (length(missing) > 0) {
     stop(paste0(length(missing), " image ids of objects not found in the image files"))
+  }
+
+  # Images without objects (empty fields) are not allowed on a TglowDataset
+  empty <- !images$image_id %in% objects$image_id
+  if (any(empty)) {
+    warning(paste0("Skipped ", sum(empty), " images without objects: ", paste(images$image_id[empty], collapse = ", ")))
+    images <- images[!empty, , drop = F]
   }
 
   # Non numeric columns that are not part of the expected output still go to meta
