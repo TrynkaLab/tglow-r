@@ -74,6 +74,7 @@
 * getImageData
 * getImageDataByObject
 * get_feature_meta_from_names
+* get_feature_meta_from_names_pipeline
 * hex_to_rgb
 * imageIds
 * img_apply_color
@@ -118,6 +119,8 @@
 * read_cellprofiler_dir
 * read_cellprofiler_fileset_a
 * read_cellprofiler_fileset_b
+* read_cellprofiler_parquet
+* read_pipeline_parquet
 * scale_assay
 * scale_assay_min_max
 * scale_dataset
@@ -125,6 +128,8 @@
 * skewness
 * tglow_dimplot
 * tglow_dimplot_interactive
+* tglow_feature_map_cellprofiler
+* tglow_feature_map_pipeline
 * tglow_filters_from_table
 * tglow_plot_execution_time
 * tglow_plot_location_hex
