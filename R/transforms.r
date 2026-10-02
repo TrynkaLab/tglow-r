@@ -32,8 +32,8 @@
 #' scaling to reference samples. This sets them to NA when calculating the scaling factors.
 #'
 #' @examples
-#' # Generate a matrix
-#' r <- matrix(runif(100000 * 1000), nrow = 100000, ncol = 1000)
+#' # Generate a matrix, increase the size to see a bigger speed difference
+#' r <- matrix(runif(10000 * 100), nrow = 10000, ncol = 100)
 #'
 #' # Run using scale
 #' system.time({
@@ -42,12 +42,11 @@
 #'
 #' # Run using fast_colscale
 #' system.time({
-#'     r.fast_colscale <- fast_colscale(r, add_attr = F)
+#'     r.fast_colscale <- fast_colscale(r, add_attr = FALSE)
 #' })
 #'
-#' # Compare results
-#' diff <- abs(r.scale - r.fast_colscale)
-#' all(diff < 1e-15)
+#' # Compare results, ignoring the scaled:center and scaled:scale attributes set by scale()
+#' all.equal(r.scale, r.fast_colscale, check.attributes = FALSE)
 #' @importFrom matrixStats colMedians colSds colMads
 #' @export
 fast_colscale <- function(x,
@@ -503,6 +502,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' @param assay A \linkS4class{TglowAssay}
 #' @param grouping Vector with a grouping variable of length nrow(assay)
 #' @param reference.group Scale not to the vector mean/median, sd/mad but to the objects indiciated here
+#' @param na.rm Should NA's be removed during mean and variance calculations. If FALSE, a feature with a single NA becomes all NA
 #' @param ... Arguments passed to \code{\link{fast_colscale}}. Strongly recommend looking at these!
 #' @returns The assay with the scale.data slot populated
 #'
@@ -527,7 +527,7 @@ apply_boxcox <- function(dataset, assay, assay.out = NULL, trim = TRUE, slot = "
 #' and reference.group to getDataByObject(object, "is_control")
 #'
 #' @export
-scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
+scale_assay <- function(assay, grouping = NULL, reference.group = NULL, na.rm = TRUE, ...) {
     if (!is(assay, "TglowAssay")) {
         stop("Assay must be TglowAssay")
     }
@@ -542,7 +542,7 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
 
     if (is.null(grouping)) {
         #assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data@.Data, reference.group = reference.group, ...))
-        assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data, reference.group = reference.group, ...))
+        assay@scale.data <- tglowr::TglowMatrix(tglowr::fast_colscale(assay@data, reference.group = reference.group, na.rm = na.rm, ...))
     } else {
         if (length(grouping) != nrow(assay)) {
             stop("Length of grouping must equal nrow(assay)")
@@ -562,7 +562,7 @@ scale_assay <- function(assay, grouping = NULL, reference.group = NULL, ...) {
 
         for (group in unique(grouping)) {
             selector <- grouping == group
-            mat.scale[selector, ] <- tglowr::fast_colscale(mat[selector, ], reference.group = reference.group[selector], ...)
+            mat.scale[selector, ] <- tglowr::fast_colscale(mat[selector, ], reference.group = reference.group[selector], na.rm = na.rm, ...)
         }
 
         assay@scale.data <- tglowr::TglowMatrix(mat.scale)

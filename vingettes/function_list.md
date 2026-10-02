@@ -50,7 +50,7 @@
 * filter_agg_coef_var_multicol
 * filter_agg_inf
 * filter_agg_inf_median
-* filter_agg_inf_median_sum
+* filter_agg_inf_median_multicol
 * filter_agg_inf_multicol
 * filter_agg_kurtosis
 * filter_agg_kurtosis_multicol

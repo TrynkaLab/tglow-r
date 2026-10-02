@@ -61,6 +61,11 @@ filter_vec_max_sum <- function(...) {
 #' @rdname tglow_filters
 #' @export
 filter_vec_mod_z <- function(vec, thresh, grouping = NULL, absolute = T, method = "mod.z") {
+    # calculate_object_filters passes a matrix, even when only one column is selected
+    if (!is.null(dim(vec)) && ncol(vec) == 1) {
+        vec <- vec[, 1]
+    }
+
     if (is.null(grouping)) {
         grouping <- rep(1, length(vec))
     }
@@ -206,8 +211,8 @@ filter_agg_inf_median <- function(vec, thresh = NULL, grouping = NULL) {
 }
 #' @rdname tglow_filters
 #' @export
-filter_agg_inf_median_sum <- function(...) {
-    filter_sum(..., func = filter_agg_inf_median)
+filter_agg_inf_median_multicol <- function(...) {
+    filter_multicol(..., func = filter_agg_inf_median)
 }
 
 #-------------------------------------------------------------------------------

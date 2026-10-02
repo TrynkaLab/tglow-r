@@ -630,10 +630,12 @@ correct_lm_per_featuregroup <- function(dataset, assay, slot, covariates.group, 
 #' Calculates both the chisquared and the f-test based LRT. F test is more accurate for small samples
 #'
 #' @param res The results from lm_matrix
-#' @param res.reduced The results from lm_matrix for the reduced model
-#' @param design The design matrix for the full model
-#' @param design.null The design matrix for the reduced model
-lm_matrix_lrt <- function(res, res.reduced, design, design.null) {
+#' The degrees of freedom are taken from the fitted models, so columns lm_matrix dropped
+#' (zero sum or near singular, i.e. a term constant within a group) are not counted
+#'
+#' @param res The results from lm_matrix
+#' @param res.reduced The results from lm_matrix for the reduced model, fitted on the same rows
+lm_matrix_lrt <- function(res, res.reduced) {
         #------------------------------------
         # Chisquared based LRT
         #------------------------------------
@@ -641,7 +643,13 @@ lm_matrix_lrt <- function(res, res.reduced, design, design.null) {
         lrt.stat <- 2 * (res$model.stats$ll - res.reduced$model.stats$ll)
 
         # Degrees of freedom = difference in number of estimated parameters
-        df.diff <- ncol(design) - ncol(design.null)
+        # Both models are fit on the same rows, so this is the difference in residual df
+        df.diff <- res.reduced$df - res$df
+
+        if (df.diff <= 0) {
+            warning("Full model has no more parameters than the null model after dropping columns, LRT set to NA")
+            df.diff <- NA
+        }
 
         # p-value from chi-square distribution
         lrt.pval <- pchisq(lrt.stat, df = df.diff, lower.tail = FALSE)
@@ -790,7 +798,7 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
                                     design   = design.null,
                                     calculate_ll = TRUE)
             
-            res$lrt <- lm_matrix_lrt(res, res.reduced, design, design.null)
+            res$lrt <- lm_matrix_lrt(res, res.reduced)
         }
 
         return(res)
@@ -812,7 +820,7 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
                 response.cur <- response[selector, ]
             }
 
-            results[[group]] <- lm_matrix(response.cur, design[selector, ], covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null), ...)
+            results[[group]] <- lm_matrix(response.cur, design[selector, , drop = FALSE], covariates.dont.use = covariates.dont.use, calculate_ll = !is.null(formula.null), ...)
             
             # LRT
             if (!is.null(formula.null)) {
@@ -820,10 +828,10 @@ calculate_lm <- function(dataset, assay, slot, covariates, formula = NULL, formu
                 
                 # i.e. every column in design.reduced should also be in design.full
                 res.reduced <- lm_matrix(response = response.cur,
-                                        design   = design.null[selector, ],
+                                        design   = design.null[selector, , drop = FALSE],
                                         calculate_ll = TRUE)
 
-                results[[group]]$lrt <- lm_matrix_lrt(results[[group]], res.reduced, design[selector, ], design.null[selector, ])
+                results[[group]]$lrt <- lm_matrix_lrt(results[[group]], res.reduced)
             }
         }
         return(results)
@@ -989,7 +997,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
   }
   
   if (!is.null(covariates.dont.use)) {
-    if (sum(covariates.dont.use %in% colnames(design)) != length(design)) {
+    if (sum(covariates.dont.use %in% colnames(design)) != length(covariates.dont.use)) {
       warning("Not all covariates specified in covariates.dont.use found. Check the output carefully if all is expected. This can happen if covariates.dont.use contains factors")
     }
   }
@@ -1002,7 +1010,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
       msg <- paste0(msg, "Offending collumns: ", colnames(design)[design.colsums == 0])
       warning(msg)
       
-      design <- design[, design.colsums != 0]
+      design <- design[, design.colsums != 0, drop = FALSE]
     }
   }
   
@@ -1020,7 +1028,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
       msg <- paste0(msg, "Offending collumns: ", paste0(colnames(design)[offenders], collapse=", "))
       warning(msg)
       cat("[WARN] ", msg, "\n")
-      design <- design[, qr.decomp$pivot[ev > tol]]
+      design <- design[, qr.decomp$pivot[ev > tol], drop = FALSE]
     }
     
     # Final QR on the removed values
@@ -1041,7 +1049,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
         msg <- paste0(msg, "Offending collumns: ", paste0(colnames(design)[ev < tol], collapse=", "))
         warning(msg)
         cat("[WARN] ", msg, "\n")
-        design <- design[, ev > tol]
+        design <- design[, ev > tol, drop = FALSE]
         a <- crossprod(design)
       }
     }
@@ -1102,8 +1110,8 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
       design.tmp <- design
     } else {
       # Include covariates for beta fitting, but don't correct for them
-      beta.tmp   <- beta[!colnames(design) %in% covariates.dont.use, ]
-      design.tmp <- design[, !colnames(design) %in% covariates.dont.use]
+      beta.tmp   <- beta[!colnames(design) %in% covariates.dont.use, , drop = FALSE]
+      design.tmp <- design[, !colnames(design) %in% covariates.dont.use, drop = FALSE]
     }
     
     ypred <- (design.tmp %*% beta.tmp)
@@ -1146,10 +1154,15 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
       r2           <- 1 - (rss / tss)
       r2.adj       <- 1 - (1 - r2) * (length(rs) - 1) / df
       
-      # Calculate F-statistic
-      msr <- (tss - rss) / (ncol(design.tmp) - 1)
-      f.stat <- msr / mse
-      p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
+      # Calculate F-statistic, undefined for an intercept only model (e.g. formula.null = ~1)
+      if (ncol(design.tmp) > 1) {
+        msr <- (tss - rss) / (ncol(design.tmp) - 1)
+        f.stat <- msr / mse
+        p <- 1 - pf(f.stat, ncol(design.tmp) - 1, df)
+      } else {
+        f.stat <- NA
+        p <- NA
+      }
       
       # Calculate ll
       if (calculate_ll) {

@@ -204,7 +204,7 @@ img_max_project <- function(img) {
 #'
 #' @examples
 #' input <- array(1, dim = c(5, 5, 3))
-#' padded <- pad_center_nd(input, 10, 10)
+#' padded <- img_pad_center(input, 10, 10)
 #' dim(padded)  # 10 10 3
 #' print(padded[,,1])  # Shows the first 2D slice padded and centered
 #'

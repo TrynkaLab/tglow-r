@@ -4,7 +4,7 @@
 \alias{scale_assay}
 \title{Scale a TglowAssay}
 \usage{
-scale_assay(assay, grouping = NULL, reference.group = NULL, ...)
+scale_assay(assay, grouping = NULL, reference.group = NULL, na.rm = TRUE, ...)
 }
 \arguments{
 \item{assay}{A \linkS4class{TglowAssay}}
@@ -12,6 +12,8 @@ scale_assay(assay, grouping = NULL, reference.group = NULL, ...)
 \item{grouping}{Vector with a grouping variable of length nrow(assay)}
 
 \item{reference.group}{Scale not to the vector mean/median, sd/mad but to the objects indiciated here}
+
+\item{na.rm}{Should NA's be removed during mean and variance calculations. If FALSE, a feature with a single NA becomes all NA}
 
 \item{...}{Arguments passed to \code{\link{fast_colscale}}. Strongly recommend looking at these!}
 }

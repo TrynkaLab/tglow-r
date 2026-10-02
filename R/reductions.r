@@ -49,12 +49,12 @@ calculate_pca <- function(dataset, assay, slot = "scale.data", pc.n = NULL, redu
     if (use_irlba) {
         # Calculate PCAs
         pcs <- irlba::prcomp_irlba(cur.data, n = pc.n, center = F, scale = F)
-        rownames(pcs$x) <- dataset@object.ids
+        rownames(pcs$x) <- unname(dataset@object.ids)
 
         res <- new("TglowReduction", x = pcs$x, var = pcs$sdev^2, var_total = pcs$totalvar)
     } else {
         pcs <- prcomp(cur.data, center = F, scale = F)
-        rownames(pcs$x) <- dataset@object.ids
+        rownames(pcs$x) <- unname(dataset@object.ids)
 
         res <- new("TglowReduction", x = pcs$x, var = pcs$sdev^2, var_total = sum(pcs$sdev^2))
     }
@@ -139,7 +139,7 @@ calculate_umap <- function(dataset, reduction = NULL, assay = NULL, slot = "scal
     # Don't return the output directly from UMAP, but rather make sure when a downsample is
     # done the whole matrix is returned
     res <- matrix(NA, nrow = nrow(dataset), ncol = 2)
-    rownames(res) <- dataset@object.ids
+    rownames(res) <- unname(dataset@object.ids)
     umap <- uwot::umap(pcs@x[sample, 1:pc.n], ...)
 
     res[sample, ] <- umap

@@ -21,7 +21,7 @@
 \alias{filter_agg_unique_val}
 \alias{filter_agg_unique_val_multicol}
 \alias{filter_agg_inf_median}
-\alias{filter_agg_inf_median_sum}
+\alias{filter_agg_inf_median_multicol}
 \alias{filter_agg_inf}
 \alias{filter_agg_inf_multicol}
 \alias{filter_agg_blacklist}
@@ -69,7 +69,7 @@ filter_agg_unique_val_multicol(...)
 
 filter_agg_inf_median(vec, thresh = NULL, grouping = NULL)
 
-filter_agg_inf_median_sum(...)
+filter_agg_inf_median_multicol(...)
 
 filter_agg_inf(vec, thresh = NULL, grouping = NULL)
 

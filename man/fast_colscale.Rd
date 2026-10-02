@@ -54,8 +54,8 @@ might have a lot of zeroes, which can skew the mean and variance estimates and g
 scaling to reference samples. This sets them to NA when calculating the scaling factors.
 }
 \examples{
-# Generate a matrix
-r <- matrix(runif(100000 * 1000), nrow = 100000, ncol = 1000)
+# Generate a matrix, increase the size to see a bigger speed difference
+r <- matrix(runif(10000 * 100), nrow = 10000, ncol = 100)
 
 # Run using scale
 system.time({
@@ -64,10 +64,9 @@ system.time({
 
 # Run using fast_colscale
 system.time({
-    r.fast_colscale <- fast_colscale(r, add_attr = F)
+    r.fast_colscale <- fast_colscale(r, add_attr = FALSE)
 })
 
-# Compare results
-diff <- abs(r.scale - r.fast_colscale)
-all(diff < 1e-15)
+# Compare results, ignoring the scaled:center and scaled:scale attributes set by scale()
+all.equal(r.scale, r.fast_colscale, check.attributes = FALSE)
 }

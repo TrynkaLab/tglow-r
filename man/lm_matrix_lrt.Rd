@@ -4,16 +4,12 @@
 \alias{lm_matrix_lrt}
 \title{Calculate LRT on results from lm_matrix}
 \usage{
-lm_matrix_lrt(res, res.reduced, design, design.null)
+lm_matrix_lrt(res, res.reduced)
 }
 \arguments{
 \item{res}{The results from lm_matrix}
 
-\item{res.reduced}{The results from lm_matrix for the reduced model}
-
-\item{design}{The design matrix for the full model}
-
-\item{design.null}{The design matrix for the reduced model}
+\item{res.reduced}{The results from lm_matrix for the reduced model, fitted on the same rows}
 }
 \description{
 Calculates both the chisquared and the f-test based LRT. F test is more accurate for small samples
