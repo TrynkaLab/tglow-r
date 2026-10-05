@@ -25,6 +25,7 @@
 - scale_assay() and scale_dataset() now default to na.rm = TRUE, so a single NA no longer makes a whole feature NA
 - PCA and UMAP rownames no longer carry a names attribute
 - Fixed vingettes/example.r (apply_clustering, apply_correction_lm, find_markers, cluster column names, filter name typo)
+- Refit in lmm_matrix defaults to true (safer)
 
 # v0.1.22 (unreleased)
 

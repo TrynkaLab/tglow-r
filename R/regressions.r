@@ -1225,7 +1225,7 @@ lm_matrix <- function(response, design, covariates.dont.use = NULL, residuals.on
 #' @importFrom performance model_performance
 #' @importFrom lme4 lFormula
 #' @export
-lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = FALSE, control=lme4::lmerControl(check.conv.singular=list(action='ignore', tol=1e-4)), ...) {
+lmm_matrix <- function(response, design, formula, formula.null = NULL, residuals.only = FALSE, return.residuals = FALSE, refit = TRUE, control=lme4::lmerControl(check.conv.singular=list(action='ignore', tol=1e-4)), ...) {
     
     if (is(formula, "formula")) {
         formula <- paste0(as.character(formula), collapse=" ")
