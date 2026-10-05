@@ -11,7 +11,7 @@ lmm_matrix(
   formula.null = NULL,
   residuals.only = FALSE,
   return.residuals = FALSE,
-  refit = FALSE,
+  refit = TRUE,
   control = lme4::lmerControl(check.conv.singular = list(action = "ignore", tol = 1e-04)),
   ...
 )
